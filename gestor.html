@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tareas de Equipo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #2563eb; --bg: #f3f4f6; --white: #ffffff; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        
+        .container { max-width: 1000px; margin: 0 auto; background: var(--white); padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        /* Estilos Login */
+        #login-screen { text-align: center; }
+        input, select, button { padding: 10px; margin: 10px 0; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.9; }
+        
+        /* Estilos Dashboard */
+        .hidden { display: none; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .task-card { border-left: 5px solid var(--primary); background: #f9fafb; padding: 15px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .priority-alta { border-color: #ef4444; }
+        .priority-media { border-color: #f59e0b; }
+        .status-badge { padding: 5px 10px; border-radius: 15px; font-size: 0.8em; color: white; }
+        .bg-pendiente { background: #9ca3af; }
+        .bg-progreso { background: #3b82f6; }
+        .bg-completada { background: #10b981; }
+
+        /* Grid para Admin */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .stat-box { background: #fff; border: 1px solid #ddd; padding: 20px; border-radius: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="login-screen">
+        <h2>Bienvenido al Gestor de Tareas</h2>
+        <p>Ingresa tus credenciales</p>
+        <input type="text" id="username" placeholder="Usuario (admin o juan)">
+        <input type="password" id="password" placeholder="Contraseña (123)">
+        <button onclick="login()">Ingresar</button>
+        <p style="font-size: 0.8em; color: #666;">Prueba: admin/123 o juan/123</p>
+    </div>
+
+    <div id="admin-dashboard" class="hidden">
+        <div class="header">
+            <h3>Panel de Control (Admin)</h3>
+            <button style="width: auto; background: #ef4444;" onclick="logout()">Cerrar Sesión</button>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-box">
+                <h4>Rendimiento Global</h4>
+                <canvas id="chartEstado"></canvas>
+            </div>
+            <div class="stat-box">
+                <h4>Tareas por Usuario</h4>
+                <canvas id="chartUsuarios"></canvas>
+            </div>
+        </div>
+        <h3>Todas las tareas del equipo</h3>
+        <div id="admin-task-list"></div>
+    </div>
+
+    <div id="employee-dashboard" class="hidden">
+        <div class="header">
+            <h3 id="welcome-msg">Mis Tareas</h3>
+            <button style="width: auto; background: #ef4444;" onclick="logout()">Salir</button>
+        </div>
+
+        <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h4>Nueva Tarea</h4>
+            <input type="text" id="task-title" placeholder="¿Qué hay que hacer?">
+            <div style="display: flex; gap: 10px;">
+                <select id="task-priority">
+                    <option value="baja">Prioridad Baja</option>
+                    <option value="media">Prioridad Media</option>
+                    <option value="alta">Prioridad Alta</option>
+                </select>
+                <select id="task-assign">
+                    <option value="juan">Asignar a Juan</option>
+                    <option value="maria">Asignar a Maria</option>
+                    <option value="pedro">Asignar a Pedro</option>
+                </select>
+            </div>
+            <button onclick="addTask()">Agregar Tarea</button>
+        </div>
+
+        <div id="task-list">
+            </div>
+    </div>
+</div>
+
+<script>
+    // DATOS DE EJEMPLO (Simulando Base de Datos)
+    let tasks = [
+        { id: 1, title: 'Diseñar logo', priority: 'alta', status: 'completada', assigned: 'juan' },
+        { id: 2, title: 'Comprar dominio', priority: 'media', status: 'progreso', assigned: 'maria' },
+        { id: 3, title: 'Reunión con cliente', priority: 'baja', status: 'pendiente', assigned: 'juan' }
+    ];
+
+    let currentUser = null;
+
+    function login() {
+        const user = document.getElementById('username').value.toLowerCase();
+        const pass = document.getElementById('password').value;
+
+        if (pass !== '123') { alert('Contraseña incorrecta'); return; }
+
+        document.getElementById('login-screen').classList.add('hidden');
+        currentUser = user;
+
+        if (user === 'admin') {
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+            renderAdminStats();
+            renderAdminTasks();
+        } else {
+            document.getElementById('employee-dashboard').classList.remove('hidden');
+            document.getElementById('welcome-msg').innerText = `Hola, ${user.charAt(0).toUpperCase() + user.slice(1)}`;
+            renderTasks();
+        }
+    }
+
+    function logout() {
+        location.reload();
+    }
+
+    // LÓGICA DE EMPLEADO
+    function renderTasks() {
+        const list = document.getElementById('task-list');
+        list.innerHTML = '';
+        
+        // Filtramos tareas (en una app real, esto viene del servidor)
+        // Aquí mostramos todas para que veas el ejemplo, o solo las del usuario
+        const myTasks = tasks; // tasks.filter(t => t.assigned === currentUser);
+
+        myTasks.forEach(task => {
+            const div = document.createElement('div');
+            div.className = `task-card priority-${task.priority}`;
+            div.innerHTML = `
+                <div>
+                    <strong>${task.title}</strong> <br>
+                    <small>Asignado a: ${task.assigned}</small>
+                </div>
+                <div>
+                    <span class="status-badge bg-${task.status}">${task.status}</span>
+                    <button style="width: auto; margin-left: 10px; font-size: 0.7em;" onclick="advanceTask(${task.id})">Avance ></button>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function addTask() {
+        const title = document.getElementById('task-title').value;
+        const priority = document.getElementById('task-priority').value;
+        const assigned = document.getElementById('task-assign').value;
+        
+        if(!title) return alert('Escribe una tarea');
+
+        tasks.push({ id: Date.now(), title, priority, status: 'pendiente', assigned });
+        document.getElementById('task-title').value = '';
+        renderTasks();
+    }
+
+    function advanceTask(id) {
+        const task = tasks.find(t => t.id === id);
+        if (task.status === 'pendiente') task.status = 'progreso';
+        else if (task.status === 'progreso') task.status = 'completada';
+        renderTasks();
+    }
+
+    // LÓGICA DE ADMIN (ESTADÍSTICAS)
+    function renderAdminTasks() {
+        const list = document.getElementById('admin-task-list');
+        list.innerHTML = '';
+        tasks.forEach(task => {
+            list.innerHTML += `<div class="task-card priority-${task.priority}">
+                <b>${task.title}</b> 
+                <span>${task.assigned} - ${task.status}</span>
+            </div>`;
+        });
+    }
+
+    function renderAdminStats() {
+        // Calcular datos
+        const completadas = tasks.filter(t => t.status === 'completada').length;
+        const pendientes = tasks.filter(t => t.status !== 'completada').length;
+        
+        // Gráfico Estado
+        new Chart(document.getElementById('chartEstado'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Completadas', 'Pendientes/Progreso'],
+                datasets: [{ data: [completadas, pendientes], backgroundColor: ['#10b981', '#cbd5e1'] }]
+            }
+        });
+
+        // Gráfico Usuarios (Conteo simple)
+        const counts = {};
+        tasks.forEach(t => { counts[t.assigned] = (counts[t.assigned] || 0) + 1; });
+        
+        new Chart(document.getElementById('chartUsuarios'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{ label: 'Tareas por persona', data: Object.values(counts), backgroundColor: '#3b82f6' }]
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

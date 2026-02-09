@@ -7,27 +7,29 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .kanban-card { transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s; }
+    .kanban-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .kanban-card.dragging { opacity: 0.5; transform: rotate(3deg); }
+    .kanban-column.drag-over { background: #dbeafe !important; }
   </style>
 </head>
 <body>
   <div id="root"></div>
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
 
-    // Logo Asobares exacto - réplica fiel del logo original
+    // Logo Asobares
     const AsobaresLogo = ({ width = 280 }) => (
-  <img src="asobares_original.png" alt="Asobares" style={{ width: width, height: 'auto' }} />
-);
+      <img src="/asobares_original.png" alt="Asobares" style={{ width: width, height: 'auto' }} />
+    );
 
-    // Logo pequeño para sidebar
     const AsobaresLogoSmall = ({ width = 150 }) => (
-  <img src="asobares_blanco.png" alt="Asobares" style={{ width: width, height: 'auto' }} />
-);
+      <img src="/asobares_blanco.png" alt="Asobares" style={{ width: width, height: 'auto' }} />
+    );
 
     // Usuarios iniciales
     const initialUsers = [
@@ -64,30 +66,61 @@
     };
 
     const initialTasks = [
-      { id: 1, mes: 'Diciembre', cargo: 'Diseño Web', responsable: 7, proyecto: 'Montar Landing Círculo Gastro', ejeEstrategico: 'Círculo Gastro', fechaInicio: '2025-12-15', fechaFin: '2025-12-26', estado: 'planeado', resultado: 'En proceso', descripcion: 'Crear Landing con la información del Círculo gastro', objetivo: 'Dejarla terminada' },
-      { id: 2, mes: 'Diciembre', cargo: 'Dirección de Proyectos', responsable: 3, proyecto: 'Liquidaciones Derecho de Autor', ejeEstrategico: 'Proyectos', fechaInicio: '2026-12-16', fechaFin: '2026-12-20', estado: 'completado', resultado: 'Completado', descripcion: 'Se entregaron los recibos', objetivo: 'Entregar las Liquidaciones' },
-      { id: 3, mes: 'Diciembre', cargo: 'Dirección de Proyectos', responsable: 3, proyecto: 'Actualización Pagina Web Niglife', ejeEstrategico: 'Proyectos', fechaInicio: '2026-12-17', fechaFin: '2026-12-23', estado: 'retrasado', resultado: 'Pendiente', descripcion: 'Actualizar logos y dirección', objetivo: '' },
-      { id: 4, mes: 'Diciembre', cargo: 'Diseño Web', responsable: 7, proyecto: 'Actualizar web Asobares', ejeEstrategico: 'Asobares', fechaInicio: '2025-12-19', fechaFin: '2025-12-22', estado: 'en-curso', resultado: 'En proceso', descripcion: 'Actualizar datos del equipo', objetivo: 'Dejar los datos completos' },
+      { id: 1, mes: 'Enero', cargo: 'Diseño Web', responsable: 7, proyecto: 'Montar Landing Círculo Gastro', ejeEstrategico: 'Círculo Gastro', fechaInicio: '2026-01-15', fechaFin: '2026-01-26', estado: 'planeado', resultado: 'En proceso', descripcion: 'Crear Landing con la información del Círculo gastro', objetivo: 'Dejarla terminada' },
+      { id: 2, mes: 'Enero', cargo: 'Dirección de Proyectos', responsable: 3, proyecto: 'Liquidaciones Derecho de Autor', ejeEstrategico: 'Proyectos', fechaInicio: '2026-01-16', fechaFin: '2026-01-20', estado: 'completado', resultado: 'Completado', descripcion: 'Se entregaron los recibos', objetivo: 'Entregar las Liquidaciones' },
+      { id: 3, mes: 'Enero', cargo: 'Dirección de Proyectos', responsable: 3, proyecto: 'Actualización Pagina Web Niglife', ejeEstrategico: 'Proyectos', fechaInicio: '2026-01-17', fechaFin: '2026-01-23', estado: 'retrasado', resultado: 'Pendiente', descripcion: 'Actualizar logos y dirección', objetivo: '' },
+      { id: 4, mes: 'Enero', cargo: 'Diseño Web', responsable: 7, proyecto: 'Actualizar web Asobares', ejeEstrategico: 'Asobares', fechaInicio: '2026-01-19', fechaFin: '2026-01-22', estado: 'en-curso', resultado: 'En proceso', descripcion: 'Actualizar datos del equipo', objetivo: 'Dejar los datos completos' },
       { id: 5, mes: 'Enero', cargo: 'Dirección Clúster DJ', responsable: 4, proyecto: 'Actualización Base de Datos', ejeEstrategico: 'Cluster DJ', fechaInicio: '2026-01-05', fechaFin: '2026-01-10', estado: 'completado', resultado: 'Completado', descripcion: 'Actualizar la base de datos eliminando repetidos', objetivo: '' },
       { id: 6, mes: 'Enero', cargo: 'Soporte Organizacional Afiliados', responsable: 6, proyecto: 'Gestión de afiliados nuevos', ejeEstrategico: 'Asobares', fechaInicio: '2026-01-08', fechaFin: '2026-01-15', estado: 'en-curso', resultado: 'En proceso', descripcion: 'Procesar solicitudes de nuevos afiliados', objetivo: 'Completar 20 afiliaciones' },
+      { id: 7, mes: 'Enero', cargo: 'Dirección Ejecutiva', responsable: 2, proyecto: 'Reunión Junta Directiva', ejeEstrategico: 'Asobares', fechaInicio: '2026-01-20', fechaFin: '2026-01-25', estado: 'planeado', resultado: '', descripcion: 'Preparar y liderar reunión mensual', objetivo: 'Aprobar presupuesto Q1' },
+      { id: 8, mes: 'Enero', cargo: 'Community Manager & Graf', responsable: 8, proyecto: 'Campaña Redes Enero', ejeEstrategico: 'Comunicaciones', fechaInicio: '2026-01-01', fechaFin: '2026-01-31', estado: 'en-curso', resultado: 'En proceso', descripcion: 'Gestión de contenido mensual', objetivo: 'Aumentar engagement 15%' },
     ];
 
     function App() {
-      const [currentUser, setCurrentUser] = useState(null);
-      const [users, setUsers] = useState(initialUsers);
-      const [tasks, setTasks] = useState(initialTasks);
+      // Cargar datos guardados del navegador o usar los iniciales
+      const [currentUser, setCurrentUser] = useState(() => {
+        const saved = localStorage.getItem('asobares_currentUser');
+        return saved ? JSON.parse(saved) : null;
+      });
+      const [users, setUsers] = useState(() => {
+        const saved = localStorage.getItem('asobares_users');
+        return saved ? JSON.parse(saved) : initialUsers;
+      });
+      const [tasks, setTasks] = useState(() => {
+        const saved = localStorage.getItem('asobares_tasks');
+        return saved ? JSON.parse(saved) : initialTasks;
+      });
+
+      // Guardar automáticamente cuando cambien los datos
+      useEffect(() => {
+        localStorage.setItem('asobares_users', JSON.stringify(users));
+      }, [users]);
+
+      useEffect(() => {
+        localStorage.setItem('asobares_tasks', JSON.stringify(tasks));
+      }, [tasks]);
+
+      useEffect(() => {
+        if (currentUser) {
+          localStorage.setItem('asobares_currentUser', JSON.stringify(currentUser));
+        } else {
+          localStorage.removeItem('asobares_currentUser');
+        }
+      }, [currentUser]);
+
       const [view, setView] = useState('dashboard');
       const [showTaskModal, setShowTaskModal] = useState(false);
       const [showUserModal, setShowUserModal] = useState(false);
       const [editingTask, setEditingTask] = useState(null);
       const [filterMes, setFilterMes] = useState('all');
       const [filterEstado, setFilterEstado] = useState('all');
-      const [filterCargo, setFilterCargo] = useState('all');
+      const [filterUsuario, setFilterUsuario] = useState('all'); // Para admin ver tareas de otros
       const [searchTerm, setSearchTerm] = useState('');
       const [loginUsername, setLoginUsername] = useState('');
       const [loginPassword, setLoginPassword] = useState('');
       const [loginError, setLoginError] = useState('');
       const [notification, setNotification] = useState(null);
+      const [draggedTask, setDraggedTask] = useState(null);
 
       const showNotification = (message, type = 'success') => {
         setNotification({ message, type });
@@ -110,6 +143,18 @@
         setView('dashboard');
         setLoginUsername('');
         setLoginPassword('');
+      };
+
+      const handleResetData = () => {
+        if (confirm('¿Estás seguro? Esto borrará TODAS las tareas y usuarios creados y volverá a los datos iniciales.')) {
+          localStorage.removeItem('asobares_users');
+          localStorage.removeItem('asobares_tasks');
+          localStorage.removeItem('asobares_currentUser');
+          setUsers(initialUsers);
+          setTasks(initialTasks);
+          setCurrentUser(null);
+          showNotification('Datos reiniciados correctamente');
+        }
       };
 
       const handleSaveTask = (taskData) => {
@@ -145,33 +190,123 @@
         showNotification('Usuario creado correctamente');
       };
 
-      const filteredTasks = tasks.filter(task => {
+      // Función para actualizar estado de tarea (drag & drop)
+      const handleUpdateTaskStatus = (taskId, newStatus) => {
+        setTasks(tasks.map(t => t.id === taskId ? { ...t, estado: newStatus } : t));
+        showNotification(`Tarea movida a "${statusLabels[newStatus].label}"`);
+      };
+
+      // Drag and Drop handlers
+      const handleDragStart = (e, task) => {
+        setDraggedTask(task);
+        e.target.classList.add('dragging');
+      };
+
+      const handleDragEnd = (e) => {
+        setDraggedTask(null);
+        e.target.classList.remove('dragging');
+      };
+
+      const handleDragOver = (e) => {
+        e.preventDefault();
+      };
+
+      const handleDragEnter = (e) => {
+        e.preventDefault();
+        e.currentTarget.classList.add('drag-over');
+      };
+
+      const handleDragLeave = (e) => {
+        e.currentTarget.classList.remove('drag-over');
+      };
+
+      const handleDrop = (e, newStatus) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        if (draggedTask) {
+          handleUpdateTaskStatus(draggedTask.id, newStatus);
+        }
+      };
+
+      // Filtrar tareas según usuario actual
+      const getMyTasks = () => {
+        if (currentUser.role === 'admin') {
+          // Admin puede filtrar por usuario
+          if (filterUsuario !== 'all') {
+            return tasks.filter(t => t.responsable === parseInt(filterUsuario));
+          }
+          return tasks;
+        } else {
+          // Usuario normal solo ve sus tareas
+          return tasks.filter(t => t.responsable === currentUser.id);
+        }
+      };
+
+      const myTasks = currentUser ? getMyTasks() : [];
+
+      const filteredTasks = myTasks.filter(task => {
         if (filterMes !== 'all' && task.mes !== filterMes) return false;
         if (filterEstado !== 'all' && task.estado !== filterEstado) return false;
-        if (filterCargo !== 'all' && task.cargo !== filterCargo) return false;
         if (searchTerm && !task.proyecto.toLowerCase().includes(searchTerm.toLowerCase())) return false;
         return true;
       });
 
-      const stats = {
-        total: tasks.length,
-        completado: tasks.filter(t => t.estado === 'completado').length,
-        enCurso: tasks.filter(t => t.estado === 'en-curso').length,
-        planeado: tasks.filter(t => t.estado === 'planeado').length,
-        retrasado: tasks.filter(t => t.estado === 'retrasado').length,
+      // Estadísticas basadas en fecha actual (mes actual)
+      const currentMonth = meses[new Date().getMonth()];
+      const currentYear = new Date().getFullYear();
+
+      const getTasksForCurrentPeriod = (userTasks) => {
+        return userTasks.filter(t => {
+          const taskDate = new Date(t.fechaFin);
+          const now = new Date();
+          // Tareas del mes actual o que ya debieron completarse
+          return taskDate.getMonth() === now.getMonth() && taskDate.getFullYear() === now.getFullYear() 
+                 || (taskDate < now && t.estado !== 'completado');
+        });
       };
 
-      const cumplimiento = stats.total > 0 ? Math.round((stats.completado / stats.total) * 100) : 0;
+      const getStatsForUser = (userId) => {
+        const userTasks = tasks.filter(t => t.responsable === userId);
+        const currentPeriodTasks = getTasksForCurrentPeriod(userTasks);
+        const now = new Date();
+        
+        const completadas = currentPeriodTasks.filter(t => t.estado === 'completado').length;
+        const enCurso = currentPeriodTasks.filter(t => t.estado === 'en-curso').length;
+        const pendientes = currentPeriodTasks.filter(t => t.estado === 'planeado').length;
+        const retrasadas = currentPeriodTasks.filter(t => {
+          const fechaFin = new Date(t.fechaFin);
+          return fechaFin < now && t.estado !== 'completado';
+        }).length;
+        const noCumplidas = currentPeriodTasks.filter(t => {
+          const fechaFin = new Date(t.fechaFin);
+          return fechaFin < now && t.estado !== 'completado';
+        }).length;
 
-      const userStats = users.filter(u => u.role !== 'admin').map(user => {
-        const userTasks = tasks.filter(t => t.responsable === user.id);
-        return {
-          ...user,
-          total: userTasks.length,
-          completado: userTasks.filter(t => t.estado === 'completado').length,
-          cumplimiento: userTasks.length > 0 ? Math.round((userTasks.filter(t => t.estado === 'completado').length / userTasks.length) * 100) : 0,
-        };
-      });
+        const total = currentPeriodTasks.length;
+        const cumplimiento = total > 0 ? Math.round((completadas / total) * 100) : 0;
+
+        return { total, completadas, enCurso, pendientes, retrasadas, noCumplidas, cumplimiento };
+      };
+
+      const myStats = currentUser ? getStatsForUser(currentUser.id) : {};
+
+      const globalStats = {
+        total: getTasksForCurrentPeriod(tasks).length,
+        completadas: getTasksForCurrentPeriod(tasks).filter(t => t.estado === 'completado').length,
+        enCurso: getTasksForCurrentPeriod(tasks).filter(t => t.estado === 'en-curso').length,
+        pendientes: getTasksForCurrentPeriod(tasks).filter(t => t.estado === 'planeado').length,
+        retrasadas: getTasksForCurrentPeriod(tasks).filter(t => {
+          const fechaFin = new Date(t.fechaFin);
+          return fechaFin < new Date() && t.estado !== 'completado';
+        }).length,
+      };
+      globalStats.cumplimiento = globalStats.total > 0 ? Math.round((globalStats.completadas / globalStats.total) * 100) : 0;
+
+      // Stats por usuario para admin
+      const userStats = users.filter(u => u.role !== 'admin').map(user => ({
+        ...user,
+        ...getStatsForUser(user.id)
+      }));
 
       // LOGIN SCREEN
       if (!currentUser) {
@@ -333,9 +468,9 @@
 
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
               {[
-                { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-                { id: 'tasks', icon: '📋', label: 'Tareas' },
-                { id: 'board', icon: '📌', label: 'Tablero Kanban' },
+                { id: 'dashboard', icon: '📊', label: 'Mi Dashboard' },
+                { id: 'tasks', icon: '📋', label: 'Mis Tareas' },
+                { id: 'board', icon: '📌', label: 'Mi Tablero Kanban' },
               ].map(item => (
                 <button
                   key={item.id}
@@ -363,6 +498,16 @@
                 <>
                   <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
                   <p style={{ color: '#64748b', fontSize: '11px', fontWeight: '600', padding: '0 16px', margin: '0 0 8px', letterSpacing: '1px' }}>ADMINISTRACIÓN</p>
+                  <button
+                    onClick={() => setView('all-tasks')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '10px', border: 'none',
+                      background: view === 'all-tasks' ? 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)' : 'transparent',
+                      color: view === 'all-tasks' ? 'white' : '#94a3b8', fontSize: '15px', fontWeight: view === 'all-tasks' ? '600' : '400', cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    <span style={{ fontSize: '18px' }}>📁</span> Todas las Tareas
+                  </button>
                   <button
                     onClick={() => setView('team')}
                     style={{
@@ -399,11 +544,22 @@
                 onClick={handleLogout}
                 style={{
                   width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)',
-                  background: 'transparent', color: '#94a3b8', fontSize: '14px', cursor: 'pointer',
+                  background: 'transparent', color: '#94a3b8', fontSize: '14px', cursor: 'pointer', marginBottom: '8px',
                 }}
               >
                 Cerrar Sesión
               </button>
+              {currentUser.role === 'admin' && (
+                <button
+                  onClick={handleResetData}
+                  style={{
+                    width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid rgba(239,68,68,0.3)',
+                    background: 'rgba(239,68,68,0.1)', color: '#f87171', fontSize: '12px', cursor: 'pointer',
+                  }}
+                >
+                  🔄 Reiniciar datos
+                </button>
+              )}
             </div>
           </aside>
 
@@ -413,14 +569,15 @@
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
               <div>
                 <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1a1a2e', margin: 0 }}>
-                  {view === 'dashboard' && 'Dashboard'}
-                  {view === 'tasks' && 'Gestión de Tareas'}
-                  {view === 'board' && 'Tablero Kanban'}
+                  {view === 'dashboard' && `Mi Dashboard`}
+                  {view === 'tasks' && 'Mis Tareas'}
+                  {view === 'board' && 'Mi Tablero Kanban'}
+                  {view === 'all-tasks' && 'Todas las Tareas'}
                   {view === 'team' && 'Gestión de Equipo'}
                   {view === 'analytics' && 'KPIs y Analíticas'}
                 </h1>
                 <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>
-                  {new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  {currentMonth} {currentYear} • {currentUser.name}
                 </p>
               </div>
               <button
@@ -439,13 +596,14 @@
             {/* Dashboard View */}
             {view === 'dashboard' && (
               <div>
+                {/* Stats Cards - Personal */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '32px' }}>
                   {[
-                    { icon: '📋', value: stats.total, label: 'Total', color: '#1a1a2e' },
-                    { icon: '✅', value: stats.completado, label: 'Completadas', color: '#10b981' },
-                    { icon: '🔄', value: stats.enCurso, label: 'En Curso', color: '#f59e0b' },
-                    { icon: '📝', value: stats.planeado, label: 'Planeadas', color: '#3b82f6' },
-                    { icon: '⚠️', value: stats.retrasado, label: 'Retrasadas', color: '#E84338' },
+                    { icon: '📋', value: myStats.total || 0, label: 'Mis Tareas', color: '#1a1a2e' },
+                    { icon: '✅', value: myStats.completadas || 0, label: 'Completadas', color: '#10b981' },
+                    { icon: '🔄', value: myStats.enCurso || 0, label: 'En Curso', color: '#f59e0b' },
+                    { icon: '📝', value: myStats.pendientes || 0, label: 'Pendientes', color: '#3b82f6' },
+                    { icon: '⚠️', value: myStats.retrasadas || 0, label: 'Retrasadas', color: '#E84338' },
                   ].map((stat, i) => (
                     <div key={i} style={{
                       background: 'white', borderRadius: '16px', padding: '24px',
@@ -459,50 +617,83 @@
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
+                  {/* Mi Cumplimiento */}
                   <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Cumplimiento</h2>
+                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Mi Cumplimiento ({currentMonth})</h2>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
                       <div style={{ position: 'relative', width: '140px', height: '140px' }}>
                         <svg width="140" height="140" viewBox="0 0 140 140">
                           <circle cx="70" cy="70" r="55" fill="none" stroke="#f1f5f9" strokeWidth="12" />
-                          <circle cx="70" cy="70" r="55" fill="none" stroke="#E84338" strokeWidth="12"
-                            strokeDasharray={`${(cumplimiento / 100) * 345} 345`}
+                          <circle cx="70" cy="70" r="55" fill="none" stroke={myStats.cumplimiento >= 70 ? '#10b981' : myStats.cumplimiento >= 40 ? '#f59e0b' : '#E84338'} strokeWidth="12"
+                            strokeDasharray={`${((myStats.cumplimiento || 0) / 100) * 345} 345`}
                             strokeLinecap="round" transform="rotate(-90 70 70)" />
                         </svg>
                         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span style={{ fontSize: '32px', fontWeight: '700', color: '#1a1a2e' }}>{cumplimiento}%</span>
+                          <span style={{ fontSize: '32px', fontWeight: '700', color: '#1a1a2e' }}>{myStats.cumplimiento || 0}%</span>
                         </div>
+                      </div>
+                      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                        <p style={{ fontSize: '24px' }}>{myStats.cumplimiento >= 70 ? '🟢' : myStats.cumplimiento >= 40 ? '🟡' : '🔴'}</p>
+                        <p style={{ fontSize: '13px', color: '#64748b', marginTop: '8px' }}>
+                          {myStats.completadas || 0} de {myStats.total || 0} tareas completadas
+                        </p>
                       </div>
                     </div>
                   </div>
 
+                  {/* Mis Tareas Recientes */}
                   <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Tareas Recientes</h2>
+                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Mis Tareas Pendientes</h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {tasks.slice(0, 4).map(task => {
-                        const responsable = users.find(u => u.id === task.responsable);
-                        return (
-                          <div key={task.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px', background: '#f8f9fa', borderRadius: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              <span style={{ fontSize: '24px' }}>{responsable?.avatar}</span>
-                              <div>
-                                <p style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a2e', margin: 0 }}>{task.proyecto}</p>
-                                <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0' }}>{responsable?.name}</p>
-                              </div>
-                            </div>
-                            <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: statusLabels[task.estado].bg, color: statusLabels[task.estado].color }}>
-                              {statusLabels[task.estado].label}
-                            </span>
+                      {myTasks.filter(t => t.estado !== 'completado').slice(0, 5).map(task => (
+                        <div key={task.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px', background: '#f8f9fa', borderRadius: '10px' }}>
+                          <div>
+                            <p style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a2e', margin: 0 }}>{task.proyecto}</p>
+                            <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>Vence: {task.fechaFin}</p>
                           </div>
-                        );
-                      })}
+                          <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: statusLabels[task.estado].bg, color: statusLabels[task.estado].color }}>
+                            {statusLabels[task.estado].label}
+                          </span>
+                        </div>
+                      ))}
+                      {myTasks.filter(t => t.estado !== 'completado').length === 0 && (
+                        <p style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>🎉 ¡No tienes tareas pendientes!</p>
+                      )}
                     </div>
                   </div>
                 </div>
+
+                {/* Tareas Retrasadas */}
+                {(myStats.retrasadas || 0) > 0 && (
+                  <div style={{ background: '#fef2f2', borderRadius: '16px', padding: '24px', border: '1px solid #fecaca', marginTop: '24px' }}>
+                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#b91c1c', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      ⚠️ Mis Tareas Retrasadas ({myStats.retrasadas})
+                    </h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {myTasks.filter(t => {
+                        const fechaFin = new Date(t.fechaFin);
+                        return fechaFin < new Date() && t.estado !== 'completado';
+                      }).map(task => (
+                        <div key={task.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'white', borderRadius: '10px' }}>
+                          <div>
+                            <p style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a2e', margin: 0 }}>{task.proyecto}</p>
+                            <p style={{ fontSize: '12px', color: '#dc2626', margin: '2px 0 0' }}>Venció: {task.fechaFin}</p>
+                          </div>
+                          <button
+                            onClick={() => { setEditingTask(task); setShowTaskModal(true); }}
+                            style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#E84338', color: 'white', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                          >
+                            Actualizar
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Tasks View */}
+            {/* Tasks View - Mis Tareas */}
             {view === 'tasks' && (
               <div>
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
@@ -514,6 +705,124 @@
                   <select value={filterMes} onChange={(e) => setFilterMes(e.target.value)} style={{ padding: '12px 16px', borderRadius: '10px', border: '2px solid #e5e7eb', fontSize: '14px', background: 'white', cursor: 'pointer' }}>
                     <option value="all">Todos los meses</option>
                     {meses.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                  <select value={filterEstado} onChange={(e) => setFilterEstado(e.target.value)} style={{ padding: '12px 16px', borderRadius: '10px', border: '2px solid #e5e7eb', fontSize: '14px', background: 'white', cursor: 'pointer' }}>
+                    <option value="all">Todos los estados</option>
+                    {Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#f8f9fa' }}>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Proyecto</th>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Eje</th>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Fechas</th>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Estado</th>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTasks.map(task => (
+                        <tr key={task.id} style={{ borderTop: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '16px' }}>
+                            <p style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a2e', margin: 0 }}>{task.proyecto}</p>
+                            <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>{task.descripcion}</p>
+                          </td>
+                          <td style={{ padding: '16px' }}>
+                            <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', background: '#f1f5f9', color: '#475569' }}>
+                              {task.ejeEstrategico}
+                            </span>
+                          </td>
+                          <td style={{ padding: '16px' }}>
+                            <p style={{ fontSize: '12px', margin: 0 }}>📅 {task.fechaInicio}</p>
+                            <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0' }}>🏁 {task.fechaFin}</p>
+                          </td>
+                          <td style={{ padding: '16px' }}>
+                            <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: statusLabels[task.estado].bg, color: statusLabels[task.estado].color }}>
+                              {statusLabels[task.estado].label}
+                            </span>
+                          </td>
+                          <td style={{ padding: '16px' }}>
+                            <button onClick={() => { setEditingTask(task); setShowTaskModal(true); }} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: '#f1f5f9', cursor: 'pointer', marginRight: '8px' }}>✏️</button>
+                            <button onClick={() => handleDeleteTask(task.id)} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: '#fee2e2', cursor: 'pointer' }}>🗑️</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {filteredTasks.length === 0 && (
+                    <p style={{ textAlign: 'center', padding: '48px', color: '#64748b' }}>No tienes tareas asignadas</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Kanban Board - Mi Tablero (Drag & Drop) */}
+            {view === 'board' && (
+              <div>
+                <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '20px' }}>💡 Arrastra y suelta las tarjetas para cambiar el estado de tus tareas</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+                  {Object.entries(statusLabels).map(([statusKey, statusVal]) => (
+                    <div 
+                      key={statusKey} 
+                      className="kanban-column"
+                      onDragOver={handleDragOver}
+                      onDragEnter={handleDragEnter}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, statusKey)}
+                      style={{ background: '#f1f5f9', borderRadius: '16px', padding: '16px', minHeight: '500px', transition: 'background 0.2s' }}
+                    >
+                      <div style={{ background: 'white', borderRadius: '12px', padding: '14px', marginBottom: '16px', borderTop: `4px solid ${statusVal.color}` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1a1a2e', margin: 0 }}>{statusVal.label}</h3>
+                          <span style={{ background: statusVal.bg, color: statusVal.color, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' }}>
+                            {myTasks.filter(t => t.estado === statusKey).length}
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {myTasks.filter(t => t.estado === statusKey).map(task => (
+                          <div 
+                            key={task.id} 
+                            className="kanban-card"
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, task)}
+                            onDragEnd={handleDragEnd}
+                            onClick={() => { setEditingTask(task); setShowTaskModal(true); }}
+                            style={{ background: 'white', borderRadius: '12px', padding: '16px', cursor: 'grab', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}
+                          >
+                            <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '600', background: '#f1f5f9', color: '#475569' }}>
+                              {task.ejeEstrategico}
+                            </span>
+                            <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a2e', margin: '12px 0 8px' }}>{task.proyecto}</h4>
+                            <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 12px', lineHeight: '1.4' }}>{task.descripcion}</p>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
+                              <span style={{ fontSize: '10px', color: '#94a3b8' }}>🏁 {task.fechaFin}</span>
+                              <span style={{ fontSize: '16px' }}>⋮⋮</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* All Tasks View - Admin */}
+            {view === 'all-tasks' && currentUser.role === 'admin' && (
+              <div>
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                  <input
+                    type="text" placeholder="🔍 Buscar..." value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{ flex: 1, minWidth: '200px', padding: '12px 16px', borderRadius: '10px', border: '2px solid #e5e7eb', fontSize: '14px', outline: 'none' }}
+                  />
+                  <select value={filterUsuario} onChange={(e) => setFilterUsuario(e.target.value)} style={{ padding: '12px 16px', borderRadius: '10px', border: '2px solid #e5e7eb', fontSize: '14px', background: 'white', cursor: 'pointer' }}>
+                    <option value="all">Todos los usuarios</option>
+                    {users.filter(u => u.role !== 'admin').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                   </select>
                   <select value={filterEstado} onChange={(e) => setFilterEstado(e.target.value)} style={{ padding: '12px 16px', borderRadius: '10px', border: '2px solid #e5e7eb', fontSize: '14px', background: 'white', cursor: 'pointer' }}>
                     <option value="all">Todos los estados</option>
@@ -546,7 +855,7 @@
                                 <span style={{ fontSize: '20px' }}>{responsable?.avatar}</span>
                                 <div>
                                   <p style={{ fontSize: '13px', fontWeight: '500', margin: 0 }}>{responsable?.name}</p>
-                                  <p style={{ fontSize: '11px', color: '#64748b', margin: 0 }}>{task.cargo}</p>
+                                  <p style={{ fontSize: '11px', color: '#64748b', margin: 0 }}>{responsable?.cargo}</p>
                                 </div>
                               </div>
                             </td>
@@ -572,42 +881,6 @@
               </div>
             )}
 
-            {/* Kanban Board */}
-            {view === 'board' && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
-                {Object.entries(statusLabels).map(([statusKey, statusVal]) => (
-                  <div key={statusKey} style={{ background: '#f1f5f9', borderRadius: '16px', padding: '16px', minHeight: '500px' }}>
-                    <div style={{ background: 'white', borderRadius: '12px', padding: '14px', marginBottom: '16px', borderTop: `4px solid ${statusVal.color}` }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1a1a2e', margin: 0 }}>{statusVal.label}</h3>
-                        <span style={{ background: statusVal.bg, color: statusVal.color, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' }}>
-                          {tasks.filter(t => t.estado === statusKey).length}
-                        </span>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {tasks.filter(t => t.estado === statusKey).map(task => {
-                        const responsable = users.find(u => u.id === task.responsable);
-                        return (
-                          <div key={task.id} onClick={() => { setEditingTask(task); setShowTaskModal(true); }}
-                            style={{ background: 'white', borderRadius: '12px', padding: '16px', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
-                            <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '600', background: '#f1f5f9', color: '#475569' }}>
-                              {task.ejeEstrategico}
-                            </span>
-                            <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a2e', margin: '12px 0 8px' }}>{task.proyecto}</h4>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
-                              <span style={{ fontSize: '11px', color: '#64748b' }}>{responsable?.avatar} {responsable?.name?.split(' ')[0]}</span>
-                              <span style={{ fontSize: '10px', color: '#94a3b8' }}>🏁 {task.fechaFin}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
             {/* Team View */}
             {view === 'team' && currentUser.role === 'admin' && (
               <div>
@@ -617,76 +890,142 @@
                     + Añadir Usuario
                   </button>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-                  {users.map(user => (
-                    <div key={user.id} style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-                        <span style={{ fontSize: '48px' }}>{user.avatar}</span>
-                        <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: user.role === 'admin' ? '#fee2e2' : '#f1f5f9', color: user.role === 'admin' ? '#E84338' : '#64748b', height: 'fit-content' }}>
-                          {user.role === 'admin' ? 'Admin' : 'Usuario'}
-                        </span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                  {users.filter(u => u.role !== 'admin').map(user => {
+                    const stats = getStatsForUser(user.id);
+                    return (
+                      <div key={user.id} style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ fontSize: '40px' }}>{user.avatar}</span>
+                            <div>
+                              <h3 style={{ fontSize: '16px', fontWeight: '700', margin: 0 }}>{user.name}</h3>
+                              <p style={{ fontSize: '12px', color: '#E84338', margin: '2px 0 0', fontWeight: '500' }}>{user.cargo}</p>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: '28px' }}>{stats.cumplimiento >= 70 ? '🟢' : stats.cumplimiento >= 40 ? '🟡' : '🔴'}</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', padding: '16px 0', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9' }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a2e', margin: 0 }}>{stats.total}</p>
+                            <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0' }}>Total</p>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '20px', fontWeight: '700', color: '#10b981', margin: 0 }}>{stats.completadas}</p>
+                            <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0' }}>Completadas</p>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '20px', fontWeight: '700', color: '#3b82f6', margin: 0 }}>{stats.pendientes}</p>
+                            <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0' }}>Pendientes</p>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '20px', fontWeight: '700', color: '#E84338', margin: 0 }}>{stats.retrasadas}</p>
+                            <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0' }}>Retrasadas</p>
+                          </div>
+                        </div>
+                        <div style={{ marginTop: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <span style={{ fontSize: '12px', color: '#64748b' }}>Cumplimiento</span>
+                            <span style={{ fontSize: '12px', fontWeight: '700', color: stats.cumplimiento >= 70 ? '#10b981' : stats.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}>{stats.cumplimiento}%</span>
+                          </div>
+                          <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${stats.cumplimiento}%`, background: stats.cumplimiento >= 70 ? '#10b981' : stats.cumplimiento >= 40 ? '#f59e0b' : '#E84338', borderRadius: '4px' }}></div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => { setFilterUsuario(user.id.toString()); setView('all-tasks'); }}
+                          style={{ width: '100%', marginTop: '16px', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: 'white', color: '#64748b', fontSize: '13px', cursor: 'pointer' }}
+                        >
+                          Ver tareas →
+                        </button>
                       </div>
-                      <h3 style={{ fontSize: '18px', fontWeight: '700', margin: '0 0 4px' }}>{user.name}</h3>
-                      <p style={{ fontSize: '13px', color: '#E84338', margin: '0 0 4px', fontWeight: '500' }}>{user.cargo}</p>
-                      <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>@{user.username}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* Analytics View */}
             {view === 'analytics' && currentUser.role === 'admin' && (
-              <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 24px' }}>Ranking de Desempeño</h2>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ background: '#f8f9fa' }}>
-                      <th style={{ padding: '14px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>RANK</th>
-                      <th style={{ padding: '14px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>RESPONSABLE</th>
-                      <th style={{ padding: '14px', textAlign: 'center', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>TAREAS</th>
-                      <th style={{ padding: '14px', textAlign: 'center', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>COMPLETADAS</th>
-                      <th style={{ padding: '14px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>CUMPLIMIENTO</th>
-                      <th style={{ padding: '14px', textAlign: 'center', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>SEMÁFORO</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {userStats.sort((a, b) => b.cumplimiento - a.cumplimiento).map((member, idx) => (
-                      <tr key={member.id} style={{ borderTop: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '16px', fontSize: '18px' }}>{idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}</td>
-                        <td style={{ padding: '16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '24px' }}>{member.avatar}</span>
-                            <div>
-                              <p style={{ fontWeight: '600', margin: 0 }}>{member.name}</p>
-                              <p style={{ fontSize: '12px', color: '#E84338', margin: 0 }}>{member.cargo}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>{member.total}</td>
-                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: '600', color: '#10b981' }}>{member.completado}</td>
-                        <td style={{ padding: '16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ flex: 1, height: '10px', background: '#f1f5f9', borderRadius: '5px', overflow: 'hidden' }}>
-                              <div style={{ height: '100%', width: `${member.cumplimiento}%`, background: member.cumplimiento >= 70 ? '#10b981' : member.cumplimiento >= 40 ? '#f59e0b' : '#E84338', borderRadius: '5px' }}></div>
-                            </div>
-                            <span style={{ fontWeight: '700', color: member.cumplimiento >= 70 ? '#10b981' : member.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}>{member.cumplimiento}%</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px', textAlign: 'center', fontSize: '24px' }}>
-                          {member.cumplimiento >= 70 ? '🟢' : member.cumplimiento >= 40 ? '🟡' : '🔴'}
-                        </td>
+              <div>
+                {/* Resumen Global */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '32px' }}>
+                  {[
+                    { icon: '📋', value: globalStats.total, label: 'Total Período', color: '#1a1a2e' },
+                    { icon: '✅', value: globalStats.completadas, label: 'Completadas', color: '#10b981' },
+                    { icon: '🔄', value: globalStats.enCurso, label: 'En Curso', color: '#f59e0b' },
+                    { icon: '📝', value: globalStats.pendientes, label: 'Pendientes', color: '#3b82f6' },
+                    { icon: '⚠️', value: globalStats.retrasadas, label: 'No Cumplidas', color: '#E84338' },
+                  ].map((stat, i) => (
+                    <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: `4px solid ${stat.color}` }}>
+                      <span style={{ fontSize: '24px' }}>{stat.icon}</span>
+                      <p style={{ fontSize: '32px', fontWeight: '700', color: stat.color, margin: '8px 0 0' }}>{stat.value}</p>
+                      <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>{stat.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 24px' }}>Ranking de Desempeño - {currentMonth} {currentYear}</h2>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#f8f9fa' }}>
+                        <th style={{ padding: '14px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>#</th>
+                        <th style={{ padding: '14px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>RESPONSABLE</th>
+                        <th style={{ padding: '14px', textAlign: 'center', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>TOTAL</th>
+                        <th style={{ padding: '14px', textAlign: 'center', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>COMPLETADAS</th>
+                        <th style={{ padding: '14px', textAlign: 'center', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>PENDIENTES</th>
+                        <th style={{ padding: '14px', textAlign: 'center', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>NO CUMPLIDAS</th>
+                        <th style={{ padding: '14px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>CUMPLIMIENTO</th>
+                        <th style={{ padding: '14px', textAlign: 'center', fontSize: '12px', fontWeight: '700', color: '#64748b' }}>ESTADO</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {userStats.sort((a, b) => b.cumplimiento - a.cumplimiento).map((member, idx) => (
+                        <tr key={member.id} style={{ borderTop: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '16px', fontSize: '18px' }}>{idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`}</td>
+                          <td style={{ padding: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <span style={{ fontSize: '24px' }}>{member.avatar}</span>
+                              <div>
+                                <p style={{ fontWeight: '600', margin: 0 }}>{member.name}</p>
+                                <p style={{ fontSize: '12px', color: '#E84338', margin: 0 }}>{member.cargo}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>{member.total}</td>
+                          <td style={{ padding: '16px', textAlign: 'center', fontWeight: '600', color: '#10b981' }}>{member.completadas}</td>
+                          <td style={{ padding: '16px', textAlign: 'center', fontWeight: '600', color: '#3b82f6' }}>{member.pendientes}</td>
+                          <td style={{ padding: '16px', textAlign: 'center', fontWeight: '600', color: '#E84338' }}>{member.retrasadas}</td>
+                          <td style={{ padding: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div style={{ flex: 1, height: '10px', background: '#f1f5f9', borderRadius: '5px', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${member.cumplimiento}%`, background: member.cumplimiento >= 70 ? '#10b981' : member.cumplimiento >= 40 ? '#f59e0b' : '#E84338', borderRadius: '5px' }}></div>
+                              </div>
+                              <span style={{ fontWeight: '700', color: member.cumplimiento >= 70 ? '#10b981' : member.cumplimiento >= 40 ? '#f59e0b' : '#E84338', minWidth: '45px' }}>{member.cumplimiento}%</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: '16px', textAlign: 'center', fontSize: '24px' }}>
+                            {member.cumplimiento >= 70 ? '🟢' : member.cumplimiento >= 40 ? '🟡' : '🔴'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </main>
 
           {/* Task Modal */}
           {showTaskModal && (
-            <TaskModal task={editingTask} users={users} onSave={handleSaveTask} onClose={() => { setShowTaskModal(false); setEditingTask(null); }} />
+            <TaskModal 
+              task={editingTask} 
+              users={users} 
+              currentUser={currentUser}
+              onSave={handleSaveTask} 
+              onClose={() => { setShowTaskModal(false); setEditingTask(null); }} 
+            />
           )}
 
           {/* User Modal */}
@@ -697,10 +1036,10 @@
       );
     }
 
-    function TaskModal({ task, users, onSave, onClose }) {
+    function TaskModal({ task, users, currentUser, onSave, onClose }) {
       const [mes, setMes] = useState(task?.mes || meses[new Date().getMonth()]);
-      const [cargo, setCargo] = useState(task?.cargo || cargos[0]);
-      const [responsable, setResponsable] = useState(task?.responsable || users.find(u => u.role !== 'admin')?.id || '');
+      const [cargo, setCargo] = useState(task?.cargo || currentUser.cargo);
+      const [responsable, setResponsable] = useState(task?.responsable || (currentUser.role === 'admin' ? users.find(u => u.role !== 'admin')?.id : currentUser.id));
       const [proyecto, setProyecto] = useState(task?.proyecto || '');
       const [ejeEstrategico, setEjeEstrategico] = useState(task?.ejeEstrategico || ejesEstrategicos[0]);
       const [fechaInicio, setFechaInicio] = useState(task?.fechaInicio || new Date().toISOString().split('T')[0]);
@@ -739,18 +1078,20 @@
                   <select value={ejeEstrategico} onChange={(e) => setEjeEstrategico(e.target.value)} style={inputStyle}>{ejesEstrategicos.map(e => <option key={e} value={e}>{e}</option>)}</select>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Cargo</label>
-                  <select value={cargo} onChange={(e) => setCargo(e.target.value)} style={inputStyle}>{cargos.map(c => <option key={c} value={c}>{c}</option>)}</select>
+              {currentUser.role === 'admin' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Cargo</label>
+                    <select value={cargo} onChange={(e) => setCargo(e.target.value)} style={inputStyle}>{cargos.map(c => <option key={c} value={c}>{c}</option>)}</select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Responsable</label>
+                    <select value={responsable} onChange={(e) => setResponsable(e.target.value)} style={inputStyle}>
+                      {users.filter(u => u.role !== 'admin').map(u => <option key={u.id} value={u.id}>{u.avatar} {u.name}</option>)}
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Responsable</label>
-                  <select value={responsable} onChange={(e) => setResponsable(e.target.value)} style={inputStyle}>
-                    {users.filter(u => u.role !== 'admin').map(u => <option key={u.id} value={u.id}>{u.avatar} {u.name}</option>)}
-                  </select>
-                </div>
-              </div>
+              )}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>📅 Fecha Inicio</label>

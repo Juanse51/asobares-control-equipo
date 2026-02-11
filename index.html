@@ -24,11 +24,11 @@
 
     // Logo Asobares
     const AsobaresLogo = ({ width = 280 }) => (
-      <img src="/asobares_original.png" alt="Asobares" style={{ width: width, height: 'auto' }} />
+      <img src="logo.png" alt="Asobares" style={{ width: width, height: 'auto' }} />
     );
 
     const AsobaresLogoSmall = ({ width = 150 }) => (
-      <img src="/asobares_blanco.png" alt="Asobares" style={{ width: width, height: 'auto' }} />
+      <img src="logo.png" alt="Asobares" style={{ width: width, height: 'auto' }} />
     );
 
     // Usuarios iniciales
@@ -111,11 +111,13 @@
       const [view, setView] = useState('dashboard');
       const [showTaskModal, setShowTaskModal] = useState(false);
       const [showUserModal, setShowUserModal] = useState(false);
+      const [editingUser, setEditingUser] = useState(null);
       const [editingTask, setEditingTask] = useState(null);
       const [filterMes, setFilterMes] = useState('all');
       const [filterEstado, setFilterEstado] = useState('all');
       const [filterUsuario, setFilterUsuario] = useState('all'); // Para admin ver tareas de otros
       const [searchTerm, setSearchTerm] = useState('');
+      const [selectedMonth, setSelectedMonth] = useState(meses[new Date().getMonth()]); // Mes seleccionado para estadísticas
       const [loginUsername, setLoginUsername] = useState('');
       const [loginPassword, setLoginPassword] = useState('');
       const [loginError, setLoginError] = useState('');
@@ -162,7 +164,11 @@
           setTasks(tasks.map(t => t.id === editingTask.id ? { ...t, ...taskData } : t));
           showNotification('Tarea actualizada correctamente');
         } else {
-          const newTask = { ...taskData, id: Math.max(...tasks.map(t => t.id), 0) + 1 };
+          const newTask = { 
+            ...taskData, 
+            id: Math.max(...tasks.map(t => t.id), 0) + 1,
+            creadoPor: currentUser.id // Guardar quien creó la tarea
+          };
           setTasks([...tasks, newTask]);
           showNotification('Tarea creada correctamente');
         }
@@ -182,12 +188,33 @@
         const newUser = {
           ...userData,
           id: Math.max(...users.map(u => u.id)) + 1,
-          avatar: avatars[Math.floor(Math.random() * avatars.length)],
-          role: 'user',
+          avatar: userData.avatar || avatars[Math.floor(Math.random() * avatars.length)],
         };
         setUsers([...users, newUser]);
         setShowUserModal(false);
         showNotification('Usuario creado correctamente');
+      };
+
+      const handleUpdateUser = (userData) => {
+        setUsers(users.map(u => u.id === editingUser.id ? { ...u, ...userData } : u));
+        // Si el usuario editado es el actual, actualizar también currentUser
+        if (currentUser.id === editingUser.id) {
+          setCurrentUser({ ...currentUser, ...userData });
+        }
+        setEditingUser(null);
+        setShowUserModal(false);
+        showNotification('Usuario actualizado correctamente');
+      };
+
+      const handleDeleteUser = (userId) => {
+        if (userId === currentUser.id) {
+          showNotification('No puedes eliminarte a ti mismo', 'error');
+          return;
+        }
+        if (confirm('¿Estás seguro de eliminar este usuario? Sus tareas NO serán eliminadas.')) {
+          setUsers(users.filter(u => u.id !== userId));
+          showNotification('Usuario eliminado');
+        }
       };
 
       // Función para actualizar estado de tarea (drag & drop)
@@ -195,6 +222,13 @@
         setTasks(tasks.map(t => t.id === taskId ? { ...t, estado: newStatus } : t));
         showNotification(`Tarea movida a "${statusLabels[newStatus].label}"`);
       };
+
+      // Tareas asignadas por el usuario a otros (para usuarios normales)
+      const getTasksAssignedByMe = () => {
+        return tasks.filter(t => t.creadoPor === currentUser.id && t.responsable !== currentUser.id);
+      };
+
+      const tasksAssignedByMe = currentUser ? getTasksAssignedByMe() : [];
 
       // Drag and Drop handlers
       const handleDragStart = (e, task) => {
@@ -255,6 +289,10 @@
       const currentMonth = meses[new Date().getMonth()];
       const currentYear = new Date().getFullYear();
 
+      const getTasksForSelectedMonth = (userTasks) => {
+        return userTasks.filter(t => t.mes === selectedMonth);
+      };
+
       const getTasksForCurrentPeriod = (userTasks) => {
         return userTasks.filter(t => {
           const taskDate = new Date(t.fechaFin);
@@ -265,47 +303,54 @@
         });
       };
 
-      const getStatsForUser = (userId) => {
+      const getStatsForUser = (userId, month = null) => {
         const userTasks = tasks.filter(t => t.responsable === userId);
-        const currentPeriodTasks = getTasksForCurrentPeriod(userTasks);
+        const filteredTasks = month ? userTasks.filter(t => t.mes === month) : getTasksForCurrentPeriod(userTasks);
         const now = new Date();
         
-        const completadas = currentPeriodTasks.filter(t => t.estado === 'completado').length;
-        const enCurso = currentPeriodTasks.filter(t => t.estado === 'en-curso').length;
-        const pendientes = currentPeriodTasks.filter(t => t.estado === 'planeado').length;
-        const retrasadas = currentPeriodTasks.filter(t => {
+        const completadas = filteredTasks.filter(t => t.estado === 'completado').length;
+        const enCurso = filteredTasks.filter(t => t.estado === 'en-curso').length;
+        const pendientes = filteredTasks.filter(t => t.estado === 'planeado').length;
+        const retrasadas = filteredTasks.filter(t => {
           const fechaFin = new Date(t.fechaFin);
           return fechaFin < now && t.estado !== 'completado';
         }).length;
-        const noCumplidas = currentPeriodTasks.filter(t => {
+        const noCumplidas = filteredTasks.filter(t => {
           const fechaFin = new Date(t.fechaFin);
           return fechaFin < now && t.estado !== 'completado';
         }).length;
 
-        const total = currentPeriodTasks.length;
+        const total = filteredTasks.length;
         const cumplimiento = total > 0 ? Math.round((completadas / total) * 100) : 0;
 
         return { total, completadas, enCurso, pendientes, retrasadas, noCumplidas, cumplimiento };
       };
 
-      const myStats = currentUser ? getStatsForUser(currentUser.id) : {};
+      const myStats = currentUser ? getStatsForUser(currentUser.id, selectedMonth) : {};
 
-      const globalStats = {
-        total: getTasksForCurrentPeriod(tasks).length,
-        completadas: getTasksForCurrentPeriod(tasks).filter(t => t.estado === 'completado').length,
-        enCurso: getTasksForCurrentPeriod(tasks).filter(t => t.estado === 'en-curso').length,
-        pendientes: getTasksForCurrentPeriod(tasks).filter(t => t.estado === 'planeado').length,
-        retrasadas: getTasksForCurrentPeriod(tasks).filter(t => {
-          const fechaFin = new Date(t.fechaFin);
-          return fechaFin < new Date() && t.estado !== 'completado';
-        }).length,
+      // Estadísticas globales por mes seleccionado
+      const getGlobalStats = (month = null) => {
+        const filteredTasks = month ? tasks.filter(t => t.mes === month) : getTasksForCurrentPeriod(tasks);
+        const now = new Date();
+        return {
+          total: filteredTasks.length,
+          completadas: filteredTasks.filter(t => t.estado === 'completado').length,
+          enCurso: filteredTasks.filter(t => t.estado === 'en-curso').length,
+          pendientes: filteredTasks.filter(t => t.estado === 'planeado').length,
+          retrasadas: filteredTasks.filter(t => {
+            const fechaFin = new Date(t.fechaFin);
+            return fechaFin < now && t.estado !== 'completado';
+          }).length,
+          get cumplimiento() { return this.total > 0 ? Math.round((this.completadas / this.total) * 100) : 0; }
+        };
       };
-      globalStats.cumplimiento = globalStats.total > 0 ? Math.round((globalStats.completadas / globalStats.total) * 100) : 0;
+
+      const globalStats = getGlobalStats(selectedMonth);
 
       // Stats por usuario para admin
       const userStats = users.filter(u => u.role !== 'admin').map(user => ({
         ...user,
-        ...getStatsForUser(user.id)
+        ...getStatsForUser(user.id, selectedMonth)
       }));
 
       // LOGIN SCREEN
@@ -467,37 +512,19 @@
             </div>
 
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-              {[
-                { id: 'dashboard', icon: '📊', label: 'Mi Dashboard' },
-                { id: 'tasks', icon: '📋', label: 'Mis Tareas' },
-                { id: 'board', icon: '📌', label: 'Mi Tablero Kanban' },
-              ].map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => setView(item.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '14px 16px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: view === item.id ? 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)' : 'transparent',
-                    color: view === item.id ? 'white' : '#94a3b8',
-                    fontSize: '15px',
-                    fontWeight: view === item.id ? '600' : '400',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                  }}
-                >
-                  <span style={{ fontSize: '18px' }}>{item.icon}</span>
-                  {item.label}
-                </button>
-              ))}
-              {currentUser.role === 'admin' && (
+              {currentUser.role === 'admin' ? (
                 <>
-                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
-                  <p style={{ color: '#64748b', fontSize: '11px', fontWeight: '600', padding: '0 16px', margin: '0 0 8px', letterSpacing: '1px' }}>ADMINISTRACIÓN</p>
+                  {/* Menú para ADMIN */}
+                  <button
+                    onClick={() => setView('admin-dashboard')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '10px', border: 'none',
+                      background: view === 'admin-dashboard' ? 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)' : 'transparent',
+                      color: view === 'admin-dashboard' ? 'white' : '#94a3b8', fontSize: '15px', fontWeight: view === 'admin-dashboard' ? '600' : '400', cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    <span style={{ fontSize: '18px' }}>📊</span> Dashboard General
+                  </button>
                   <button
                     onClick={() => setView('all-tasks')}
                     style={{
@@ -506,8 +533,20 @@
                       color: view === 'all-tasks' ? 'white' : '#94a3b8', fontSize: '15px', fontWeight: view === 'all-tasks' ? '600' : '400', cursor: 'pointer', textAlign: 'left',
                     }}
                   >
-                    <span style={{ fontSize: '18px' }}>📁</span> Todas las Tareas
+                    <span style={{ fontSize: '18px' }}>📋</span> Todas las Tareas
                   </button>
+                  <button
+                    onClick={() => setView('all-board')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '10px', border: 'none',
+                      background: view === 'all-board' ? 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)' : 'transparent',
+                      color: view === 'all-board' ? 'white' : '#94a3b8', fontSize: '15px', fontWeight: view === 'all-board' ? '600' : '400', cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    <span style={{ fontSize: '18px' }}>📌</span> Tablero General
+                  </button>
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
+                  <p style={{ color: '#64748b', fontSize: '11px', fontWeight: '600', padding: '0 16px', margin: '0 0 8px', letterSpacing: '1px' }}>ADMINISTRACIÓN</p>
                   <button
                     onClick={() => setView('team')}
                     style={{
@@ -516,7 +555,7 @@
                       color: view === 'team' ? 'white' : '#94a3b8', fontSize: '15px', fontWeight: view === 'team' ? '600' : '400', cursor: 'pointer', textAlign: 'left',
                     }}
                   >
-                    <span style={{ fontSize: '18px' }}>👥</span> Equipo
+                    <span style={{ fontSize: '18px' }}>👥</span> Gestión de Equipo
                   </button>
                   <button
                     onClick={() => setView('analytics')}
@@ -526,7 +565,50 @@
                       color: view === 'analytics' ? 'white' : '#94a3b8', fontSize: '15px', fontWeight: view === 'analytics' ? '600' : '400', cursor: 'pointer', textAlign: 'left',
                     }}
                   >
-                    <span style={{ fontSize: '18px' }}>📈</span> KPIs
+                    <span style={{ fontSize: '18px' }}>📈</span> KPIs y Estadísticas
+                  </button>
+                </>
+              ) : (
+                <>
+                  {/* Menú para USUARIOS NORMALES */}
+                  {[
+                    { id: 'dashboard', icon: '📊', label: 'Mi Dashboard' },
+                    { id: 'tasks', icon: '📋', label: 'Mis Tareas' },
+                    { id: 'board', icon: '📌', label: 'Mi Tablero Kanban' },
+                  ].map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => setView(item.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '14px 16px',
+                        borderRadius: '10px',
+                        border: 'none',
+                        background: view === item.id ? 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)' : 'transparent',
+                        color: view === item.id ? 'white' : '#94a3b8',
+                        fontSize: '15px',
+                        fontWeight: view === item.id ? '600' : '400',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                      {item.label}
+                    </button>
+                  ))}
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
+                  <p style={{ color: '#64748b', fontSize: '11px', fontWeight: '600', padding: '0 16px', margin: '0 0 8px', letterSpacing: '1px' }}>EQUIPO</p>
+                  <button
+                    onClick={() => setView('assigned-tasks')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '10px', border: 'none',
+                      background: view === 'assigned-tasks' ? 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)' : 'transparent',
+                      color: view === 'assigned-tasks' ? 'white' : '#94a3b8', fontSize: '15px', fontWeight: view === 'assigned-tasks' ? '600' : '400', cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    <span style={{ fontSize: '18px' }}>📤</span> Tareas Asignadas
                   </button>
                 </>
               )}
@@ -572,34 +654,50 @@
                   {view === 'dashboard' && `Mi Dashboard`}
                   {view === 'tasks' && 'Mis Tareas'}
                   {view === 'board' && 'Mi Tablero Kanban'}
+                  {view === 'assigned-tasks' && 'Tareas que Asigné'}
+                  {view === 'admin-dashboard' && 'Dashboard General'}
                   {view === 'all-tasks' && 'Todas las Tareas'}
+                  {view === 'all-board' && 'Tablero General'}
                   {view === 'team' && 'Gestión de Equipo'}
-                  {view === 'analytics' && 'KPIs y Analíticas'}
+                  {view === 'analytics' && 'KPIs y Estadísticas'}
                 </h1>
                 <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>
                   {currentMonth} {currentYear} • {currentUser.name}
                 </p>
               </div>
-              <button
-                onClick={() => { setEditingTask(null); setShowTaskModal(true); }}
-                style={{
-                  padding: '14px 28px', borderRadius: '10px', border: 'none',
-                  background: 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)',
-                  color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer',
-                  boxShadow: '0 4px 15px rgba(232, 67, 56, 0.3)', display: 'flex', alignItems: 'center', gap: '8px',
-                }}
-              >
-                <span style={{ fontSize: '18px' }}>+</span> Nueva Tarea
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                {/* Selector de Mes para estadísticas */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'white', borderRadius: '10px', border: '2px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '14px', color: '#64748b' }}>📅 Mes:</span>
+                  <select 
+                    value={selectedMonth} 
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: '600', color: '#E84338', background: 'transparent', cursor: 'pointer', outline: 'none' }}
+                  >
+                    {meses.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <button
+                  onClick={() => { setEditingTask(null); setShowTaskModal(true); }}
+                  style={{
+                    padding: '14px 28px', borderRadius: '10px', border: 'none',
+                    background: 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)',
+                    color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(232, 67, 56, 0.3)', display: 'flex', alignItems: 'center', gap: '8px',
+                  }}
+                >
+                  <span style={{ fontSize: '18px' }}>+</span> Nueva Tarea
+                </button>
+              </div>
             </header>
 
             {/* Dashboard View */}
-            {view === 'dashboard' && (
+            {view === 'dashboard' && currentUser.role !== 'admin' && (
               <div>
                 {/* Stats Cards - Personal */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '32px' }}>
                   {[
-                    { icon: '📋', value: myStats.total || 0, label: 'Mis Tareas', color: '#1a1a2e' },
+                    { icon: '📋', value: myStats.total || 0, label: `Tareas ${selectedMonth}`, color: '#1a1a2e' },
                     { icon: '✅', value: myStats.completadas || 0, label: 'Completadas', color: '#10b981' },
                     { icon: '🔄', value: myStats.enCurso || 0, label: 'En Curso', color: '#f59e0b' },
                     { icon: '📝', value: myStats.pendientes || 0, label: 'Pendientes', color: '#3b82f6' },
@@ -619,7 +717,7 @@
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
                   {/* Mi Cumplimiento */}
                   <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Mi Cumplimiento ({currentMonth})</h2>
+                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Mi Cumplimiento - {selectedMonth}</h2>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
                       <div style={{ position: 'relative', width: '140px', height: '140px' }}>
                         <svg width="140" height="140" viewBox="0 0 140 140">
@@ -643,9 +741,9 @@
 
                   {/* Mis Tareas Recientes */}
                   <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Mis Tareas Pendientes</h2>
+                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Mis Tareas Pendientes - {selectedMonth}</h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {myTasks.filter(t => t.estado !== 'completado').slice(0, 5).map(task => (
+                      {myTasks.filter(t => t.mes === selectedMonth && t.estado !== 'completado').slice(0, 5).map(task => (
                         <div key={task.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px', background: '#f8f9fa', borderRadius: '10px' }}>
                           <div>
                             <p style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a2e', margin: 0 }}>{task.proyecto}</p>
@@ -656,8 +754,8 @@
                           </span>
                         </div>
                       ))}
-                      {myTasks.filter(t => t.estado !== 'completado').length === 0 && (
-                        <p style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>🎉 ¡No tienes tareas pendientes!</p>
+                      {myTasks.filter(t => t.mes === selectedMonth && t.estado !== 'completado').length === 0 && (
+                        <p style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>🎉 ¡No tienes tareas pendientes en {selectedMonth}!</p>
                       )}
                     </div>
                   </div>
@@ -693,8 +791,250 @@
               </div>
             )}
 
+            {/* Admin Dashboard - Estadísticas Generales */}
+            {view === 'admin-dashboard' && currentUser.role === 'admin' && (
+              <div>
+                {/* Stats Cards - Global */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '32px' }}>
+                  {[
+                    { icon: '📋', value: globalStats.total, label: `Total ${selectedMonth}`, color: '#1a1a2e' },
+                    { icon: '✅', value: globalStats.completadas, label: 'Completadas', color: '#10b981' },
+                    { icon: '🔄', value: globalStats.enCurso, label: 'En Curso', color: '#f59e0b' },
+                    { icon: '📝', value: globalStats.pendientes, label: 'Pendientes', color: '#3b82f6' },
+                    { icon: '⚠️', value: globalStats.retrasadas, label: 'Retrasadas', color: '#E84338' },
+                  ].map((stat, i) => (
+                    <div key={i} style={{
+                      background: 'white', borderRadius: '16px', padding: '24px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: `4px solid ${stat.color}`,
+                    }}>
+                      <span style={{ fontSize: '28px' }}>{stat.icon}</span>
+                      <p style={{ fontSize: '36px', fontWeight: '700', color: stat.color, margin: '8px 0 0' }}>{stat.value}</p>
+                      <p style={{ fontSize: '13px', color: '#64748b', margin: '4px 0 0' }}>{stat.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+                  {/* Cumplimiento General */}
+                  <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Cumplimiento General - {selectedMonth}</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                      <div style={{ position: 'relative', width: '160px', height: '160px' }}>
+                        <svg width="160" height="160" viewBox="0 0 160 160">
+                          <circle cx="80" cy="80" r="65" fill="none" stroke="#f1f5f9" strokeWidth="14" />
+                          <circle cx="80" cy="80" r="65" fill="none" stroke={globalStats.cumplimiento >= 70 ? '#10b981' : globalStats.cumplimiento >= 40 ? '#f59e0b' : '#E84338'} strokeWidth="14"
+                            strokeDasharray={`${((globalStats.cumplimiento || 0) / 100) * 408} 408`}
+                            strokeLinecap="round" transform="rotate(-90 80 80)" />
+                        </svg>
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '36px', fontWeight: '700', color: '#1a1a2e' }}>{globalStats.cumplimiento}%</span>
+                          <span style={{ fontSize: '32px' }}>{globalStats.cumplimiento >= 70 ? '🟢' : globalStats.cumplimiento >= 40 ? '🟡' : '🔴'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Distribución por Estado */}
+                  <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Distribución por Estado - {selectedMonth}</h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {Object.entries(statusLabels).map(([key, val]) => {
+                        const count = tasks.filter(t => t.mes === selectedMonth && t.estado === key).length;
+                        const percent = globalStats.total > 0 ? (count / globalStats.total) * 100 : 0;
+                        return (
+                          <div key={key}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                              <span style={{ fontSize: '14px', color: '#1a1a2e' }}>{val.label}</span>
+                              <span style={{ fontSize: '14px', fontWeight: '600', color: val.color }}>{count} ({Math.round(percent)}%)</span>
+                            </div>
+                            <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${percent}%`, background: val.color, borderRadius: '4px' }}></div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Resumen por Miembro */}
+                <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a1a2e', margin: '0 0 20px' }}>Resumen por Miembro - {selectedMonth}</h2>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                    {userStats.sort((a, b) => b.cumplimiento - a.cumplimiento).map(member => (
+                      <div key={member.id} style={{ padding: '16px', background: '#f8f9fa', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '32px' }}>{member.avatar}</span>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: '14px', fontWeight: '600', margin: 0 }}>{member.name.split(' ')[0]}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                            <div style={{ flex: 1, height: '6px', background: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${member.cumplimiento}%`, background: member.cumplimiento >= 70 ? '#10b981' : member.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}></div>
+                            </div>
+                            <span style={{ fontSize: '12px', fontWeight: '600', color: member.cumplimiento >= 70 ? '#10b981' : member.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}>{member.cumplimiento}%</span>
+                          </div>
+                        </div>
+                        <span style={{ fontSize: '20px' }}>{member.cumplimiento >= 70 ? '🟢' : member.cumplimiento >= 40 ? '🟡' : '🔴'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tareas Retrasadas - Alerta */}
+                {globalStats.retrasadas > 0 && (
+                  <div style={{ background: '#fef2f2', borderRadius: '16px', padding: '24px', border: '1px solid #fecaca', marginTop: '24px' }}>
+                    <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#b91c1c', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      ⚠️ Tareas Retrasadas - {selectedMonth} ({globalStats.retrasadas})
+                    </h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {tasks.filter(t => t.mes === selectedMonth).filter(t => {
+                        const fechaFin = new Date(t.fechaFin);
+                        return fechaFin < new Date() && t.estado !== 'completado';
+                      }).slice(0, 5).map(task => {
+                        const responsable = users.find(u => u.id === task.responsable);
+                        return (
+                          <div key={task.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'white', borderRadius: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <span style={{ fontSize: '24px' }}>{responsable?.avatar}</span>
+                              <div>
+                                <p style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a2e', margin: 0 }}>{task.proyecto}</p>
+                                <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0' }}>{responsable?.name} • Venció: {task.fechaFin}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => { setEditingTask(task); setShowTaskModal(true); }}
+                              style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#E84338', color: 'white', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                            >
+                              Ver
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tablero General - Admin (todas las tareas) */}
+            {view === 'all-board' && currentUser.role === 'admin' && (
+              <div>
+                <div style={{ marginBottom: '20px' }}>
+                  <select value={filterUsuario} onChange={(e) => setFilterUsuario(e.target.value)} style={{ padding: '12px 16px', borderRadius: '10px', border: '2px solid #e5e7eb', fontSize: '14px', background: 'white', cursor: 'pointer' }}>
+                    <option value="all">Todos los usuarios</option>
+                    {users.filter(u => u.role !== 'admin').map(u => <option key={u.id} value={u.id}>{u.avatar} {u.name}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+                  {Object.entries(statusLabels).map(([statusKey, statusVal]) => {
+                    const columnTasks = filterUsuario === 'all' 
+                      ? tasks.filter(t => t.estado === statusKey)
+                      : tasks.filter(t => t.estado === statusKey && t.responsable === parseInt(filterUsuario));
+                    return (
+                      <div 
+                        key={statusKey} 
+                        className="kanban-column"
+                        onDragOver={handleDragOver}
+                        onDragEnter={handleDragEnter}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, statusKey)}
+                        style={{ background: '#f1f5f9', borderRadius: '16px', padding: '16px', minHeight: '500px', transition: 'background 0.2s' }}
+                      >
+                        <div style={{ background: 'white', borderRadius: '12px', padding: '14px', marginBottom: '16px', borderTop: `4px solid ${statusVal.color}` }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1a1a2e', margin: 0 }}>{statusVal.label}</h3>
+                            <span style={{ background: statusVal.bg, color: statusVal.color, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' }}>
+                              {columnTasks.length}
+                            </span>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {columnTasks.map(task => {
+                            const responsable = users.find(u => u.id === task.responsable);
+                            return (
+                              <div 
+                                key={task.id} 
+                                className="kanban-card"
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, task)}
+                                onDragEnd={handleDragEnd}
+                                onClick={() => { setEditingTask(task); setShowTaskModal(true); }}
+                                style={{ background: 'white', borderRadius: '12px', padding: '16px', cursor: 'grab', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}
+                              >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                  <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '600', background: '#f1f5f9', color: '#475569' }}>
+                                    {task.ejeEstrategico}
+                                  </span>
+                                  <span style={{ fontSize: '20px' }}>{responsable?.avatar}</span>
+                                </div>
+                                <h4 style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a2e', margin: '8px 0' }}>{task.proyecto}</h4>
+                                <p style={{ fontSize: '11px', color: '#64748b', margin: 0 }}>{responsable?.name}</p>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', marginTop: '8px', borderTop: '1px solid #f1f5f9' }}>
+                                  <span style={{ fontSize: '10px', color: '#94a3b8' }}>🏁 {task.fechaFin}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Tareas Asignadas por mi (para usuarios normales) */}
+            {view === 'assigned-tasks' && currentUser.role !== 'admin' && (
+              <div>
+                <p style={{ color: '#64748b', marginBottom: '20px' }}>Tareas que has creado y asignado a otros miembros del equipo</p>
+                <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#f8f9fa' }}>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Proyecto</th>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Asignado a</th>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Fecha Fin</th>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Estado</th>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tasksAssignedByMe.map(task => {
+                        const responsable = users.find(u => u.id === task.responsable);
+                        return (
+                          <tr key={task.id} style={{ borderTop: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '16px' }}>
+                              <p style={{ fontSize: '14px', fontWeight: '600', color: '#1a1a2e', margin: 0 }}>{task.proyecto}</p>
+                              <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>{task.ejeEstrategico}</p>
+                            </td>
+                            <td style={{ padding: '16px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '24px' }}>{responsable?.avatar}</span>
+                                <span style={{ fontSize: '14px' }}>{responsable?.name}</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '16px', fontSize: '14px' }}>{task.fechaFin}</td>
+                            <td style={{ padding: '16px' }}>
+                              <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: statusLabels[task.estado].bg, color: statusLabels[task.estado].color }}>
+                                {statusLabels[task.estado].label}
+                              </span>
+                            </td>
+                            <td style={{ padding: '16px' }}>
+                              <button onClick={() => { setEditingTask(task); setShowTaskModal(true); }} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: '#f1f5f9', cursor: 'pointer' }}>👁️ Ver</button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {tasksAssignedByMe.length === 0 && (
+                    <p style={{ textAlign: 'center', padding: '48px', color: '#64748b' }}>No has asignado tareas a otros miembros</p>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Tasks View - Mis Tareas */}
-            {view === 'tasks' && (
+            {view === 'tasks' && currentUser.role !== 'admin' && (
               <div>
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
                   <input
@@ -759,8 +1099,8 @@
               </div>
             )}
 
-            {/* Kanban Board - Mi Tablero (Drag & Drop) */}
-            {view === 'board' && (
+            {/* Kanban Board - Mi Tablero (Drag & Drop) - Solo usuarios normales */}
+            {view === 'board' && currentUser.role !== 'admin' && (
               <div>
                 <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '20px' }}>💡 Arrastra y suelta las tarjetas para cambiar el estado de tus tareas</p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
@@ -820,6 +1160,10 @@
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{ flex: 1, minWidth: '200px', padding: '12px 16px', borderRadius: '10px', border: '2px solid #e5e7eb', fontSize: '14px', outline: 'none' }}
                   />
+                  <select value={filterMes} onChange={(e) => setFilterMes(e.target.value)} style={{ padding: '12px 16px', borderRadius: '10px', border: '2px solid #e5e7eb', fontSize: '14px', background: 'white', cursor: 'pointer' }}>
+                    <option value="all">Todos los meses</option>
+                    {meses.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
                   <select value={filterUsuario} onChange={(e) => setFilterUsuario(e.target.value)} style={{ padding: '12px 16px', borderRadius: '10px', border: '2px solid #e5e7eb', fontSize: '14px', background: 'white', cursor: 'pointer' }}>
                     <option value="all">Todos los usuarios</option>
                     {users.filter(u => u.role !== 'admin').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
@@ -886,12 +1230,12 @@
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                   <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>Miembros del Equipo</h2>
-                  <button onClick={() => setShowUserModal(true)} style={{ padding: '12px 24px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+                  <button onClick={() => { setEditingUser(null); setShowUserModal(true); }} style={{ padding: '12px 24px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
                     + Añadir Usuario
                   </button>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-                  {users.filter(u => u.role !== 'admin').map(user => {
+                  {users.map(user => {
                     const stats = getStatsForUser(user.id);
                     return (
                       <div key={user.id} style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
@@ -901,43 +1245,73 @@
                             <div>
                               <h3 style={{ fontSize: '16px', fontWeight: '700', margin: 0 }}>{user.name}</h3>
                               <p style={{ fontSize: '12px', color: '#E84338', margin: '2px 0 0', fontWeight: '500' }}>{user.cargo}</p>
+                              <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0' }}>@{user.username}</p>
                             </div>
                           </div>
-                          <span style={{ fontSize: '28px' }}>{stats.cumplimiento >= 70 ? '🟢' : stats.cumplimiento >= 40 ? '🟡' : '🔴'}</span>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', padding: '16px 0', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9' }}>
-                          <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a2e', margin: 0 }}>{stats.total}</p>
-                            <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0' }}>Total</p>
-                          </div>
-                          <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '20px', fontWeight: '700', color: '#10b981', margin: 0 }}>{stats.completadas}</p>
-                            <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0' }}>Completadas</p>
-                          </div>
-                          <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '20px', fontWeight: '700', color: '#3b82f6', margin: 0 }}>{stats.pendientes}</p>
-                            <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0' }}>Pendientes</p>
-                          </div>
-                          <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '20px', fontWeight: '700', color: '#E84338', margin: 0 }}>{stats.retrasadas}</p>
-                            <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0' }}>Retrasadas</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                            <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '10px', fontWeight: '600', background: user.role === 'admin' ? '#fee2e2' : '#f1f5f9', color: user.role === 'admin' ? '#E84338' : '#64748b' }}>
+                              {user.role === 'admin' ? 'Admin' : 'Usuario'}
+                            </span>
+                            {user.role !== 'admin' && <span style={{ fontSize: '24px' }}>{stats.cumplimiento >= 70 ? '🟢' : stats.cumplimiento >= 40 ? '🟡' : '🔴'}</span>}
                           </div>
                         </div>
-                        <div style={{ marginTop: '16px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                            <span style={{ fontSize: '12px', color: '#64748b' }}>Cumplimiento</span>
-                            <span style={{ fontSize: '12px', fontWeight: '700', color: stats.cumplimiento >= 70 ? '#10b981' : stats.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}>{stats.cumplimiento}%</span>
-                          </div>
-                          <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${stats.cumplimiento}%`, background: stats.cumplimiento >= 70 ? '#10b981' : stats.cumplimiento >= 40 ? '#f59e0b' : '#E84338', borderRadius: '4px' }}></div>
-                          </div>
+                        
+                        {user.role !== 'admin' && (
+                          <>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', padding: '12px 0', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9' }}>
+                              <div style={{ textAlign: 'center' }}>
+                                <p style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a2e', margin: 0 }}>{stats.total}</p>
+                                <p style={{ fontSize: '9px', color: '#64748b', margin: '2px 0 0' }}>Total</p>
+                              </div>
+                              <div style={{ textAlign: 'center' }}>
+                                <p style={{ fontSize: '18px', fontWeight: '700', color: '#10b981', margin: 0 }}>{stats.completadas}</p>
+                                <p style={{ fontSize: '9px', color: '#64748b', margin: '2px 0 0' }}>Hechas</p>
+                              </div>
+                              <div style={{ textAlign: 'center' }}>
+                                <p style={{ fontSize: '18px', fontWeight: '700', color: '#3b82f6', margin: 0 }}>{stats.pendientes}</p>
+                                <p style={{ fontSize: '9px', color: '#64748b', margin: '2px 0 0' }}>Pendientes</p>
+                              </div>
+                              <div style={{ textAlign: 'center' }}>
+                                <p style={{ fontSize: '18px', fontWeight: '700', color: '#E84338', margin: 0 }}>{stats.retrasadas}</p>
+                                <p style={{ fontSize: '9px', color: '#64748b', margin: '2px 0 0' }}>Retrasadas</p>
+                              </div>
+                            </div>
+                            <div style={{ marginTop: '12px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                <span style={{ fontSize: '11px', color: '#64748b' }}>Cumplimiento</span>
+                                <span style={{ fontSize: '11px', fontWeight: '700', color: stats.cumplimiento >= 70 ? '#10b981' : stats.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}>{stats.cumplimiento}%</span>
+                              </div>
+                              <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${stats.cumplimiento}%`, background: stats.cumplimiento >= 70 ? '#10b981' : stats.cumplimiento >= 40 ? '#f59e0b' : '#E84338', borderRadius: '3px' }}></div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                          <button
+                            onClick={() => { setEditingUser(user); setShowUserModal(true); }}
+                            style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: 'white', color: '#64748b', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                          >
+                            ✏️ Editar
+                          </button>
+                          {user.role !== 'admin' && (
+                            <button
+                              onClick={() => { setFilterUsuario(user.id.toString()); setView('all-tasks'); }}
+                              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: '#f1f5f9', color: '#64748b', fontSize: '13px', cursor: 'pointer' }}
+                            >
+                              📋 Tareas
+                            </button>
+                          )}
+                          {user.id !== currentUser.id && (
+                            <button
+                              onClick={() => handleDeleteUser(user.id)}
+                              style={{ padding: '10px', borderRadius: '8px', border: 'none', background: '#fee2e2', color: '#E84338', fontSize: '13px', cursor: 'pointer' }}
+                            >
+                              🗑️
+                            </button>
+                          )}
                         </div>
-                        <button
-                          onClick={() => { setFilterUsuario(user.id.toString()); setView('all-tasks'); }}
-                          style={{ width: '100%', marginTop: '16px', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: 'white', color: '#64748b', fontSize: '13px', cursor: 'pointer' }}
-                        >
-                          Ver tareas →
-                        </button>
                       </div>
                     );
                   })}
@@ -951,7 +1325,7 @@
                 {/* Resumen Global */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '32px' }}>
                   {[
-                    { icon: '📋', value: globalStats.total, label: 'Total Período', color: '#1a1a2e' },
+                    { icon: '📋', value: globalStats.total, label: `Total ${selectedMonth}`, color: '#1a1a2e' },
                     { icon: '✅', value: globalStats.completadas, label: 'Completadas', color: '#10b981' },
                     { icon: '🔄', value: globalStats.enCurso, label: 'En Curso', color: '#f59e0b' },
                     { icon: '📝', value: globalStats.pendientes, label: 'Pendientes', color: '#3b82f6' },
@@ -966,7 +1340,7 @@
                 </div>
 
                 <div style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 24px' }}>Ranking de Desempeño - {currentMonth} {currentYear}</h2>
+                  <h2 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 24px' }}>Ranking de Desempeño - {selectedMonth} {currentYear}</h2>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: '#f8f9fa' }}>
@@ -1030,7 +1404,12 @@
 
           {/* User Modal */}
           {showUserModal && currentUser.role === 'admin' && (
-            <UserModal cargos={cargos} onSave={handleCreateUser} onClose={() => setShowUserModal(false)} />
+            <UserModal 
+              user={editingUser}
+              cargos={cargos} 
+              onSave={editingUser ? handleUpdateUser : handleCreateUser} 
+              onClose={() => { setShowUserModal(false); setEditingUser(null); }} 
+            />
           )}
         </div>
       );
@@ -1078,20 +1457,20 @@
                   <select value={ejeEstrategico} onChange={(e) => setEjeEstrategico(e.target.value)} style={inputStyle}>{ejesEstrategicos.map(e => <option key={e} value={e}>{e}</option>)}</select>
                 </div>
               </div>
-              {currentUser.role === 'admin' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Cargo</label>
-                    <select value={cargo} onChange={(e) => setCargo(e.target.value)} style={inputStyle}>{cargos.map(c => <option key={c} value={c}>{c}</option>)}</select>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Responsable</label>
-                    <select value={responsable} onChange={(e) => setResponsable(e.target.value)} style={inputStyle}>
-                      {users.filter(u => u.role !== 'admin').map(u => <option key={u.id} value={u.id}>{u.avatar} {u.name}</option>)}
-                    </select>
-                  </div>
+              
+              {/* Todos pueden asignar tareas */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Cargo</label>
+                  <select value={cargo} onChange={(e) => setCargo(e.target.value)} style={inputStyle}>{cargos.map(c => <option key={c} value={c}>{c}</option>)}</select>
                 </div>
-              )}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Asignar a</label>
+                  <select value={responsable} onChange={(e) => setResponsable(e.target.value)} style={inputStyle}>
+                    {users.filter(u => u.role !== 'admin').map(u => <option key={u.id} value={u.id}>{u.avatar} {u.name}</option>)}
+                  </select>
+                </div>
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>📅 Fecha Inicio</label>
@@ -1132,27 +1511,54 @@
       );
     }
 
-    function UserModal({ cargos, onSave, onClose }) {
-      const [name, setName] = useState('');
-      const [username, setUsername] = useState('');
+    function UserModal({ user, cargos, onSave, onClose }) {
+      const availableEmojis = ['👤', '👨', '👩', '🧑', '👨‍💼', '👩‍💼', '👨‍💻', '👩‍💻', '🎨', '🎵', '👨‍🍳', '📱', '⚖️', '🧑‍🔬', '👷', '🧑‍🏫', '🧑‍⚕️', '🦸', '🧙'];
+      
+      const [name, setName] = useState(user?.name || '');
+      const [username, setUsername] = useState(user?.username || '');
       const [password, setPassword] = useState('');
-      const [cargo, setCargo] = useState(cargos[0]);
+      const [cargo, setCargo] = useState(user?.cargo || cargos[0]);
+      const [avatar, setAvatar] = useState(user?.avatar || '👤');
+      const [role, setRole] = useState(user?.role || 'user');
 
       const handleSubmit = () => {
-        if (!name.trim() || !username.trim() || !password.trim()) return;
-        onSave({ name, username, password, cargo });
+        if (!name.trim() || !username.trim() || (!user && !password.trim())) return;
+        const userData = { name, username, cargo, avatar, role };
+        if (password.trim()) userData.password = password;
+        else if (user) userData.password = user.password; // Mantener contraseña anterior si no se cambió
+        onSave(userData);
       };
 
       const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: '10px', border: '2px solid #e5e7eb', fontSize: '14px', boxSizing: 'border-box', outline: 'none' };
 
       return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '450px' }}>
+          <div style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflow: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px', background: 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)', borderRadius: '20px 20px 0 0' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'white', margin: 0 }}>👤 Nuevo Usuario</h2>
+              <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'white', margin: 0 }}>{user ? '✏️ Editar Usuario' : '👤 Nuevo Usuario'}</h2>
               <button onClick={onClose} style={{ width: '40px', height: '40px', borderRadius: '10px', border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: '20px', color: 'white', cursor: 'pointer' }}>×</button>
             </div>
             <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Selector de Emoji */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Emoji / Avatar</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '12px', background: '#f8f9fa', borderRadius: '10px' }}>
+                  {availableEmojis.map(emoji => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setAvatar(emoji)}
+                      style={{
+                        width: '40px', height: '40px', borderRadius: '10px', border: avatar === emoji ? '2px solid #E84338' : '2px solid transparent',
+                        background: avatar === emoji ? '#fee2e2' : 'white', fontSize: '20px', cursor: 'pointer', transition: 'all 0.2s'
+                      }}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Nombre completo *</label>
                 <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre" style={inputStyle} />
@@ -1162,16 +1568,39 @@
                 <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="nombre.apellido" style={inputStyle} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Contraseña *</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña" style={inputStyle} />
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+                  {user ? 'Nueva Contraseña (dejar vacío para mantener)' : 'Contraseña *'}
+                </label>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={user ? '••••••••' : 'Contraseña'} style={inputStyle} />
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Cargo</label>
-                <select value={cargo} onChange={(e) => setCargo(e.target.value)} style={inputStyle}>{cargos.map(c => <option key={c} value={c}>{c}</option>)}</select>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Cargo</label>
+                  <select value={cargo} onChange={(e) => setCargo(e.target.value)} style={inputStyle}>
+                    <option value="Administrador">Administrador</option>
+                    {cargos.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Rol</label>
+                  <select value={role} onChange={(e) => setRole(e.target.value)} style={inputStyle}>
+                    <option value="user">Usuario</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
               </div>
+              
+              {role === 'admin' && (
+                <div style={{ padding: '12px', background: '#fef3c7', borderRadius: '10px', border: '1px solid #fcd34d' }}>
+                  <p style={{ fontSize: '13px', color: '#92400e', margin: 0 }}>⚠️ Los administradores pueden ver y gestionar todas las tareas y usuarios.</p>
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                 <button onClick={onClose} style={{ padding: '12px 24px', borderRadius: '10px', border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Cancelar</button>
-                <button onClick={handleSubmit} style={{ padding: '12px 32px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>Crear</button>
+                <button onClick={handleSubmit} style={{ padding: '12px 32px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #E84338 0%, #c41e16 100%)', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
+                  {user ? 'Guardar Cambios' : 'Crear Usuario'}
+                </button>
               </div>
             </div>
           </div>

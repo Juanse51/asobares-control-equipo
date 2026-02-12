@@ -30,8 +30,8 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const AsobaresLogo = ({ width = 280 }) => (<img src="logo.png" alt="Asobares" style={{ width, height: 'auto' }} />);
-    const AsobaresLogoSmall = ({ width = 150 }) => (<img src="logo.png" alt="Asobares" style={{ width, height: 'auto' }} />);
+    const AsobaresLogo = ({ width = 280 }) => (<img src="/asobares_original.png" alt="Asobares" style={{ width, height: 'auto' }} />);
+    const AsobaresLogoSmall = ({ width = 150 }) => (<img src="/asobares_blanco.png" alt="Asobares" style={{ width, height: 'auto' }} />);
 
     const cargos = ['Dirección Ejecutiva', 'Dirección de Proyectos', 'Dirección Clúster DJ', 'Dirección Círculo Gastro', 'Soporte Organizacional Afiliados', 'Diseño Web', 'Community Manager & Graf', 'Dirección Jurídica'];
     const ejesEstrategicos = ['Asobares', 'Proyectos', 'Cluster DJ', 'Círculo Gastro', 'Mi destino tu noche', 'Fontur', 'Alianza OSA', 'Asobares Medellín', 'Formación', 'Comunicaciones', 'Otro'];
@@ -206,10 +206,9 @@
               {loginError && <p style={{ color: '#E84338', fontSize: 14, marginBottom: 16, textAlign: 'center' }}>{loginError}</p>}
               <button onClick={handleLogin} style={{ width: '100%', padding: 16, borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Iniciar Sesión</button>
             </div>
-            <div style={{ marginTop: 32, padding: 20, background: '#fef2f2', borderRadius: 12, border: '1px solid #fecaca' }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#b91c1c', marginBottom: 8 }}>🔑 Credenciales:</p>
-              <p style={{ fontSize: 13, color: '#991b1b', fontFamily: 'monospace' }}>Admin: <b>admin</b> / <b>admin123</b></p>
-              <p style={{ fontSize: 13, color: '#991b1b', fontFamily: 'monospace' }}>Usuario: <b>sebastian.henao</b> / <b>asobares123</b></p>
+            <div style={{ marginTop: 32, textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: '#64748b' }}>¿No recuerdas tu contraseña?</p>
+              <p style={{ fontSize: 13, color: '#64748b' }}>Solicítala a <a href="mailto:webasobares@gmail.com" style={{ color: '#E84338', fontWeight: 600 }}>webasobares@gmail.com</a></p>
             </div>
           </div>
         </div>
@@ -259,7 +258,7 @@
           </aside>
 
           {/* Main */}
-          <main style={{ flex: 1, marginLeft: 280, padding: 32 }}>
+          <main style={{ flex: 1, marginLeft: 280, padding: 32, paddingBottom: 80 }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
               <div>
                 <h1 style={{ fontSize: 28, fontWeight: 700, color: '#1a1a2e' }}>
@@ -481,6 +480,11 @@
 
           {showTaskModal && <TaskModal task={editingTask} users={users} currentUser={currentUser} onSave={handleSaveTask} onClose={() => { setShowTaskModal(false); setEditingTask(null); }} />}
           {showUserModal && <UserModal user={editingUser} cargos={cargos} onSave={handleSaveUser} onClose={() => { setShowUserModal(false); setEditingUser(null); }} />}
+          
+          {/* Footer */}
+          <div style={{ position: 'fixed', bottom: 0, left: 280, right: 0, padding: '12px 32px', background: 'white', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: '#94a3b8' }}>Desarrollado por: <a href="https://vamosarayar.com" target="_blank" rel="noopener noreferrer" style={{ color: '#E84338', fontWeight: 600, textDecoration: 'none' }}>Rayar!</a></p>
+          </div>
         </div>
       );
     }

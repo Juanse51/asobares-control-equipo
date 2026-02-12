@@ -30,8 +30,8 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const AsobaresLogo = ({ width = 280 }) => (<img src="/asobares_original.png" alt="Asobares" style={{ width, height: 'auto' }} />);
-    const AsobaresLogoSmall = ({ width = 150 }) => (<img src="/asobares_blanco.png" alt="Asobares" style={{ width, height: 'auto' }} />);
+    const AsobaresLogo = ({ width = 280 }) => (<img src="logo.png" alt="Asobares" style={{ width, height: 'auto' }} />);
+    const AsobaresLogoSmall = ({ width = 150 }) => (<img src="logo.png" alt="Asobares" style={{ width, height: 'auto' }} />);
 
     const cargos = ['Dirección Ejecutiva', 'Dirección de Proyectos', 'Dirección Clúster DJ', 'Dirección Círculo Gastro', 'Soporte Organizacional Afiliados', 'Diseño Web', 'Community Manager & Graf', 'Dirección Jurídica'];
     const ejesEstrategicos = ['Asobares', 'Proyectos', 'Cluster DJ', 'Círculo Gastro', 'Mi destino tu noche', 'Fontur', 'Alianza OSA', 'Asobares Medellín', 'Formación', 'Comunicaciones', 'Otro'];
@@ -297,8 +297,8 @@
                   </div>
                   <div style={{ background: 'white', borderRadius: 16, padding: 24 }}>
                     <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Por Miembro</h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      {userStats.sort((a, b) => b.cumplimiento - a.cumplimiento).slice(0, 5).map(m => (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 300, overflowY: 'auto' }}>
+                      {userStats.sort((a, b) => b.cumplimiento - a.cumplimiento).map(m => (
                         <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: '#f8f9fa', borderRadius: 10 }}>
                           <span style={{ fontSize: 24 }}>{m.avatar}</span>
                           <div style={{ flex: 1 }}><p style={{ fontSize: 13, fontWeight: 600 }}>{m.name}</p><div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}><div style={{ flex: 1, height: 6, background: '#e5e7eb', borderRadius: 3 }}><div style={{ height: '100%', width: `${m.cumplimiento}%`, background: m.cumplimiento >= 70 ? '#10b981' : m.cumplimiento >= 40 ? '#f59e0b' : '#E84338', borderRadius: 3 }}></div></div><span style={{ fontSize: 11, fontWeight: 600, color: m.cumplimiento >= 70 ? '#10b981' : m.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}>{m.cumplimiento}%</span></div></div>

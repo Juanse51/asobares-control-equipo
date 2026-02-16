@@ -47,8 +47,8 @@
       } catch (e) {}
     };
 
-    const AsobaresLogo = ({ width = 280 }) => (<img src="logo.png" alt="Asobares" style={{ width, height: 'auto' }} />);
-    const AsobaresLogoSmall = ({ width = 150 }) => (<img src="logo.png" alt="Asobares" style={{ width, height: 'auto' }} />);
+    const AsobaresLogo = ({ width = 280 }) => (<img src="/asobares_original.png" alt="Asobares" style={{ width, height: 'auto' }} />);
+    const AsobaresLogoSmall = ({ width = 150 }) => (<img src="/asobares_blanco.png" alt="Asobares" style={{ width, height: 'auto' }} />);
 
     const cargos = ['Dirección Ejecutiva', 'Dirección de Proyectos', 'Dirección Clúster DJ', 'Dirección Círculo Gastro', 'Soporte Organizacional Afiliados', 'Diseño Web', 'Community Manager & Graf', 'Dirección Jurídica', 'Administrador'];
     const ejesEstrategicos = ['Asobares', 'Proyectos', 'Cluster DJ', 'Círculo Gastro', 'Mi destino tu noche', 'Fontur', 'Alianza OSA', 'Asobares Medellín', 'Formación', 'Comunicaciones', 'Otro'];
@@ -103,8 +103,26 @@
             setBellShaking(true);
             setTimeout(() => setBellShaking(false), 500);
             playSound();
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification('📋 Nueva tarea', { body: msg, icon: 'logo.png' });
+            // Notificación del navegador - funciona en cualquier pestaña
+            if ('Notification' in window) {
+              if (Notification.permission === 'granted') {
+                const notif = new Notification('📋 Nueva tarea asignada - Asobares', { 
+                  body: msg, 
+                  icon: '/asobares_original.png',
+                  badge: '/asobares_original.png',
+                  tag: 'asobares-task-' + t.id,
+                  renotify: true,
+                  requireInteraction: true,
+                  silent: false
+                });
+                notif.onclick = () => { window.focus(); notif.close(); };
+              } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(perm => {
+                  if (perm === 'granted') {
+                    new Notification('📋 Nueva tarea asignada - Asobares', { body: msg, icon: '/asobares_original.png' });
+                  }
+                });
+              }
             }
           }
           loadData();

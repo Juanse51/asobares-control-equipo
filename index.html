@@ -180,8 +180,26 @@
       const handleSaveTask = async (data) => {
         try {
           const taskData = { mes: data.mes, cargo: data.cargo, responsable: data.responsables, proyecto: data.proyecto, eje_estrategico: data.ejeEstrategico, fecha_inicio: data.fechaInicio, fecha_fin: data.fechaFin, estado: data.estado, descripcion: data.descripcion };
-          if (editingTask) { await supabase.from('tareas').update(taskData).eq('id', editingTask.id); showNotif('Tarea actualizada'); }
-          else { taskData.creado_por = currentUser.id; await supabase.from('tareas').insert(taskData); showNotif('Tarea creada'); }
+          if (editingTask) { 
+            await supabase.from('tareas').update(taskData).eq('id', editingTask.id); 
+            showNotif('Tarea actualizada'); 
+          } else { 
+            taskData.creado_por = currentUser.id; 
+            await supabase.from('tareas').insert(taskData); 
+            // Enviar emails a los responsables (excepto al creador)
+            const responsablesIds = data.responsables.filter(id => id !== currentUser.id);
+            for (const respId of responsablesIds) {
+              const resp = users.find(u => u.id === respId);
+              if (resp?.email) {
+                fetch(`${SUPABASE_URL}/functions/v1/send-task-notification`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+                  body: JSON.stringify({ to: resp.email, toName: resp.name, fromName: currentUser.name, proyecto: data.proyecto, descripcion: data.descripcion, fechaFin: data.fechaFin })
+                }).catch(e => console.log('Error enviando email:', e));
+              }
+            }
+            showNotif('Tarea creada'); 
+          }
           await loadData(); setShowTaskModal(false); setEditingTask(null);
         } catch (e) { console.error(e); showNotif('Error al guardar', 'error'); }
       };
@@ -191,12 +209,12 @@
       const handleSaveUser = async (data) => {
         try {
           if (editingUser) {
-            const upd = { name: data.name, username: data.username, cargo: data.cargo, avatar: data.avatar, role: data.role };
+            const upd = { name: data.name, username: data.username, email: data.email, cargo: data.cargo, avatar: data.avatar, role: data.role };
             if (data.password) upd.password = data.password;
             await supabase.from('usuarios').update(upd).eq('id', editingUser.id);
             if (currentUser.id === editingUser.id) { const u = { ...currentUser, ...upd }; setCurrentUser(u); localStorage.setItem('asobares_user', JSON.stringify(u)); }
             showNotif('Usuario actualizado');
-          } else { await supabase.from('usuarios').insert({ username: data.username, name: data.name, password: data.password, role: data.role || 'user', cargo: data.cargo, avatar: data.avatar || '👤' }); showNotif('Usuario creado'); }
+          } else { await supabase.from('usuarios').insert({ username: data.username, name: data.name, email: data.email, password: data.password, role: data.role || 'user', cargo: data.cargo, avatar: data.avatar || '👤' }); showNotif('Usuario creado'); }
           await loadData(); setShowUserModal(false); setEditingUser(null);
         } catch (e) { showNotif('Error al guardar', 'error'); }
       };
@@ -349,12 +367,13 @@
       const emojis = ['👤', '👨', '👩', '🧑', '👨‍💼', '👩‍💼', '👨‍💻', '👩‍💻', '🎨', '🎵', '👨‍🍳', '📱', '⚖️', '👔'];
       const [name, setName] = useState(user?.name || '');
       const [username, setUsername] = useState(user?.username || '');
+      const [email, setEmail] = useState(user?.email || '');
       const [password, setPassword] = useState('');
       const [cargo, setCargo] = useState(user?.cargo || cargos[0]);
       const [avatar, setAvatar] = useState(user?.avatar || '👤');
       const [role, setRole] = useState(user?.role || 'user');
       const st = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, boxSizing: 'border-box' };
-      return (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}><div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 500, maxHeight: '90vh', overflow: 'auto' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 24, background: 'linear-gradient(135deg, #E84338, #c41e16)', borderRadius: '20px 20px 0 0' }}><h2 style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>{user ? '✏️ Editar' : '👤 Nuevo'} Usuario</h2><button onClick={onClose} style={{ width: 40, height: 40, borderRadius: 10, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 20, color: 'white', cursor: 'pointer' }}>×</button></div><div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Emoji</label><div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: 12, background: '#f8f9fa', borderRadius: 10 }}>{emojis.map(e => <button key={e} type="button" onClick={() => setAvatar(e)} style={{ width: 40, height: 40, borderRadius: 10, border: avatar === e ? '2px solid #E84338' : '2px solid transparent', background: avatar === e ? '#fee2e2' : 'white', fontSize: 20, cursor: 'pointer' }}>{e}</button>)}</div></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Nombre *</label><input type="text" value={name} onChange={e => setName(e.target.value)} style={st} /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Usuario *</label><input type="text" value={username} onChange={e => setUsername(e.target.value)} style={st} /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>{user ? 'Nueva Contraseña (opcional)' : 'Contraseña *'}</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} style={st} /></div><div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Cargo</label><select value={cargo} onChange={e => setCargo(e.target.value)} style={st}>{cargos.map(c => <option key={c} value={c}>{c}</option>)}</select></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Rol</label><select value={role} onChange={e => setRole(e.target.value)} style={st}><option value="user">Usuario</option><option value="admin">Admin</option><option value="invitado">Invitado</option></select></div></div><div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}><button onClick={onClose} style={{ padding: '12px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button><button onClick={() => { if (name.trim() && username.trim() && (user || password.trim())) onSave({ name, username, password: password || undefined, cargo, avatar, role }); }} style={{ padding: '12px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>{user ? 'Guardar' : 'Crear'}</button></div></div></div></div>);
+      return (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}><div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 500, maxHeight: '90vh', overflow: 'auto' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 24, background: 'linear-gradient(135deg, #E84338, #c41e16)', borderRadius: '20px 20px 0 0' }}><h2 style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>{user ? '✏️ Editar' : '👤 Nuevo'} Usuario</h2><button onClick={onClose} style={{ width: 40, height: 40, borderRadius: 10, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 20, color: 'white', cursor: 'pointer' }}>×</button></div><div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Emoji</label><div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: 12, background: '#f8f9fa', borderRadius: 10 }}>{emojis.map(e => <button key={e} type="button" onClick={() => setAvatar(e)} style={{ width: 40, height: 40, borderRadius: 10, border: avatar === e ? '2px solid #E84338' : '2px solid transparent', background: avatar === e ? '#fee2e2' : 'white', fontSize: 20, cursor: 'pointer' }}>{e}</button>)}</div></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Nombre *</label><input type="text" value={name} onChange={e => setName(e.target.value)} style={st} /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Usuario *</label><input type="text" value={username} onChange={e => setUsername(e.target.value)} style={st} placeholder="nombre.apellido" /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>📧 Email *</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} style={st} placeholder="correo@asobares.org" /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>{user ? 'Nueva Contraseña (opcional)' : 'Contraseña *'}</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} style={st} /></div><div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Cargo</label><select value={cargo} onChange={e => setCargo(e.target.value)} style={st}>{cargos.map(c => <option key={c} value={c}>{c}</option>)}</select></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Rol</label><select value={role} onChange={e => setRole(e.target.value)} style={st}><option value="user">Usuario</option><option value="admin">Admin</option><option value="invitado">Invitado</option></select></div></div><div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}><button onClick={onClose} style={{ padding: '12px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button><button onClick={() => { if (name.trim() && username.trim() && email.trim() && (user || password.trim())) onSave({ name, username, email, password: password || undefined, cargo, avatar, role }); }} style={{ padding: '12px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>{user ? 'Guardar' : 'Crear'}</button></div></div></div></div>);
     }
 
     ReactDOM.render(<App />, document.getElementById('root'));

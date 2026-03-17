@@ -60,6 +60,20 @@
       'retrasado': { label: 'Retrasado', color: '#ef4444', bg: '#fee2e2' },
     };
 
+    // FUNCIONES PARA MANEJAR ARRAY DE RESPONSABLES
+    const getResponsables = (task) => {
+      if (!task || task.responsable == null) return [];
+      const r = task.responsable;
+      if (Array.isArray(r)) return r.map(Number).filter(n => !isNaN(n));
+      if (typeof r === 'number') return [r];
+      if (typeof r === 'string') {
+        const cleaned = r.replace(/[{}]/g, '');
+        return cleaned ? cleaned.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n)) : [];
+      }
+      return [];
+    };
+    const isUserResponsable = (task, userId) => getResponsables(task).includes(userId);
+
     function App() {
       const [currentUser, setCurrentUser] = useState(null);
       const [users, setUsers] = useState([]);
@@ -96,7 +110,8 @@
         if (!currentUser) return;
         const channel = supabase.channel('db-changes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tareas' }, (payload) => {
           const t = payload.new;
-          if (t.responsable === currentUser.id && t.creado_por !== currentUser.id) {
+          const resps = getResponsables(t);
+          if (resps.includes(currentUser.id) && t.creado_por !== currentUser.id) {
             const from = usersRef.current.find(u => u.id === t.creado_por);
             const msg = `${from?.name || 'Alguien'} te asignó: "${t.proyecto}"`;
             setNotifications(prev => [{ id: Date.now(), msg, from: from?.name, avatar: from?.avatar || '👤', task: t.proyecto, time: new Date().toISOString(), read: false }, ...prev].slice(0, 50));
@@ -187,16 +202,16 @@
       const handleDragLeave = (e) => e.currentTarget.classList.remove('drag-over');
       const handleDrop = (e, status) => { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); if (draggedTask) handleUpdateStatus(draggedTask.id, status); };
 
-      const getAllTasks = () => filterUsuario !== 'all' ? tasks.filter(t => t.responsable === parseInt(filterUsuario)) : tasks;
-      const getMyTasks = () => currentUser ? tasks.filter(t => t.responsable === currentUser.id) : [];
+      const getAllTasks = () => filterUsuario !== 'all' ? tasks.filter(t => isUserResponsable(t, parseInt(filterUsuario))) : tasks;
+      const getMyTasks = () => currentUser ? tasks.filter(t => isUserResponsable(t, currentUser.id)) : [];
       const allTasks = getAllTasks();
       const myTasks = getMyTasks();
       const filteredTasks = allTasks.filter(t => { if (filterMes !== 'all' && t.mes !== filterMes) return false; if (filterEstado !== 'all' && t.estado !== filterEstado) return false; if (searchTerm && !t.proyecto.toLowerCase().includes(searchTerm.toLowerCase())) return false; return true; });
       const myFilteredTasks = myTasks.filter(t => { if (filterMes !== 'all' && t.mes !== filterMes) return false; if (filterEstado !== 'all' && t.estado !== filterEstado) return false; if (searchTerm && !t.proyecto.toLowerCase().includes(searchTerm.toLowerCase())) return false; return true; });
-      const assignedByMe = currentUser ? tasks.filter(t => t.creado_por === currentUser.id && t.responsable !== currentUser.id) : [];
+      const assignedByMe = currentUser ? tasks.filter(t => t.creado_por === currentUser.id && !isUserResponsable(t, currentUser.id)) : [];
 
       const getStats = (userId, month) => {
-        const t = tasks.filter(x => x.responsable === userId && (!month || x.mes === month));
+        const t = tasks.filter(x => isUserResponsable(x, userId) && (!month || x.mes === month));
         const comp = t.filter(x => x.estado === 'completado').length;
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const ret = t.filter(x => { if (x.estado === 'completado') return false; const f = new Date(x.fecha_fin + 'T23:59:59'); return f < today; }).length;

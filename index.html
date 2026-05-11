@@ -79,6 +79,22 @@
     };
     const getDriveIcon = (tipo) => ({ folder: '📁', spreadsheet: '📗', file: '📄', doc: '📘', slides: '📙', link: '🔗' }[tipo] || '🔗');
     const getDriveLabel = (tipo) => ({ folder: 'Carpeta', spreadsheet: 'Hoja de cálculo', file: 'Archivo', doc: 'Documento', slides: 'Presentación', link: 'Enlace' }[tipo] || 'Enlace');
+    const getDriveFileId = (url) => { const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/); return m ? m[1] : null; };
+    const getDrivePreviewUrl = (url) => {
+      if (!url || url.includes('/folders/')) return null;
+      const id = getDriveFileId(url);
+      if (!id) return null;
+      if (url.includes('/file/d/')) return `https://drive.google.com/file/d/${id}/preview`;
+      if (url.includes('/spreadsheets/')) return `https://docs.google.com/spreadsheets/d/${id}/preview`;
+      if (url.includes('/document/')) return `https://docs.google.com/document/d/${id}/preview`;
+      if (url.includes('/presentation/')) return `https://docs.google.com/presentation/d/${id}/preview`;
+      return null;
+    };
+    const getDriveDownloadUrl = (doc) => {
+      if (doc.tipo === 'folder') return null;
+      if (doc.tipo === 'file') { const id = getDriveFileId(doc.url); return id ? `https://drive.google.com/uc?export=download&id=${id}` : null; }
+      return doc.url;
+    };
 
     // FUNCIONES PARA MANEJAR ARRAY DE RESPONSABLES
     const getResponsables = (task) => {
@@ -133,8 +149,9 @@
       const usersRef = useRef([]);
       const [docs, setDocs] = useState([]);
       const [docsLoading, setDocsLoading] = useState(false);
-      const [docCategory, setDocCategory] = useState('all');
+      const [docNav, setDocNav] = useState({ cat: null, subcat: null });
       const [docSearch, setDocSearch] = useState('');
+      const [docPreview, setDocPreview] = useState(null);
       const [savingDoc, setSavingDoc] = useState(false);
       const [showAddDocModal, setShowAddDocModal] = useState(false);
 
@@ -377,71 +394,114 @@
 
             {view === 'docs' && (
               <div>
-                <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <input type="text" placeholder="🔍 Buscar recurso..." value={docSearch} onChange={e => setDocSearch(e.target.value)} style={{ flex: 1, minWidth: 200, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
-                  <select value={docCategory} onChange={e => setDocCategory(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
-                    <option value="all">Todas las categorías</option>
-                    {docCategories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
-                  </select>
-                  <button onClick={loadDocs} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 14 }}>🔄</button>
-                  {currentUser.role !== 'invitado' && <button onClick={() => setShowAddDocModal(true)} style={{ padding: '12px 24px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>+ Agregar recurso</button>}
+                <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
+                  {docNav.cat && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                      <button onClick={() => setDocNav({ cat: null, subcat: null })} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#475569', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>📁 Documentación</button>
+                      <span style={{ color: '#94a3b8' }}>›</span>
+                      {docNav.subcat ? (
+                        <>
+                          <button onClick={() => setDocNav({ cat: docNav.cat, subcat: null })} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#475569', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>{docCategories.find(c => c.id === docNav.cat)?.icon} {docCategories.find(c => c.id === docNav.cat)?.label}</button>
+                          <span style={{ color: '#94a3b8' }}>›</span>
+                          <span style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', fontSize: 13, fontWeight: 700 }}>📁 {docNav.subcat}</span>
+                        </>
+                      ) : (
+                        <span style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', fontSize: 13, fontWeight: 700 }}>{docCategories.find(c => c.id === docNav.cat)?.icon} {docCategories.find(c => c.id === docNav.cat)?.label}</span>
+                      )}
+                    </div>
+                  )}
+                  {docNav.cat && <input type="text" placeholder="🔍 Buscar..." value={docSearch} onChange={e => setDocSearch(e.target.value)} style={{ width: 200, padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13 }} />}
+                  <button onClick={loadDocs} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 14 }}>🔄</button>
+                  {currentUser.role !== 'invitado' && <button onClick={() => setShowAddDocModal(true)} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>+ Agregar recurso</button>}
                 </div>
                 {docsLoading ? (
                   <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando...</p></div>
-                ) : (
-                  <div>
-                    {docCategories.filter(cat => docCategory === 'all' || cat.id === docCategory).map(cat => {
-                      const catDocs = docs.filter(d => d.categoria === cat.id && (!docSearch || d.nombre.toLowerCase().includes(docSearch.toLowerCase()) || (d.subcategoria || '').toLowerCase().includes(docSearch.toLowerCase())));
-                      if (docCategory === 'all' && catDocs.length === 0) return null;
-                      const subcats = [...new Set(catDocs.filter(d => d.subcategoria).map(d => d.subcategoria))];
-                      const rootDocs = catDocs.filter(d => !d.subcategoria);
-                      const renderCard = (doc) => (
-                        <div key={doc.id} style={{ background: 'white', borderRadius: 16, padding: 22, display: 'flex', flexDirection: 'column', gap: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                            <span style={{ fontSize: 40, lineHeight: 1 }}>{getDriveIcon(doc.tipo)}</span>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', wordBreak: 'break-word', lineHeight: 1.4 }}>{doc.nombre}</p>
-                              <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 5 }}>{getDriveLabel(doc.tipo)} · Agregado por {doc.agregado_por_nombre || 'Asobares'}</p>
-                              {doc.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginTop: 6 }}>{doc.descripcion}</p>}
-                            </div>
-                          </div>
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '11px 0', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 13, fontWeight: 600, textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>🔗 Abrir en Drive</a>
-                            {currentUser.role === 'admin' && <button onClick={() => handleDeleteDoc(doc.id)} style={{ padding: '11px 14px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', cursor: 'pointer', fontSize: 13 }}>🗑️</button>}
-                          </div>
-                        </div>
-                      );
+                ) : !docNav.cat ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+                    {docCategories.map(cat => {
+                      const count = docs.filter(d => d.categoria === cat.id).length;
+                      const subcats = [...new Set(docs.filter(d => d.categoria === cat.id && d.subcategoria).map(d => d.subcategoria))];
                       return (
-                        <div key={cat.id} style={{ marginBottom: 36 }}>
-                          {docCategory === 'all' && <h3 style={{ fontSize: 13, fontWeight: 700, color: '#64748b', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, letterSpacing: 1 }}><span>{cat.icon}</span>{cat.label.toUpperCase()}<span style={{ background: '#f1f5f9', color: '#94a3b8', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 600 }}>{catDocs.length}</span></h3>}
-                          {catDocs.length === 0 && docCategory !== 'all' && <div style={{ background: 'white', borderRadius: 16, padding: 48, textAlign: 'center', color: '#94a3b8' }}><p style={{ fontSize: 40, marginBottom: 12 }}>📭</p><p style={{ fontSize: 15, fontWeight: 600 }}>Sin recursos en esta categoría</p></div>}
-                          {subcats.map(sc => (
-                            <div key={sc} style={{ marginBottom: 24 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 14px', background: '#f8f9fa', borderRadius: 10, borderLeft: '3px solid #E84338' }}>
-                                <span>📁</span><span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{sc}</span>
-                                <span style={{ fontSize: 11, color: '#94a3b8' }}>{catDocs.filter(d => d.subcategoria === sc).length} recurso(s)</span>
-                              </div>
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>{catDocs.filter(d => d.subcategoria === sc).map(renderCard)}</div>
-                            </div>
-                          ))}
-                          {rootDocs.length > 0 && (
-                            <div>
-                              {subcats.length > 0 && <p style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', marginBottom: 10 }}>GENERAL</p>}
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>{rootDocs.map(renderCard)}</div>
-                            </div>
-                          )}
+                        <div key={cat.id} onClick={() => { setDocNav({ cat: cat.id, subcat: null }); setDocSearch(''); }} style={{ background: 'white', borderRadius: 20, padding: '36px 24px', cursor: 'pointer', textAlign: 'center', border: '2px solid #f1f5f9', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'all 0.15s' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#E84338'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(232,67,56,0.15)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}>
+                          <span style={{ fontSize: 52 }}>{cat.icon}</span>
+                          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginTop: 14, marginBottom: 6 }}>{cat.label}</h3>
+                          <p style={{ fontSize: 12, color: '#94a3b8' }}>{count} recurso{count !== 1 ? 's' : ''}{subcats.length > 0 ? ` · ${subcats.length} subcarpeta${subcats.length !== 1 ? 's' : ''}` : ''}</p>
                         </div>
                       );
                     })}
-                    {docs.filter(d => (docCategory === 'all' || d.categoria === docCategory) && (!docSearch || d.nombre.toLowerCase().includes(docSearch.toLowerCase()))).length === 0 && (
-                      <div style={{ background: 'white', borderRadius: 16, padding: 60, textAlign: 'center', color: '#94a3b8' }}>
-                        <p style={{ fontSize: 48, marginBottom: 16 }}>📂</p>
-                        <p style={{ fontSize: 16, fontWeight: 600, color: '#475569', marginBottom: 8 }}>No hay recursos aún</p>
-                        <p style={{ fontSize: 14 }}>{currentUser.role !== 'invitado' ? 'Agrega el primer recurso con el botón de arriba' : 'Aún no se han agregado recursos'}</p>
-                      </div>
-                    )}
                   </div>
-                )}
+                ) : (() => {
+                  const renderDocCard = (doc) => {
+                    const previewUrl = getDrivePreviewUrl(doc.url);
+                    const downloadUrl = getDriveDownloadUrl(doc);
+                    return (
+                      <div key={doc.id} style={{ background: 'white', borderRadius: 16, overflow: 'hidden', border: '1px solid #f1f5f9', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column' }}>
+                        <div onClick={() => previewUrl && setDocPreview(doc)} style={{ background: 'linear-gradient(135deg, #f8f9fa, #f1f5f9)', height: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: previewUrl ? 'pointer' : 'default', position: 'relative' }}>
+                          <span style={{ fontSize: 52 }}>{getDriveIcon(doc.tipo)}</span>
+                          {previewUrl && <div style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 11, padding: '3px 8px', borderRadius: 6, fontWeight: 600 }}>👁 Vista previa</div>}
+                        </div>
+                        <div style={{ padding: 16, flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <div>
+                            <p style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', lineHeight: 1.4, marginBottom: 4 }}>{doc.nombre}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8' }}>{getDriveLabel(doc.tipo)}</p>
+                            {doc.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{doc.descripcion}</p>}
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, marginTop: 'auto' }}>
+                            {previewUrl && <button onClick={() => setDocPreview(doc)} style={{ flex: 1, padding: '9px 0', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>👁 Preview</button>}
+                            <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '9px 0', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 12, fontWeight: 600, textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🔗 Abrir</a>
+                            {downloadUrl && doc.tipo !== 'folder' && <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '9px 12px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontSize: 12, fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>⬇️</a>}
+                            {currentUser.role === 'admin' && <button onClick={() => handleDeleteDoc(doc.id)} style={{ padding: '9px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', cursor: 'pointer', fontSize: 12 }}>🗑️</button>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  };
+                  const catInfo = docCategories.find(c => c.id === docNav.cat);
+                  if (docNav.subcat) {
+                    const subcatDocs = docs.filter(d => d.categoria === docNav.cat && d.subcategoria === docNav.subcat && (!docSearch || d.nombre.toLowerCase().includes(docSearch.toLowerCase())));
+                    return (
+                      <div>
+                        {subcatDocs.length === 0 ? <div style={{ background: 'white', borderRadius: 16, padding: 60, textAlign: 'center', color: '#94a3b8' }}><p style={{ fontSize: 48, marginBottom: 12 }}>📭</p><p style={{ fontWeight: 600 }}>Sin recursos en esta subcarpeta</p></div>
+                          : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>{subcatDocs.map(renderDocCard)}</div>}
+                      </div>
+                    );
+                  }
+                  const catDocs = docs.filter(d => d.categoria === docNav.cat);
+                  const subcats = [...new Set(catDocs.filter(d => d.subcategoria).map(d => d.subcategoria))];
+                  const rootDocs = catDocs.filter(d => !d.subcategoria && (!docSearch || d.nombre.toLowerCase().includes(docSearch.toLowerCase())));
+                  return (
+                    <div>
+                      {subcats.length > 0 && (
+                        <div style={{ marginBottom: 32 }}>
+                          {rootDocs.length > 0 && <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>SUBCARPETAS</p>}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+                            {subcats.map(sc => {
+                              const scCount = catDocs.filter(d => d.subcategoria === sc).length;
+                              return (
+                                <div key={sc} onClick={() => setDocNav({ cat: docNav.cat, subcat: sc })} style={{ background: 'white', borderRadius: 16, padding: '24px 20px', cursor: 'pointer', border: '2px solid #f1f5f9', textAlign: 'center', transition: 'all 0.15s' }}
+                                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#E84338'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; }}>
+                                  <span style={{ fontSize: 40 }}>📁</span>
+                                  <p style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', marginTop: 10, marginBottom: 4 }}>{sc}</p>
+                                  <p style={{ fontSize: 12, color: '#94a3b8' }}>{scCount} recurso{scCount !== 1 ? 's' : ''}</p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      {rootDocs.length > 0 && (
+                        <div>
+                          {subcats.length > 0 && <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>ARCHIVOS</p>}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>{rootDocs.map(renderDocCard)}</div>
+                        </div>
+                      )}
+                      {catDocs.length === 0 && <div style={{ background: 'white', borderRadius: 16, padding: 60, textAlign: 'center', color: '#94a3b8' }}><p style={{ fontSize: 48, marginBottom: 12 }}>📭</p><p style={{ fontWeight: 600 }}>Sin recursos en {catInfo?.label}</p></div>}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
@@ -453,6 +513,19 @@
           {showTaskModal && <TaskModal task={editingTask} users={users} currentUser={currentUser} onSave={handleSaveTask} onClose={() => { setShowTaskModal(false); setEditingTask(null); }} />}
           {showUserModal && <UserModal user={editingUser} cargos={cargos} onSave={handleSaveUser} onClose={() => { setShowUserModal(false); setEditingUser(null); }} />}
           {showAddDocModal && <DocAddLinkModal onSave={handleAddDoc} saving={savingDoc} onClose={() => setShowAddDocModal(false)} />}
+          {docPreview && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 24px', background: '#1a1a2e', gap: 12, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span style={{ fontSize: 22 }}>{getDriveIcon(docPreview.tipo)}</span><p style={{ color: 'white', fontWeight: 700, fontSize: 15 }}>{docPreview.nombre}</p><span style={{ fontSize: 11, color: '#64748b', background: 'rgba(255,255,255,0.1)', padding: '3px 8px', borderRadius: 6 }}>{getDriveLabel(docPreview.tipo)}</span></div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <a href={docPreview.url} target="_blank" rel="noopener noreferrer" style={{ padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', color: 'white', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>🔗 Abrir en Drive</a>
+                  {getDriveDownloadUrl(docPreview) && docPreview.tipo !== 'folder' && <a href={getDriveDownloadUrl(docPreview)} target="_blank" rel="noopener noreferrer" style={{ padding: '8px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>⬇️ Descargar</a>}
+                  <button onClick={() => setDocPreview(null)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                </div>
+              </div>
+              <iframe src={getDrivePreviewUrl(docPreview.url)} style={{ flex: 1, border: 'none', background: 'white' }} allow="autoplay" />
+            </div>
+          )}
           <div style={{ position: 'fixed', bottom: 0, left: 280, right: 0, padding: '12px 32px', background: 'white', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}><p style={{ fontSize: 12, color: '#94a3b8' }}>Desarrollado por: <a href="https://vamosarayar.com" target="_blank" rel="noopener noreferrer" style={{ color: '#E84338', fontWeight: 600, textDecoration: 'none' }}>Rayar!</a></p></div>
         </div>
       );

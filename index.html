@@ -61,12 +61,12 @@
     };
 
     const docCategories = [
-      { id: 'general', label: 'General', icon: '📄' },
+      { id: 'juridica', label: 'Jurídica', icon: '⚖️' },
+      { id: 'cartera', label: 'Cartera', icon: '💼' },
+      { id: 'proyectos', label: 'Proyectos', icon: '🚀' },
       { id: 'logos', label: 'Logos', icon: '🖼️' },
-      { id: 'reglamentos', label: 'Reglamentos', icon: '📋' },
-      { id: 'contratos', label: 'Contratos', icon: '📝' },
-      { id: 'formatos', label: 'Formatos', icon: '📑' },
-      { id: 'otros', label: 'Otros', icon: '📦' },
+      { id: 'alianza', label: 'Alianza', icon: '🤝' },
+      { id: 'aliados', label: 'Aliados', icon: '👥' },
     ];
     const getFileIcon = (name) => {
       const ext = (name || '').split('.').pop().toLowerCase();
@@ -141,6 +141,7 @@
       const [docCategory, setDocCategory] = useState('all');
       const [docSearch, setDocSearch] = useState('');
       const [uploadingDoc, setUploadingDoc] = useState(false);
+      const [docSubfolders, setDocSubfolders] = useState({});
 
       useEffect(() => { loadData(); }, []);
       useEffect(() => { usersRef.current = users; }, [users]);
@@ -256,19 +257,33 @@
         setDocsLoading(true);
         try {
           let allFiles = [];
+          const subfolderMap = {};
           for (const cat of docCategories) {
-            const { data } = await supabase.storage.from('documentos').list(cat.id, { sortBy: { column: 'created_at', order: 'desc' } });
-            if (data) allFiles = [...allFiles, ...data.filter(f => f.name && f.name !== '.emptydir').map(f => ({ ...f, categoria: cat.id, path: `${cat.id}/${f.name}` }))];
+            subfolderMap[cat.id] = [];
+            const { data: rootItems } = await supabase.storage.from('documentos').list(cat.id, { sortBy: { column: 'created_at', order: 'desc' } });
+            if (rootItems) {
+              for (const item of rootItems) {
+                if (item.id === null) {
+                  subfolderMap[cat.id].push(item.name);
+                  const { data: subItems } = await supabase.storage.from('documentos').list(`${cat.id}/${item.name}`, { sortBy: { column: 'created_at', order: 'desc' } });
+                  if (subItems) allFiles = [...allFiles, ...subItems.filter(f => f.name && f.name !== '.emptydir' && f.id !== null).map(f => ({ ...f, categoria: cat.id, subfolder: item.name, path: `${cat.id}/${item.name}/${f.name}` }))];
+                } else if (item.name && item.name !== '.emptydir') {
+                  allFiles = [...allFiles, { ...item, categoria: cat.id, subfolder: null, path: `${cat.id}/${item.name}` }];
+                }
+              }
+            }
           }
           setDocs(allFiles);
+          setDocSubfolders(subfolderMap);
         } catch (e) { console.error(e); }
         setDocsLoading(false);
       };
-      const handleUploadDoc = async (file, categoria) => {
+      const handleUploadDoc = async (file, categoria, subfolder) => {
         setUploadingDoc(true);
         try {
           const safeName = file.name.replace(/\s+/g, '_');
-          const path = `${categoria}/${Date.now()}_${safeName}`;
+          const base = subfolder ? `${categoria}/${subfolder}` : categoria;
+          const path = `${base}/${Date.now()}_${safeName}`;
           const { error } = await supabase.storage.from('documentos').upload(path, file);
           if (error) throw error;
           showNotif('Archivo subido correctamente');
@@ -388,7 +403,7 @@
               <div>
                 {currentUser.role !== 'invitado' && (
                   <div style={{ background: 'white', borderRadius: 16, padding: 24, marginBottom: 24 }}>
-                    <DocUploadPanel onUpload={handleUploadDoc} uploading={uploadingDoc} />
+                    <DocUploadPanel onUpload={handleUploadDoc} uploading={uploadingDoc} subfoldersByCategory={docSubfolders} />
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
@@ -404,10 +419,31 @@
                 ) : (
                   <div>
                     {docCategories.filter(cat => docCategory === 'all' || cat.id === docCategory).map(cat => {
-                      const catDocs = docs.filter(d => d.categoria === cat.id && (!docSearch || d.name.toLowerCase().includes(docSearch.toLowerCase())));
+                      const catDocs = docs.filter(d => d.categoria === cat.id && (!docSearch || d.name.toLowerCase().includes(docSearch.toLowerCase()) || (d.subfolder || '').toLowerCase().includes(docSearch.toLowerCase())));
                       if (docCategory === 'all' && catDocs.length === 0) return null;
+                      const subfolderNames = [...new Set(catDocs.filter(d => d.subfolder).map(d => d.subfolder))];
+                      const rootDocs = catDocs.filter(d => !d.subfolder);
+                      const renderDocCard = (doc) => {
+                        const realName = doc.name.replace(/^\d+_/, '');
+                        const url = getDocUrl(doc.path);
+                        return (
+                          <div key={doc.id || doc.path} style={{ background: 'white', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 14, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                              <span style={{ fontSize: 38, lineHeight: 1 }}>{getFileIcon(doc.name)}</span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e', wordBreak: 'break-word', lineHeight: 1.4 }}>{realName}</p>
+                                <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>{formatFileSize(doc.metadata?.size)} · {doc.created_at ? new Date(doc.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</p>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              <a href={url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '10px 0', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 13, fontWeight: 600, textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>⬇️ Descargar</a>
+                              {currentUser.role === 'admin' && <button onClick={() => handleDeleteDoc(doc.path)} style={{ padding: '10px 14px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', cursor: 'pointer', fontSize: 13 }}>🗑️</button>}
+                            </div>
+                          </div>
+                        );
+                      };
                       return (
-                        <div key={cat.id} style={{ marginBottom: 28 }}>
+                        <div key={cat.id} style={{ marginBottom: 32 }}>
                           {docCategory === 'all' && <h3 style={{ fontSize: 13, fontWeight: 700, color: '#64748b', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8, letterSpacing: 1 }}><span>{cat.icon}</span>{cat.label.toUpperCase()}<span style={{ background: '#f1f5f9', color: '#94a3b8', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 600 }}>{catDocs.length}</span></h3>}
                           {catDocs.length === 0 && docCategory !== 'all' && (
                             <div style={{ background: 'white', borderRadius: 16, padding: 48, textAlign: 'center', color: '#94a3b8' }}>
@@ -416,27 +452,26 @@
                               {currentUser.role !== 'invitado' && <p style={{ fontSize: 13 }}>Sube el primer archivo usando el formulario de arriba</p>}
                             </div>
                           )}
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-                            {catDocs.map(doc => {
-                              const realName = doc.name.replace(/^\d+_/, '');
-                              const url = getDocUrl(doc.path);
-                              return (
-                                <div key={doc.id || doc.name} style={{ background: 'white', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 14, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}>
-                                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                                    <span style={{ fontSize: 38, lineHeight: 1 }}>{getFileIcon(doc.name)}</span>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                      <p style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e', wordBreak: 'break-word', lineHeight: 1.4 }}>{realName}</p>
-                                      <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>{formatFileSize(doc.metadata?.size)} · {doc.created_at ? new Date(doc.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</p>
-                                    </div>
-                                  </div>
-                                  <div style={{ display: 'flex', gap: 8 }}>
-                                    <a href={url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '10px 0', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 13, fontWeight: 600, textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>⬇️ Descargar</a>
-                                    {currentUser.role === 'admin' && <button onClick={() => handleDeleteDoc(doc.path)} style={{ padding: '10px 14px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', cursor: 'pointer', fontSize: 13 }}>🗑️</button>}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+                          {subfolderNames.map(sf => (
+                            <div key={sf} style={{ marginBottom: 20 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 14px', background: '#f8f9fa', borderRadius: 10, borderLeft: '3px solid #E84338' }}>
+                                <span style={{ fontSize: 16 }}>📁</span>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{sf}</span>
+                                <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 4 }}>{catDocs.filter(d => d.subfolder === sf).length} archivo(s)</span>
+                              </div>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                                {catDocs.filter(d => d.subfolder === sf).map(renderDocCard)}
+                              </div>
+                            </div>
+                          ))}
+                          {rootDocs.length > 0 && (
+                            <div>
+                              {subfolderNames.length > 0 && <p style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', marginBottom: 10, marginTop: 4 }}>SIN CARPETA</p>}
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                                {rootDocs.map(renderDocCard)}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -510,13 +545,27 @@
       return (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}><div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 500, maxHeight: '90vh', overflow: 'auto' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 24, background: 'linear-gradient(135deg, #E84338, #c41e16)', borderRadius: '20px 20px 0 0' }}><h2 style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>{user ? '✏️ Editar' : '👤 Nuevo'} Usuario</h2><button onClick={onClose} style={{ width: 40, height: 40, borderRadius: 10, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 20, color: 'white', cursor: 'pointer' }}>×</button></div><div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Emoji</label><div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: 12, background: '#f8f9fa', borderRadius: 10 }}>{emojis.map(e => <button key={e} type="button" onClick={() => setAvatar(e)} style={{ width: 40, height: 40, borderRadius: 10, border: avatar === e ? '2px solid #E84338' : '2px solid transparent', background: avatar === e ? '#fee2e2' : 'white', fontSize: 20, cursor: 'pointer' }}>{e}</button>)}</div></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Nombre *</label><input type="text" value={name} onChange={e => setName(e.target.value)} style={st} /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Usuario *</label><input type="text" value={username} onChange={e => setUsername(e.target.value)} style={st} placeholder="nombre.apellido" /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>📧 Email *</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} style={st} placeholder="correo@asobares.org" /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>{user ? 'Nueva Contraseña (opcional)' : 'Contraseña *'}</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} style={st} /></div><div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Cargo</label><select value={cargo} onChange={e => setCargo(e.target.value)} style={st}>{cargos.map(c => <option key={c} value={c}>{c}</option>)}</select></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Rol</label><select value={role} onChange={e => setRole(e.target.value)} style={st}><option value="user">Usuario</option><option value="admin">Admin</option><option value="invitado">Invitado</option></select></div></div><div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}><button onClick={onClose} style={{ padding: '12px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button><button onClick={() => { if (name.trim() && username.trim() && email.trim() && (user || password.trim())) onSave({ name, username, email, password: password || undefined, cargo, avatar, role }); }} style={{ padding: '12px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>{user ? 'Guardar' : 'Crear'}</button></div></div></div></div>);
     }
 
-    function DocUploadPanel({ onUpload, uploading }) {
+    function DocUploadPanel({ onUpload, uploading, subfoldersByCategory }) {
       const [file, setFile] = useState(null);
-      const [categoria, setCategoria] = useState('general');
+      const [categoria, setCategoria] = useState(docCategories[0].id);
+      const [subfolder, setSubfolder] = useState('');
+      const [newSubfolder, setNewSubfolder] = useState('');
+      const [creatingSubfolder, setCreatingSubfolder] = useState(false);
       const [dragging, setDragging] = useState(false);
       const inputRef = useRef(null);
+      const availableSubfolders = (subfoldersByCategory || {})[categoria] || [];
       const handleDrop = (e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) setFile(f); };
-      const handleSubmit = async () => { if (!file) return; await onUpload(file, categoria); setFile(null); };
+      const handleSubfolderChange = (val) => {
+        if (val === '__new__') { setCreatingSubfolder(true); setSubfolder(''); }
+        else { setCreatingSubfolder(false); setSubfolder(val); }
+      };
+      const handleSubmit = async () => {
+        if (!file) return;
+        const finalSubfolder = creatingSubfolder ? newSubfolder.trim() : subfolder;
+        await onUpload(file, categoria, finalSubfolder || null);
+        setFile(null); setNewSubfolder(''); setCreatingSubfolder(false); setSubfolder('');
+      };
+      const st = { width: '100%', padding: '10px 12px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 };
       return (
         <div>
           <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>📤 Subir Documento</h2>
@@ -524,27 +573,33 @@
             <div onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={handleDrop} onClick={() => inputRef.current?.click()} style={{ border: `2px dashed ${dragging ? '#E84338' : '#d1d5db'}`, borderRadius: 12, padding: 28, textAlign: 'center', cursor: 'pointer', background: dragging ? '#fef2f2' : '#f9fafb', transition: 'all 0.2s', minHeight: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <input ref={inputRef} type="file" style={{ display: 'none' }} onChange={e => setFile(e.target.files[0])} />
               {file ? (
-                <div>
-                  <p style={{ fontSize: 36, marginBottom: 8 }}>{getFileIcon(file.name)}</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e' }}>{file.name}</p>
-                  <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{formatFileSize(file.size)}</p>
-                </div>
+                <div><p style={{ fontSize: 36, marginBottom: 8 }}>{getFileIcon(file.name)}</p><p style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e' }}>{file.name}</p><p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{formatFileSize(file.size)}</p></div>
               ) : (
-                <div>
-                  <p style={{ fontSize: 36, marginBottom: 8 }}>☁️</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Arrastra un archivo o haz clic aquí</p>
-                  <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>PDF, imágenes, Word, Excel, etc.</p>
-                </div>
+                <div><p style={{ fontSize: 36, marginBottom: 8 }}>☁️</p><p style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Arrastra un archivo o haz clic aquí</p><p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>PDF, imágenes, Word, Excel, etc.</p></div>
               )}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 210 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 220 }}>
               <div>
                 <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>Categoría</label>
-                <select value={categoria} onChange={e => setCategoria(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }}>
+                <select value={categoria} onChange={e => { setCategoria(e.target.value); setSubfolder(''); setCreatingSubfolder(false); }} style={st}>
                   {docCategories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
                 </select>
               </div>
-              <button onClick={handleSubmit} disabled={!file || uploading} style={{ padding: '12px 20px', borderRadius: 10, border: 'none', background: !file || uploading ? '#e5e7eb' : 'linear-gradient(135deg, #E84338, #c41e16)', color: !file || uploading ? '#94a3b8' : 'white', fontWeight: 700, cursor: !file || uploading ? 'not-allowed' : 'pointer', fontSize: 14 }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>Subcarpeta <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
+                <select value={creatingSubfolder ? '__new__' : subfolder} onChange={e => handleSubfolderChange(e.target.value)} style={st}>
+                  <option value=''>📂 Sin subcarpeta</option>
+                  {availableSubfolders.map(s => <option key={s} value={s}>📁 {s}</option>)}
+                  <option value='__new__'>✨ Crear nueva subcarpeta...</option>
+                </select>
+              </div>
+              {creatingSubfolder && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>Nombre de la subcarpeta</label>
+                  <input type="text" value={newSubfolder} onChange={e => setNewSubfolder(e.target.value)} placeholder="Ej: 2025, Enero, Contratos..." style={st} />
+                </div>
+              )}
+              <button onClick={handleSubmit} disabled={!file || uploading || (creatingSubfolder && !newSubfolder.trim())} style={{ padding: '12px 20px', borderRadius: 10, border: 'none', background: (!file || uploading || (creatingSubfolder && !newSubfolder.trim())) ? '#e5e7eb' : 'linear-gradient(135deg, #E84338, #c41e16)', color: (!file || uploading || (creatingSubfolder && !newSubfolder.trim())) ? '#94a3b8' : 'white', fontWeight: 700, cursor: (!file || uploading) ? 'not-allowed' : 'pointer', fontSize: 14 }}>
                 {uploading ? '⏳ Subiendo...' : '⬆️ Subir archivo'}
               </button>
               {file && <button onClick={() => setFile(null)} style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #e5e7eb', background: 'white', color: '#64748b', cursor: 'pointer', fontSize: 13 }}>✕ Quitar archivo</button>}

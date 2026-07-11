@@ -60,6 +60,14 @@
       'retrasado': { label: 'Retrasado', color: '#ef4444', bg: '#fee2e2' },
     };
 
+    const crmEstados = {
+      'nuevo': { label: 'Nuevo', color: '#3b82f6', bg: '#dbeafe' },
+      'en-revision': { label: 'En revisión', color: '#f59e0b', bg: '#fef3c7' },
+      'aceptado': { label: 'Aceptado', color: '#10b981', bg: '#d1fae5' },
+      'rechazado': { label: 'Rechazado', color: '#ef4444', bg: '#fee2e2' },
+      'showcase-programado': { label: 'Showcase programado', color: '#8b5cf6', bg: '#ede9fe' },
+    };
+
     const docCategories = [
       { id: 'juridica', label: 'Jurídica', color: '#E84338', bg: '#fee2e2',
         iconPath: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
@@ -163,12 +171,18 @@
       const [shareDocId, setShareDocId] = useState(null);
       const [savingDoc, setSavingDoc] = useState(false);
       const [showAddDocModal, setShowAddDocModal] = useState(false);
+      const [crmData, setCrmData] = useState([]);
+      const [crmLoading, setCrmLoading] = useState(false);
+      const [crmSearch, setCrmSearch] = useState('');
+      const [crmFiltroEstado, setCrmFiltroEstado] = useState('all');
+      const [crmDetalle, setCrmDetalle] = useState(null);
 
       useEffect(() => { loadData(); }, []);
       useEffect(() => { usersRef.current = users; }, [users]);
       useEffect(() => { localStorage.setItem('asobares_notifs', JSON.stringify(notifications)); }, [notifications]);
       useEffect(() => { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); }, []);
       useEffect(() => { if (view === 'docs') loadDocs(); }, [view]);
+      useEffect(() => { if (view === 'crm') loadCrm(); }, [view]);
 
       useEffect(() => {
         if (!currentUser) return;
@@ -300,6 +314,17 @@
         if (error) showNotif('Error al eliminar', 'error');
         else { showNotif('Recurso eliminado'); await loadDocs(); }
       };
+      const loadCrm = async () => {
+        setCrmLoading(true);
+        const { data } = await supabase.from('artistas_area_en_vivo').select('*').order('creado_en', { ascending: false });
+        setCrmData(data || []);
+        setCrmLoading(false);
+      };
+      const updateEstadoCrm = async (id, estado) => {
+        await supabase.from('artistas_area_en_vivo').update({ estado }).eq('id', id);
+        await loadCrm();
+        showNotif('Estado actualizado');
+      };
       const handleUpdateStatus = async (id, status) => { await supabase.from('tareas').update({ estado: status }).eq('id', id); await loadData(); showNotif(`Movida a "${statusLabels[status].label}"`); };
       const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       const clearNotifs = () => setNotifications([]);
@@ -366,6 +391,7 @@
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
               <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
               <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>📁</span>Documentación</button>
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'crm' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'crm' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'crm' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>🗂️</span>CRM</button>}
               {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: '👥', label: 'Gestión de Equipo' }, { id: 'analytics', icon: '📈', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><span style={{ fontSize: 18 }}>{item.icon}</span>{item.label}</button>))}</>)}
             </nav>
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
@@ -376,7 +402,7 @@
 
           <main style={{ flex: 1, marginLeft: 280, padding: 32, paddingBottom: 80 }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
-              <div><h1 style={{ fontSize: 28, fontWeight: 700, color: '#1a1a2e' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}</h1><p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p></div>
+              <div><h1 style={{ fontSize: 28, fontWeight: 700, color: '#1a1a2e' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}</h1><p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p></div>
               <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}>🔔{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
@@ -573,6 +599,141 @@
                     </div>
                   );
                 })()}
+              </div>
+            )}
+
+            {view === 'crm' && (
+              <div>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 24, borderBottom: '2px solid #e5e7eb', paddingBottom: 16 }}>
+                  <button style={{ padding: '8px 20px', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'default' }}>🎵 Artistas · Área en Vivo</button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 24 }}>
+                  {[{ label: 'Total', val: crmData.length, color: '#1a1a2e' }, { label: 'Nuevos', val: crmData.filter(r => r.estado === 'nuevo').length, color: '#3b82f6' }, { label: 'En revisión', val: crmData.filter(r => r.estado === 'en-revision').length, color: '#f59e0b' }, { label: 'Aceptados', val: crmData.filter(r => r.estado === 'aceptado').length, color: '#10b981' }, { label: 'Rechazados', val: crmData.filter(r => r.estado === 'rechazado').length, color: '#ef4444' }].map((s, i) => (
+                    <div key={i} style={{ background: 'white', borderRadius: 14, padding: 20, borderLeft: '4px solid ' + s.color }}><p style={{ fontSize: 28, fontWeight: 700, color: s.color }}>{s.val}</p><p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{s.label}</p></div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                  <input placeholder="Buscar por nombre artístico, nombre o email..." value={crmSearch} onChange={e => setCrmSearch(e.target.value)} style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                  <select value={crmFiltroEstado} onChange={e => setCrmFiltroEstado(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                    <option value="all">Todos los estados</option>
+                    {Object.entries(crmEstados).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                  </select>
+                  <button onClick={loadCrm} style={{ padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 14 }}>🔄</button>
+                </div>
+                {crmLoading ? (
+                  <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando...</p></div>
+                ) : (
+                  <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead><tr style={{ background: '#f8f9fa' }}>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>ARTISTA</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>NOMBRE</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>CARGO</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>CIUDAD</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>ESTADO</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>REGISTRO</th>
+                        <th style={{ padding: '14px 16px' }}></th>
+                      </tr></thead>
+                      <tbody>{(() => {
+                        const filtered = crmData.filter(r => {
+                          if (crmFiltroEstado !== 'all' && r.estado !== crmFiltroEstado) return false;
+                          const q = crmSearch.toLowerCase();
+                          if (q && !r.nombre_artistico?.toLowerCase().includes(q) && !r.nombre?.toLowerCase().includes(q) && !r.email?.toLowerCase().includes(q)) return false;
+                          return true;
+                        });
+                        if (filtered.length === 0) return (<tr><td colSpan={7} style={{ padding: 48, textAlign: 'center', color: '#94a3b8' }}>{crmData.length === 0 ? '📭 Aún no hay registros' : '🔍 Sin resultados para esa búsqueda'}</td></tr>);
+                        return filtered.map(r => (
+                          <tr key={r.id} style={{ borderTop: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '14px 16px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                {r.foto_url ? <img src={r.foto_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🎵</div>}
+                                <p style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre_artistico}</p>
+                              </div>
+                            </td>
+                            <td style={{ padding: '14px 16px' }}><p style={{ fontSize: 13 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email}</p></td>
+                            <td style={{ padding: '14px 16px' }}><p style={{ fontSize: 13 }}>{r.cargo}</p></td>
+                            <td style={{ padding: '14px 16px' }}><p style={{ fontSize: 13 }}>{r.ciudad_departamento}</p></td>
+                            <td style={{ padding: '14px 16px' }}><span style={{ padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: (crmEstados[r.estado] || crmEstados['nuevo']).bg, color: (crmEstados[r.estado] || crmEstados['nuevo']).color }}>{(crmEstados[r.estado] || crmEstados['nuevo']).label}</span></td>
+                            <td style={{ padding: '14px 16px' }}><p style={{ fontSize: 12, color: '#94a3b8' }}>{new Date(r.creado_en).toLocaleDateString('es-CO')}</p></td>
+                            <td style={{ padding: '14px 16px' }}><button onClick={() => setCrmDetalle(r)} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#374151', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Ver detalle</button></td>
+                          </tr>
+                        ));
+                      })()}</tbody>
+                    </table>
+                  </div>
+                )}
+                {crmDetalle && (
+                  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+                    <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 820, maxHeight: '90vh', overflow: 'auto' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 28px', background: 'linear-gradient(135deg, #1a1a2e, #16213e)', borderRadius: '20px 20px 0 0', gap: 16 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                          {crmDetalle.foto_url ? <img src={crmDetalle.foto_url} alt="" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(255,255,255,0.2)' }} /> : <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>🎵</div>}
+                          <div><p style={{ color: 'white', fontSize: 18, fontWeight: 700 }}>{crmDetalle.nombre_artistico}</p><p style={{ color: '#94a3b8', fontSize: 13 }}>{crmDetalle.nombre} {crmDetalle.apellidos}</p></div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <select value={crmDetalle.estado} onChange={async e => { const newEstado = e.target.value; await updateEstadoCrm(crmDetalle.id, newEstado); setCrmDetalle({ ...crmDetalle, estado: newEstado }); }} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 13, background: (crmEstados[crmDetalle.estado] || crmEstados['nuevo']).bg, color: (crmEstados[crmDetalle.estado] || crmEstados['nuevo']).color, cursor: 'pointer' }}>
+                            {Object.entries(crmEstados).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                          </select>
+                          <button onClick={() => setCrmDetalle(null)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                        </div>
+                      </div>
+                      <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
+                        <div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>INFORMACIÓN DEL ARTISTA</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                            {[['Cargo', crmDetalle.cargo], ['Género', crmDetalle.genero], ['Perfil cargo', crmDetalle.perfil_cargo], ['Documento', crmDetalle.tipo_documento + ' · ' + crmDetalle.numero_documento], ['Teléfono', crmDetalle.telefono], ['Email', crmDetalle.email], ['Ciudad / Dpto', crmDetalle.ciudad_departamento], ['Dirección', crmDetalle.direccion || '—'], ['Precio show', crmDetalle.precio_show || '—']].map(([lbl, val]) => (
+                              <div key={lbl} style={{ padding: '12px 14px', background: '#f8f9fa', borderRadius: 10 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 3 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>{val}</p></div>
+                            ))}
+                          </div>
+                          {crmDetalle.resena && <div style={{ marginTop: 10, padding: '14px 16px', background: '#f8f9fa', borderRadius: 10 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 6 }}>RESEÑA</p><p style={{ fontSize: 13, color: '#374151', lineHeight: 1.7 }}>{crmDetalle.resena}</p></div>}
+                          {((crmDetalle.generos_dj && crmDetalle.generos_dj.length > 0) || (crmDetalle.generos_artista && crmDetalle.generos_artista.length > 0)) && (
+                            <div style={{ marginTop: 10, padding: '14px 16px', background: '#f8f9fa', borderRadius: 10 }}>
+                              <p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 8 }}>GÉNEROS MUSICALES</p>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {[...(crmDetalle.generos_dj || []), ...(crmDetalle.generos_artista || [])].map((g, i) => <span key={i} style={{ padding: '3px 10px', background: '#dbeafe', color: '#1d4ed8', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{g}</span>)}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        {(crmDetalle.epk_url || crmDetalle.epk_link || crmDetalle.link_audio) && (
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>ARCHIVOS Y LINKS</p>
+                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                              {(crmDetalle.epk_url || crmDetalle.epk_link) && <a href={crmDetalle.epk_url || crmDetalle.epk_link} target="_blank" rel="noopener noreferrer" style={{ padding: '10px 18px', borderRadius: 10, background: '#f1f5f9', color: '#374151', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>📄 Press Kit / EPK</a>}
+                              {crmDetalle.link_audio && <a href={crmDetalle.link_audio} target="_blank" rel="noopener noreferrer" style={{ padding: '10px 18px', borderRadius: 10, background: '#f1f5f9', color: '#374151', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>🎵 Audio / Mix</a>}
+                            </div>
+                          </div>
+                        )}
+                        {(crmDetalle.instagram || crmDetalle.facebook || crmDetalle.youtube || crmDetalle.tiktok || crmDetalle.twitter || crmDetalle.vimeo) && (
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>REDES SOCIALES</p>
+                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                              {[['Instagram', crmDetalle.instagram, '📸'], ['Facebook', crmDetalle.facebook, '📘'], ['YouTube', crmDetalle.youtube, '▶️'], ['TikTok', crmDetalle.tiktok, '🎵'], ['Twitter/X', crmDetalle.twitter, '🐦'], ['Vimeo', crmDetalle.vimeo, '🎬']].filter(([, url]) => url).map(([name, url, icon]) => (
+                                <a key={name} href={url} target="_blank" rel="noopener noreferrer" style={{ padding: '8px 16px', borderRadius: 8, background: '#f8f9fa', color: '#374151', textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>{icon} {name}</a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>EVALUACIÓN</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                            {[['Experiencia', crmDetalle.experiencia_anios ? crmDetalle.experiencia_anios + ' años' : '—'], ['Participó BOMM', crmDetalle.participo_bomm === true ? 'Sí' : crmDetalle.participo_bomm === false ? 'No' : '—'], ['Eventos masivos', crmDetalle.eventos_masivos === true ? 'Sí' : crmDetalle.eventos_masivos === false ? 'No' : '—'], ['Núm. eventos', crmDetalle.num_eventos || '—'], ['Trabaja en establecimiento', crmDetalle.trabaja_establecimiento === true ? 'Sí' : crmDetalle.trabaja_establecimiento === false ? 'No' : '—'], ['Establecimiento', crmDetalle.nombre_establecimiento || '—'], ['NIT establecimiento', crmDetalle.nit_establecimiento || '—'], ['Ruedas negocio BOMM', crmDetalle.ruedas_negocio_bomm === true ? 'Sí' : crmDetalle.ruedas_negocio_bomm === false ? 'No' : '—'], ['Capacitaciones AeV', crmDetalle.capacitaciones_aev === true ? 'Sí' : crmDetalle.capacitaciones_aev === false ? 'No' : '—']].map(([lbl, val]) => (
+                              <div key={lbl} style={{ padding: '10px 14px', background: '#f8f9fa', borderRadius: 10 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600 }}>{val}</p></div>
+                            ))}
+                          </div>
+                        </div>
+                        {crmDetalle.como_se_entero && crmDetalle.como_se_entero.length > 0 && (
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10 }}>CÓMO SE ENTERÓ</p>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                              {crmDetalle.como_se_entero.map((c, i) => <span key={i} style={{ padding: '4px 12px', background: '#d1fae5', color: '#065f46', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{c}</span>)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

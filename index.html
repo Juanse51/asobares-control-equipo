@@ -199,6 +199,7 @@
       const [loginUsername, setLoginUsername] = useState('');
       const [loginPassword, setLoginPassword] = useState('');
       const [loginError, setLoginError] = useState('');
+      const [showLoginPassword, setShowLoginPassword] = useState(false);
       const [notification, setNotification] = useState(null);
       const [draggedTask, setDraggedTask] = useState(null);
       const [notifications, setNotifications] = useState(() => {
@@ -460,7 +461,13 @@
             <div style={{ textAlign: 'center', marginBottom: 40 }}><AsobaresLogo width={260} /><div style={{ height: 1, background: 'linear-gradient(90deg, transparent, #E84338, transparent)', margin: '24px 0' }}></div><h2 style={{ fontSize: 20, color: '#1a1a2e', fontWeight: 600 }}>Gestión de Equipo</h2></div>
             <div>
               <div style={{ marginBottom: 20 }}><label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600, color: '#374151' }}>Usuario</label><input type="text" value={loginUsername} onChange={e => setLoginUsername(e.target.value)} placeholder="nombre.apellido" style={{ width: '100%', padding: '14px 16px', borderRadius: 12, border: '2px solid #e5e7eb', fontSize: 16, boxSizing: 'border-box' }} /></div>
-              <div style={{ marginBottom: 24 }}><label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600, color: '#374151' }}>Contraseña</label><input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && handleLogin()} style={{ width: '100%', padding: '14px 16px', borderRadius: 12, border: '2px solid #e5e7eb', fontSize: 16, boxSizing: 'border-box' }} /></div>
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600, color: '#374151' }}>Contraseña</label>
+                <div style={{ position: 'relative' }}>
+                  <input type={showLoginPassword ? 'text' : 'password'} value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && handleLogin()} style={{ width: '100%', padding: '14px 48px 14px 16px', borderRadius: 12, border: '2px solid #e5e7eb', fontSize: 16, boxSizing: 'border-box' }} />
+                  <button type="button" onClick={() => setShowLoginPassword(p => !p)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', cursor: 'pointer', fontSize: 18, color: '#94a3b8', lineHeight: 1, padding: 0 }}>{showLoginPassword ? '🙈' : '👁️'}</button>
+                </div>
+              </div>
               {loginError && <p style={{ color: '#E84338', fontSize: 14, marginBottom: 16, textAlign: 'center' }}>{loginError}</p>}
               <button onClick={handleLogin} style={{ width: '100%', padding: 16, borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Iniciar Sesión</button>
             </div>

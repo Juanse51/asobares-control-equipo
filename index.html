@@ -231,6 +231,12 @@
       const [fonturDpto, setFonturDpto] = useState('all');
       const [fonturCargo, setFonturCargo] = useState('all');
       const [fonturDetalle, setFonturDetalle] = useState(null);
+      const [registrosData, setRegistrosData] = useState([]);
+      const [registrosLoading, setRegistrosLoading] = useState(false);
+      const [registrosError, setRegistrosError] = useState(null);
+      const [registrosSearch, setRegistrosSearch] = useState('');
+      const [registrosFiltroForm, setRegistrosFiltroForm] = useState('all');
+      const [registrosDetalle, setRegistrosDetalle] = useState(null);
 
       useEffect(() => { loadData(); }, []);
       useEffect(() => { usersRef.current = users; }, [users]);
@@ -241,6 +247,7 @@
       useEffect(() => { if (view === 'docs') loadDocs(); }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-aev') loadCrm(); }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'fontur') loadFontur(); }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'registros') loadRegistros(); }, [view]);
 
       useEffect(() => {
         if (!currentUser) return;
@@ -462,6 +469,28 @@
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
         showNotif('Archivo descargado');
       };
+      const loadRegistros = async () => {
+        setRegistrosLoading(true);
+        setRegistrosError(null);
+        const { data, error } = await supabase.from('envios_formularios').select('*').order('creado_en', { ascending: false });
+        if (error) { setRegistrosError(error.message); setRegistrosLoading(false); return; }
+        setRegistrosData(data || []);
+        setRegistrosLoading(false);
+      };
+      const openDocFirmado = async (ruta) => {
+        const { data, error } = await supabase.storage.from('formularios').createSignedUrl(ruta, 3600);
+        if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+        else showNotif('No se pudo generar el enlace del documento');
+      };
+      const getRegistrosFiltered = () => {
+        const q = registrosSearch.toLowerCase();
+        return registrosData.filter(r => {
+          const d = r.datos || {};
+          if (registrosFiltroForm !== 'all' && r.formulario !== registrosFiltroForm) return false;
+          if (q && !d.nombre_establecimiento?.toLowerCase().includes(q) && !d.razon_social?.toLowerCase().includes(q) && !d.email_empresa?.toLowerCase().includes(q)) return false;
+          return true;
+        });
+      };
       const handleUpdateStatus = async (id, status) => { await supabase.from('tareas').update({ estado: status }).eq('id', id); await loadData(); showNotif(`Movida a "${statusLabels[status].label}"`); };
       const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       const clearNotifs = () => setNotifications([]);
@@ -535,7 +564,7 @@
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
               <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
               <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>📁</span>Documentación</button>
-              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','fontur'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','fontur'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','fontur'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>🗂️</span>CRM</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','fontur','registros'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','fontur','registros'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','fontur','registros'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>🗂️</span>CRM</button>}
               {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: '👥', label: 'Gestión de Equipo' }, { id: 'analytics', icon: '📈', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><span style={{ fontSize: 18 }}>{item.icon}</span>{item.label}</button>))}</>)}
             </nav>
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
@@ -546,7 +575,7 @@
 
           <main style={{ flex: 1, marginLeft: isMobile ? 0 : 260, padding: isMobile ? '16px 12px 80px' : '32px 32px 80px', minWidth: 0 }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 20 : 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
               <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'center', flexShrink: 0 }}>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}>🔔{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
@@ -748,10 +777,11 @@
 
             {view === 'crm' && (
               <div>
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 20, marginTop: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20, marginTop: 8 }}>
                   {[
                     { id: 'crm-aev', icon: '🎵', title: 'Área en Vivo — Lab', desc: 'Artistas y DJs postulados al programa Área en Vivo. Gestiona estados, edita y exporta.', count: crmData.length, loading: crmLoading, color: '#E84338', bg: '#fee2e2' },
-                    { id: 'fontur', icon: '📋', title: 'Formulario FONTUR', desc: 'Inscripciones al programa NTC 6496:2020 financiado por FONTUR. Solo consulta y exportación.', count: fonturData.length, loading: fonturLoading, color: '#1e3a5f', bg: '#dbeafe' }
+                    { id: 'fontur', icon: '📋', title: 'Formulario FONTUR', desc: 'Inscripciones al programa NTC 6496:2020 financiado por FONTUR. Solo consulta y exportación.', count: fonturData.length, loading: fonturLoading, color: '#1e3a5f', bg: '#dbeafe' },
+                    { id: 'registros', icon: '🏢', title: 'Registros de Formularios', desc: 'Envíos del formulario de afiliación de asobares.org. Establecimientos, datos de empresa y documentos adjuntos.', count: registrosData.length, loading: registrosLoading, color: '#059669', bg: '#d1fae5' }
                   ].map(card => (
                     <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -1055,6 +1085,142 @@
                       </div>
                     </div>
                   )}
+                </div>
+              );
+            })()}
+
+            {view === 'registros' && (() => {
+              const regFiltered = getRegistrosFiltered();
+              const tiposForm = [...new Set(registrosData.map(r => r.formulario).filter(Boolean))].sort();
+              const fmtDate = (d) => d ? new Date(d).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+              const cell = (lbl, val) => {
+                const display = Array.isArray(val) ? val.join(', ') : val;
+                return <div key={lbl} style={{ padding: '12px 14px', background: '#f8f9fa', borderRadius: 10 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 3 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: display ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{display || '—'}</p></div>;
+              };
+              const docLabels = { doc_camara_comercio: 'Cámara de Comercio', doc_cedula: 'Cédula Representante Legal', doc_rut: 'RUT' };
+              const sectionTitle = (t) => <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14, marginTop: 8 }}>{t}</p>;
+              return (
+                <div>
+                  <div style={{ marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #e5e7eb' }}>
+                    <button onClick={() => setView('crm')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← CRM</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por establecimiento, razón social o email..." value={registrosSearch} onChange={e => setRegistrosSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} aria-label="Buscar registros" />
+                    <select value={registrosFiltroForm} onChange={e => setRegistrosFiltroForm(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }} aria-label="Filtrar por formulario">
+                      <option value="all">Todos los formularios</option>
+                      {tiposForm.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <button onClick={loadRegistros} aria-label="Actualizar" style={{ padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 16 }}>🔄</button>
+                  </div>
+                  {registrosLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando registros...</p></div>
+                  ) : registrosError ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 36, marginBottom: 12 }}>⚠️</p>
+                      <p style={{ color: '#E84338', fontWeight: 600, marginBottom: 8 }}>Error al cargar los datos</p>
+                      <p style={{ color: '#64748b', fontSize: 13, marginBottom: 24 }}>{registrosError}</p>
+                      <button onClick={loadRegistros} style={{ padding: '12px 28px', borderRadius: 10, border: 'none', background: '#E84338', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Reintentar</button>
+                    </div>
+                  ) : registrosData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 48, marginBottom: 12 }}>📭</p>
+                      <p style={{ fontWeight: 600, color: '#1a1a2e', fontSize: 16, marginBottom: 8 }}>Aún no hay registros</p>
+                      <p style={{ color: '#64748b', fontSize: 13 }}>Los envíos del formulario de afiliación aparecerán aquí.</p>
+                    </div>
+                  ) : regFiltered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p>
+                      <p style={{ fontWeight: 600, color: '#1a1a2e', fontSize: 16, marginBottom: 8 }}>Sin resultados</p>
+                      <p style={{ color: '#64748b', fontSize: 13 }}>No hay registros que coincidan con los filtros. Intente ajustar los criterios.</p>
+                    </div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {regFiltered.map(r => {
+                        const d = r.datos || {};
+                        return (
+                          <div key={r.id} onClick={() => setRegistrosDetalle(r)} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
+                              <div style={{ minWidth: 0 }}><p style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e' }}>{d.nombre_establecimiento || '—'}</p><p style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginTop: 2 }}>{d.razon_social || '—'}</p></div>
+                              <span style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 20, background: '#f1f5f9', color: '#475569', fontSize: 11, fontWeight: 600 }}>Ver más</span>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                              {[['Departamento', d.departamento_establecimiento], ['Email', d.email_empresa]].map(([l, v]) => (
+                                <div key={l}><p style={{ fontSize: 10, color: '#94a3b8' }}>{l}</p><p style={{ fontSize: 12, fontWeight: 600, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v || '—'}</p></div>
+                              ))}
+                            </div>
+                            <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #f1f5f9' }}>
+                              <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.formulario} · {fmtDate(r.creado_en)}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '150px minmax(0,1.2fr) minmax(0,1fr) 130px minmax(0,1fr) 48px', padding: '10px 16px', background: '#f8f9fa', borderBottom: '1px solid #f1f5f9', gap: 8 }}>
+                        {['FECHA','ESTABLECIMIENTO','RAZÓN SOCIAL','DEPARTAMENTO','EMAIL',''].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h}</span>)}
+                      </div>
+                      {regFiltered.map(r => {
+                        const d = r.datos || {};
+                        return (
+                          <div key={r.id} onClick={() => setRegistrosDetalle(r)} style={{ display: 'grid', gridTemplateColumns: '150px minmax(0,1.2fr) minmax(0,1fr) 130px minmax(0,1fr) 48px', padding: '13px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', alignItems: 'center', gap: 8, background: 'white', transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background='#fafbfc'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                            <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4 }}>{fmtDate(r.creado_en)}</p>
+                            <p style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.nombre_establecimiento || '—'}</p>
+                            <p style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.razon_social || '—'}</p>
+                            <p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.departamento_establecimiento || '—'}</p>
+                            <p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#64748b' }}>{d.email_empresa || '—'}</p>
+                            <button aria-label="Ver detalle" onClick={e => { e.stopPropagation(); setRegistrosDetalle(r); }} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#374151', fontSize: 14, cursor: 'pointer' }}>👁</button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {registrosDetalle && (() => {
+                    const d = registrosDetalle.datos || {};
+                    const arch = registrosDetalle.archivos || {};
+                    const grid2 = { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 };
+                    const grid3 = { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10 };
+                    const rrhh = Object.entries(d).filter(([k]) => k.startsWith('rrhh_'));
+                    const contable = Object.entries(d).filter(([k]) => k.startsWith('contable_'));
+                    const operaciones = Object.entries(d).filter(([k]) => k.startsWith('operaciones_'));
+                    const fmtKey = k => k.replace(/^(rrhh_|contable_|operaciones_)/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    return (
+                      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+                        <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 860, maxHeight: '90vh', overflow: 'auto' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 28px', background: 'linear-gradient(135deg, #065f46, #047857)', borderRadius: '20px 20px 0 0', gap: 16 }}>
+                            <div>
+                              <p style={{ color: 'white', fontSize: 18, fontWeight: 700 }}>{d.nombre_establecimiento || 'Sin nombre'}</p>
+                              <p style={{ color: '#a7f3d0', fontSize: 13, marginTop: 2 }}>{d.razon_social || '—'} · {registrosDetalle.formulario}</p>
+                            </div>
+                            <button onClick={() => setRegistrosDetalle(null)} aria-label="Cerrar" style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                          </div>
+                          <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                            {sectionTitle('DATOS DE LA EMPRESA')}
+                            <div style={grid2}>{[['Razón social', d.razon_social],['Identificación', d.identificacion],['Núm. identificación', d.num_identificacion],['Representante', (d.nombre_representante||'') + ' ' + (d.apellido_representante||'')],['Departamento empresa', d.departamento_empresa],['Dirección empresa', d.direccion_empresa],['Teléfono empresa', d.telefono_empresa],['Email empresa', d.email_empresa],['Régimen', d.regimen],['Régimen (cuál)', d.regimen_cual]].map(([l,v]) => cell(l,v))}</div>
+                            {sectionTitle('DATOS DEL ESTABLECIMIENTO')}
+                            <div style={grid2}>{[['Nombre establecimiento', d.nombre_establecimiento],['Departamento', d.departamento_establecimiento],['Dirección', d.direccion_establecimiento],['Celular', d.celular_establecimiento],['Localidad', d.localidad],['Estrato', d.estrato],['Email establecimiento', d.email_establecimiento],['Tipo de negocio', d.tipo_negocio],['Concepto', d.concepto],['Música en vivo', d.musica_en_vivo],['Horario desde', d.horario_desde],['Horario hasta', d.horario_hasta],['Días de operación', d.dias_operacion],['Aforo', d.aforo],['Página web', d.pagina_web],['X / Twitter', d.x],['Facebook', d.facebook],['Instagram', d.instagram]].map(([l,v]) => cell(l,v))}</div>
+                            {rrhh.length > 0 && <>{sectionTitle('CONTACTO RRHH')}<div style={grid3}>{rrhh.map(([k,v]) => cell(fmtKey(k), v))}</div></>}
+                            {contable.length > 0 && <>{sectionTitle('CONTACTO CONTABLE')}<div style={grid3}>{contable.map(([k,v]) => cell(fmtKey(k), v))}</div></>}
+                            {operaciones.length > 0 && <>{sectionTitle('CONTACTO OPERACIONES')}<div style={grid3}>{operaciones.map(([k,v]) => cell(fmtKey(k), v))}</div></>}
+                            {sectionTitle('ACEPTACIONES Y FIRMAS')}
+                            <div style={grid2}>{[['Acepta anticorrupción', d.acepta_anticorrupcion ? 'Sí ✓' : 'No'],['Acepta uso de marca', d.acepta_uso_marca ? 'Sí ✓' : 'No'],['Firma — Nombre rep.', d.firma_rep_nombre],['Firma — Documento rep.', d.firma_rep_documento],['Firma — Nombre func.', d.firma_func_nombre]].map(([l,v]) => cell(l,v))}</div>
+                            {sectionTitle('DATOS GENERALES')}
+                            <div style={grid3}>{[['N° formulario', d.formulario_n],['Afiliación', d.afiliacion],['Fecha formulario', d.fecha],['Fecha envío', fmtDate(registrosDetalle.creado_en)]].map(([l,v]) => cell(l,v))}</div>
+                            {Object.keys(arch).length > 0 && (
+                              <>{sectionTitle('DOCUMENTOS ADJUNTOS')}
+                              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                                {Object.entries(arch).map(([key, ruta]) => (
+                                  <button key={key} onClick={() => openDocFirmado(ruta)} style={{ padding: '10px 18px', borderRadius: 10, border: '2px solid #d1fae5', background: '#f0fdf4', color: '#065f46', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                                    📄 {docLabels[key] || key}
+                                  </button>
+                                ))}
+                              </div></>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })()}

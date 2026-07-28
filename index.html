@@ -273,7 +273,7 @@
       );
     }
 
-    function CertPreviewModal({ persona, lote, plantilla, onDownload, onSaveToPlantilla, onClose }) {
+    function CertPreviewModal({ persona, lote, plantilla, onDownload, onSaveToPlantilla, onGenerarTodos, batchPersonas, onClose }) {
       const [campos, setCampos] = React.useState(() => JSON.parse(JSON.stringify(plantilla.campos || [])));
       const [selKey, setSelKey] = React.useState(null);
       const [containerW, setContainerW] = React.useState(700);
@@ -322,18 +322,25 @@
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 20px', background: '#0f0f1a', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0, flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ color: 'white', fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Vista previa — {realVals.nombre_completo}</p>
-              <p style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>Arrastra los textos o usa los controles para ajustar. Los cambios no afectan la plantilla salvo que uses "Guardar en plantilla".</p>
+              <p style={{ color: 'white', fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{batchPersonas ? `Previsualización del lote — ${lote.nombre}` : `Vista previa — ${realVals.nombre_completo}`}</p>
+              <p style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>{batchPersonas ? `Muestra: ${realVals.nombre_completo}. Ajusta posiciones y tamaños — se aplicarán a los ${batchPersonas.length} certificados al generar.` : 'Arrastra los textos o usa los controles para ajustar. Los cambios no afectan la plantilla salvo que uses "Guardar en plantilla".'}</p>
             </div>
             <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
               <button
                 onClick={async () => { setSavingPlantilla(true); await onSaveToPlantilla(campos); setSavingPlantilla(false); }}
                 style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(124,58,237,0.2)', color: '#c4b5fd', border: '1px solid rgba(124,58,237,0.4)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
               >{savingPlantilla ? 'Guardando...' : '💾 Guardar en plantilla'}</button>
-              <button
-                onClick={async () => { setDownloading(true); await onDownload(campos); setDownloading(false); }}
-                style={{ padding: '8px 18px', borderRadius: 8, background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: downloading ? 'default' : 'pointer', opacity: downloading ? 0.7 : 1 }}
-              >{downloading ? 'Generando...' : '📥 Descargar PDF'}</button>
+              {batchPersonas ? (
+                <button
+                  onClick={async () => { setDownloading(true); await onGenerarTodos(campos); setDownloading(false); onClose(); }}
+                  style={{ padding: '8px 18px', borderRadius: 8, background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: downloading ? 'default' : 'pointer', opacity: downloading ? 0.7 : 1 }}
+                >{downloading ? 'Iniciando...' : `⚡ Generar todos (${batchPersonas.length})`}</button>
+              ) : (
+                <button
+                  onClick={async () => { setDownloading(true); await onDownload(campos); setDownloading(false); }}
+                  style={{ padding: '8px 18px', borderRadius: 8, background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: downloading ? 'default' : 'pointer', opacity: downloading ? 0.7 : 1 }}
+                >{downloading ? 'Generando...' : '📥 Descargar PDF'}</button>
+              )}
               <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.08)', color: '#94a3b8', fontSize: 22, cursor: 'pointer', lineHeight: 1, flexShrink: 0 }}>×</button>
             </div>
           </div>
@@ -1094,14 +1101,14 @@
         const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(persona.cert_path);
         const a = document.createElement('a'); a.href = publicUrl; a.target = '_blank'; a.download = `Certificado_${[persona.nombre, persona.apellidos].filter(Boolean).join('_')}.pdf`; a.click();
       };
-      const generarTodos = async (personas, lote, plantilla) => {
+      const generarTodos = async (personas, lote, plantilla, camposOverride = null) => {
         if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
         setCertGenerando(true);
         setCertProgreso({ done: 0, total: personas.length });
         for (let i = 0; i < personas.length; i++) {
           const p = personas[i];
           try {
-            const doc = await generarPDF(p, lote, plantilla);
+            const doc = await generarPDF(p, lote, plantilla, camposOverride);
             const bytes = doc.output('arraybuffer');
             const path = `lotes/${lote.id}/${p.id}.pdf`;
             await supabase.storage.from('certificaciones').upload(path, bytes, { contentType: 'application/pdf', upsert: true });
@@ -1969,7 +1976,7 @@
                         <input type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) { parseCsvPersonas(e.target.files[0], certLoteActivo.id); e.target.value = ''; } }} />
                       </label>
                       {certPersonas.length > 0 && !certGenerando && (
-                        <button onClick={() => generarTodos(certPersonas, certLoteActivo, plantilla)} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>⚡ Generar todos ({certPersonas.length})</button>
+                        <button onClick={() => plantilla && setCertPreviewData({ persona: certPersonas[0], lote: certLoteActivo, plantilla, batchPersonas: certPersonas })} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>⚡ Generar todos ({certPersonas.length})</button>
                       )}
                     </div>
 
@@ -2058,12 +2065,16 @@
               persona={certPreviewData.persona}
               lote={certPreviewData.lote}
               plantilla={certPreviewData.plantilla}
+              batchPersonas={certPreviewData.batchPersonas || null}
               onClose={() => setCertPreviewData(null)}
               onDownload={async (camposOverride) => {
                 try {
                   const doc = await generarPDF(certPreviewData.persona, certPreviewData.lote, certPreviewData.plantilla, camposOverride);
                   doc.save(`Certificado_${[certPreviewData.persona.nombre, certPreviewData.persona.apellidos].filter(Boolean).join('_')}.pdf`);
                 } catch (e) { showNotif('Error: ' + e.message); }
+              }}
+              onGenerarTodos={async (camposOverride) => {
+                await generarTodos(certPreviewData.batchPersonas, certPreviewData.lote, certPreviewData.plantilla, camposOverride);
               }}
               onSaveToPlantilla={async (campos) => {
                 await saveEditorCampos(certPreviewData.plantilla.id, campos);

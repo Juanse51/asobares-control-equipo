@@ -1096,6 +1096,25 @@
           doc.save(`Certificado_${[persona.nombre, persona.apellidos].filter(Boolean).join('_')}.pdf`);
         } catch (e) { showNotif('Error: ' + e.message); }
       };
+      const enviarCertificado = async (persona, lote, plantilla, camposOverride = null) => {
+        if (!persona.email) return showNotif('Esta persona no tiene email registrado');
+        if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
+        try {
+          showNotif('Generando PDF...');
+          const doc = await generarPDF(persona, lote, plantilla, camposOverride);
+          const base64 = doc.output('datauristring').split(',')[1];
+          const nombreCompleto = [persona.nombre, persona.apellidos].filter(Boolean).join(' ');
+          const fileName = `Certificado_${nombreCompleto.replace(/\s+/g, '_')}.pdf`;
+          showNotif('Enviando correo...');
+          const { data, error } = await supabase.functions.invoke('send-certificate', {
+            body: { email: persona.email, nombre: nombreCompleto, loteNombre: lote.nombre, pdfBase64: base64, fileName },
+          });
+          if (error || data?.error) throw new Error(error?.message || data?.error);
+          await supabase.from('cert_personas').update({ estado: 'enviado' }).eq('id', persona.id);
+          await loadCertPersonas(lote.id);
+          showNotif(`✓ Certificado enviado a ${persona.email}`);
+        } catch (e) { showNotif('Error al enviar: ' + e.message); }
+      };
       const descargarPDFGenerado = (persona) => {
         if (!persona.cert_path) return;
         const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(persona.cert_path);
@@ -2015,6 +2034,7 @@
                               </div>
                               <div style={{ display: 'flex', gap: 6 }}>
                                 {plantilla && <button onClick={() => setCertPreviewData({ persona: p, lote: certLoteActivo, plantilla })} style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>📥 PDF</button>}
+                                {plantilla && p.email && <button onClick={() => enviarCertificado(p, certLoteActivo, plantilla)} title={`Enviar a ${p.email}`} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#d1fae5', color: '#065f46', fontSize: 12, cursor: 'pointer' }}>✉️</button>}
                                 <button onClick={() => deletePersona(p.id, certLoteActivo.id)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', fontSize: 12, cursor: 'pointer' }}>🗑️</button>
                               </div>
                             </div>
@@ -2026,6 +2046,7 @@
                               <span style={{ padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: est.bg, color: est.color, display: 'inline-block', width: 'fit-content' }}>{est.label}</span>
                               <div style={{ display: 'flex', gap: 6 }}>
                                 {plantilla && <button onClick={() => setCertPreviewData({ persona: p, lote: certLoteActivo, plantilla })} title="Previsualizar y descargar PDF" style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontSize: 14, cursor: 'pointer' }}>📥</button>}
+                                {plantilla && p.email && <button onClick={() => enviarCertificado(p, certLoteActivo, plantilla)} title={`Enviar a ${p.email}`} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#d1fae5', color: '#065f46', fontSize: 14, cursor: 'pointer' }}>✉️</button>}
                                 <button onClick={() => deletePersona(p.id, certLoteActivo.id)} title="Eliminar" style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', fontSize: 14, cursor: 'pointer' }}>🗑️</button>
                               </div>
                             </div>

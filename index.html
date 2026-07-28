@@ -273,6 +273,137 @@
       );
     }
 
+    function CertEditor({ plantilla, campos, onCamposChange, onSave, onBack }) {
+      const imgRef = React.useRef(null);
+      const dragging = React.useRef(null);
+      const [selKey, setSelKey] = React.useState(null);
+      const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(plantilla.imagen_path);
+      const fieldLabels = { nombre_completo: 'Nombre completo', empresa: 'Empresa', documento: 'Documento', nombre_lote: 'Nombre del lote', horas: 'Horas', ciudad: 'Ciudad', dia: 'Día', mes: 'Mes', anio: 'Año' };
+
+      const getXY = (clientX, clientY) => {
+        const rect = imgRef.current.getBoundingClientRect();
+        return {
+          x: Math.round(Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100)) * 10) / 10,
+          y: Math.round(Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100)) * 10) / 10,
+        };
+      };
+      const moveCampo = (clientX, clientY) => {
+        if (!dragging.current || !imgRef.current) return;
+        const { x, y } = getXY(clientX, clientY);
+        onCamposChange(campos.map(c => c.key === dragging.current ? { ...c, x, y } : c));
+      };
+      const upd = (key, prop, val) => onCamposChange(campos.map(c => c.key === key ? { ...c, [prop]: val } : c));
+
+      return (
+        <div>
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+            <button onClick={onBack} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>← Plantillas</button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Editor — {plantilla.nombre}</h2>
+              <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Arrastra los marcadores sobre la imagen o usa los controles para ajustar la posición.</p>
+            </div>
+            <button onClick={() => onSave(campos)} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>💾 Guardar cambios</button>
+          </div>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            {/* Image with draggable markers */}
+            <div style={{ flex: '1 1 420px', minWidth: 0 }}>
+              <div
+                ref={imgRef}
+                style={{ position: 'relative', userSelect: 'none', borderRadius: 12, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', cursor: 'crosshair', touchAction: 'none' }}
+                onMouseMove={e => moveCampo(e.clientX, e.clientY)}
+                onMouseUp={() => { dragging.current = null; }}
+                onMouseLeave={() => { dragging.current = null; }}
+                onTouchMove={e => { e.preventDefault(); moveCampo(e.touches[0].clientX, e.touches[0].clientY); }}
+                onTouchEnd={() => { dragging.current = null; }}
+              >
+                <img src={publicUrl} alt="Plantilla" style={{ width: '100%', display: 'block', pointerEvents: 'none' }} />
+                {campos.map(c => (
+                  <div
+                    key={c.key}
+                    onMouseDown={e => { e.preventDefault(); e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }}
+                    onTouchStart={e => { e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }}
+                    onClick={() => setSelKey(k => k === c.key ? null : c.key)}
+                    style={{ position: 'absolute', left: `${c.x}%`, top: `${c.y}%`, transform: 'translate(-50%, -50%)', cursor: 'grab', zIndex: 10, touchAction: 'none' }}
+                  >
+                    <div style={{ background: selKey === c.key ? '#7c3aed' : 'rgba(124,58,237,0.75)', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, whiteSpace: 'nowrap', border: selKey === c.key ? '2px solid #fff' : '1.5px solid rgba(255,255,255,0.5)', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', lineHeight: 1.5 }}>
+                      {fieldLabels[c.key] || c.key}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Controls panel */}
+            <div style={{ flex: '0 0 280px', minWidth: 260 }}>
+              <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', background: '#faf5ff' }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed' }}>CAMPOS — haz clic en uno para editar</p>
+                </div>
+                <div style={{ maxHeight: '65vh', overflowY: 'auto' }}>
+                  {campos.map(c => (
+                    <div key={c.key} style={{ borderBottom: '1px solid #f1f5f9', background: selKey === c.key ? '#faf5ff' : 'white', transition: 'background 0.15s' }}>
+                      <div onClick={() => setSelKey(k => k === c.key ? null : c.key)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 16px', cursor: 'pointer' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: selKey === c.key ? '#7c3aed' : '#cbd5e1', flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>{fieldLabels[c.key] || c.key}</span>
+                        </div>
+                        <span style={{ fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' }}>x:{c.x} y:{c.y}</span>
+                      </div>
+                      {selKey === c.key && (
+                        <div style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }} onClick={e => e.stopPropagation()}>
+                          <div>
+                            <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>X — Posición horizontal</label>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                              <input type="range" min={0} max={100} step={0.5} value={c.x} onChange={e => upd(c.key, 'x', parseFloat(e.target.value))} style={{ flex: 1, accentColor: '#7c3aed' }} />
+                              <input type="number" min={0} max={100} step={0.5} value={c.x} onChange={e => upd(c.key, 'x', parseFloat(e.target.value) || 0)} style={{ width: 54, padding: '4px 6px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 12, textAlign: 'center' }} />
+                            </div>
+                          </div>
+                          <div>
+                            <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Y — Posición vertical</label>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                              <input type="range" min={0} max={100} step={0.5} value={c.y} onChange={e => upd(c.key, 'y', parseFloat(e.target.value))} style={{ flex: 1, accentColor: '#7c3aed' }} />
+                              <input type="number" min={0} max={100} step={0.5} value={c.y} onChange={e => upd(c.key, 'y', parseFloat(e.target.value) || 0)} style={{ width: 54, padding: '4px 6px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 12, textAlign: 'center' }} />
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tamaño</label>
+                              <input type="number" min={6} max={60} value={c.fontSize || 12} onChange={e => upd(c.key, 'fontSize', parseInt(e.target.value) || 12)} style={{ width: '100%', padding: '6px 8px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 12 }} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Color</label>
+                              <input type="color" value={c.color || '#000000'} onChange={e => upd(c.key, 'color', e.target.value)} style={{ width: '100%', height: 34, border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer', padding: 2 }} />
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Estilo</label>
+                              <div style={{ display: 'flex', gap: 4 }}>
+                                {['normal', 'bold'].map(fs => (
+                                  <button key={fs} onClick={() => upd(c.key, 'fontStyle', fs)} style={{ flex: 1, padding: '5px 4px', border: `1.5px solid ${c.fontStyle === fs ? '#7c3aed' : '#e5e7eb'}`, borderRadius: 6, background: c.fontStyle === fs ? '#ede9fe' : 'white', color: c.fontStyle === fs ? '#7c3aed' : '#64748b', fontSize: 11, fontWeight: fs === 'bold' ? 700 : 400, cursor: 'pointer' }}>{fs === 'bold' ? 'Negrita' : 'Normal'}</button>
+                                ))}
+                              </div>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Alinear</label>
+                              <div style={{ display: 'flex', gap: 3 }}>
+                                {[['left','←'], ['center','⊡'], ['right','→']].map(([al, icon]) => (
+                                  <button key={al} onClick={() => upd(c.key, 'align', al)} style={{ flex: 1, padding: '5px 2px', border: `1.5px solid ${c.align === al ? '#7c3aed' : '#e5e7eb'}`, borderRadius: 6, background: c.align === al ? '#ede9fe' : 'white', color: c.align === al ? '#7c3aed' : '#64748b', fontSize: 12, cursor: 'pointer' }}>{icon}</button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     function CrmEditModal({ record, onSave, onClose }) {
       const [nombre, setNombre] = React.useState(record.nombre || '');
       const [apellidos, setApellidos] = React.useState(record.apellidos || '');
@@ -384,6 +515,8 @@
       const [certShowPlantillaModal, setCertShowPlantillaModal] = useState(false);
       const [certShowLoteModal, setCertShowLoteModal] = useState(false);
       const [certShowPersonaModal, setCertShowPersonaModal] = useState(false);
+      const [certPlantillaActiva, setCertPlantillaActiva] = useState(null);
+      const [certEditorCampos, setCertEditorCampos] = useState([]);
 
       useEffect(() => { loadData(); }, []);
       useEffect(() => { usersRef.current = users; }, [users]);
@@ -655,6 +788,13 @@
         setCertLoading(true);
         await Promise.all([loadCertPlantillas(), loadCertLotes()]);
         setCertLoading(false);
+      };
+      const saveEditorCampos = async (plantillaId, campos) => {
+        const { error } = await supabase.from('cert_plantillas').update({ campos }).eq('id', plantillaId);
+        if (error) { showNotif('Error guardando: ' + error.message); return false; }
+        await loadCertPlantillas();
+        showNotif('¡Campos guardados correctamente!');
+        return true;
       };
       const savePlantilla = async ({ nombre, descripcion, imageFile, campos }) => {
         const ext = imageFile.name.split('.').pop().toLowerCase();
@@ -1547,7 +1687,8 @@
                           <div style={{ padding: 16 }}>
                             <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{p.nombre}</h3>
                             {p.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>{p.descripcion}</p>}
-                            <p style={{ fontSize: 11, color: '#94a3b8' }}>{(p.campos || []).length} campos · {new Date(p.created_at).toLocaleDateString('es-CO')}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>{(p.campos || []).length} campos · {new Date(p.created_at).toLocaleDateString('es-CO')}</p>
+                            <button onClick={e => { e.stopPropagation(); setCertPlantillaActiva(p); setCertEditorCampos(JSON.parse(JSON.stringify(p.campos || []))); setCertSubView('editor-plantilla'); }} style={{ width: '100%', padding: '7px 0', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>✏️ Editar campos</button>
                           </div>
                         </div>
                       ))}
@@ -1682,6 +1823,19 @@
                   </div>
                 );
               }
+
+              if (certSubView === 'editor-plantilla' && certPlantillaActiva) return (
+                <CertEditor
+                  plantilla={certPlantillaActiva}
+                  campos={certEditorCampos}
+                  onCamposChange={setCertEditorCampos}
+                  onSave={async (campos) => {
+                    const ok = await saveEditorCampos(certPlantillaActiva.id, campos);
+                    if (ok) setCertPlantillaActiva(prev => ({ ...prev, campos }));
+                  }}
+                  onBack={() => setCertSubView('plantillas')}
+                />
+              );
 
               return null;
             })()}

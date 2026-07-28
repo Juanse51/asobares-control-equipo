@@ -277,22 +277,43 @@
       const imgRef = React.useRef(null);
       const dragging = React.useRef(null);
       const [selKey, setSelKey] = React.useState(null);
+      const [containerW, setContainerW] = React.useState(600);
       const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(plantilla.imagen_path);
+
+      React.useEffect(() => {
+        if (!imgRef.current) return;
+        const obs = new ResizeObserver(entries => setContainerW(entries[0].contentRect.width));
+        obs.observe(imgRef.current);
+        return () => obs.disconnect();
+      }, []);
+
+      // Converts jsPDF font-size (pt) to screen px based on image container width
+      // PDF page width = 297mm; 1pt = 25.4/72 mm → scale = containerW / 297
+      const ptToPx = pt => pt * (25.4 / 72) * (containerW / 297);
+
+      const sampleVals = {
+        nombre_completo: 'Juan Sebastián Henao Meneses',
+        empresa: 'Asobares Colombia',
+        documento: '1.073.234.567',
+        nombre_lote: 'Gestión Gastronómica para Bares',
+        horas: '40',
+        ciudad: 'Bogotá',
+        dia: '28',
+        mes: 'julio',
+        anio: '2026',
+      };
       const fieldLabels = { nombre_completo: 'Nombre completo', empresa: 'Empresa', documento: 'Documento', nombre_lote: 'Nombre del lote', horas: 'Horas', ciudad: 'Ciudad', dia: 'Día', mes: 'Mes', anio: 'Año' };
 
-      const getXY = (clientX, clientY) => {
-        const rect = imgRef.current.getBoundingClientRect();
-        return {
-          x: Math.round(Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100)) * 10) / 10,
-          y: Math.round(Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100)) * 10) / 10,
-        };
-      };
       const moveCampo = (clientX, clientY) => {
         if (!dragging.current || !imgRef.current) return;
-        const { x, y } = getXY(clientX, clientY);
+        const rect = imgRef.current.getBoundingClientRect();
+        const x = Math.round(Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100)) * 10) / 10;
+        const y = Math.round(Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100)) * 10) / 10;
         onCamposChange(campos.map(c => c.key === dragging.current ? { ...c, x, y } : c));
       };
       const upd = (key, prop, val) => onCamposChange(campos.map(c => c.key === key ? { ...c, [prop]: val } : c));
+
+      const alignOffset = (align) => align === 'center' ? '-50%, -50%' : align === 'right' ? '-100%, -50%' : '0, -50%';
 
       return (
         <div>
@@ -300,16 +321,16 @@
             <button onClick={onBack} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>← Plantillas</button>
             <div style={{ flex: 1, minWidth: 0 }}>
               <h2 style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Editor — {plantilla.nombre}</h2>
-              <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Arrastra los marcadores sobre la imagen o usa los controles para ajustar la posición.</p>
+              <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Arrastra los textos de ejemplo sobre la imagen. Haz clic en un campo para editar sus propiedades.</p>
             </div>
             <button onClick={() => onSave(campos)} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>💾 Guardar cambios</button>
           </div>
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-            {/* Image with draggable markers */}
+            {/* Image with real-text draggable overlays */}
             <div style={{ flex: '1 1 420px', minWidth: 0 }}>
               <div
                 ref={imgRef}
-                style={{ position: 'relative', userSelect: 'none', borderRadius: 12, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', cursor: 'crosshair', touchAction: 'none' }}
+                style={{ position: 'relative', userSelect: 'none', borderRadius: 12, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', cursor: 'default', touchAction: 'none' }}
                 onMouseMove={e => moveCampo(e.clientX, e.clientY)}
                 onMouseUp={() => { dragging.current = null; }}
                 onMouseLeave={() => { dragging.current = null; }}
@@ -317,26 +338,51 @@
                 onTouchEnd={() => { dragging.current = null; }}
               >
                 <img src={publicUrl} alt="Plantilla" style={{ width: '100%', display: 'block', pointerEvents: 'none' }} />
-                {campos.map(c => (
-                  <div
-                    key={c.key}
-                    onMouseDown={e => { e.preventDefault(); e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }}
-                    onTouchStart={e => { e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }}
-                    onClick={() => setSelKey(k => k === c.key ? null : c.key)}
-                    style={{ position: 'absolute', left: `${c.x}%`, top: `${c.y}%`, transform: 'translate(-50%, -50%)', cursor: 'grab', zIndex: 10, touchAction: 'none' }}
-                  >
-                    <div style={{ background: selKey === c.key ? '#7c3aed' : 'rgba(124,58,237,0.75)', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, whiteSpace: 'nowrap', border: selKey === c.key ? '2px solid #fff' : '1.5px solid rgba(255,255,255,0.5)', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', lineHeight: 1.5 }}>
-                      {fieldLabels[c.key] || c.key}
+                {campos.map(c => {
+                  const fsPx = ptToPx(c.fontSize || 12);
+                  const isSel = selKey === c.key;
+                  return (
+                    <div
+                      key={c.key}
+                      onMouseDown={e => { e.preventDefault(); e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }}
+                      onTouchStart={e => { e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }}
+                      onClick={() => setSelKey(k => k === c.key ? null : c.key)}
+                      style={{
+                        position: 'absolute',
+                        left: `${c.x}%`,
+                        top: `${c.y}%`,
+                        transform: `translate(${alignOffset(c.align)})`,
+                        cursor: 'grab',
+                        zIndex: 10,
+                        touchAction: 'none',
+                        lineHeight: 1,
+                      }}
+                    >
+                      <span style={{
+                        display: 'block',
+                        fontSize: `${fsPx}px`,
+                        fontWeight: c.fontStyle === 'bold' ? 700 : 400,
+                        color: c.color || '#000',
+                        fontFamily: 'Helvetica, Arial, sans-serif',
+                        whiteSpace: 'nowrap',
+                        outline: isSel ? '2px solid #7c3aed' : '1.5px dashed rgba(124,58,237,0.4)',
+                        outlineOffset: 2,
+                        borderRadius: 2,
+                        padding: '0 2px',
+                        background: isSel ? 'rgba(124,58,237,0.08)' : 'transparent',
+                      }}>
+                        {sampleVals[c.key] ?? c.key}
+                      </span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
             {/* Controls panel */}
             <div style={{ flex: '0 0 280px', minWidth: 260 }}>
               <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', background: '#faf5ff' }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed' }}>CAMPOS — haz clic en uno para editar</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed' }}>CAMPOS — haz clic para editar</p>
                 </div>
                 <div style={{ maxHeight: '65vh', overflowY: 'auto' }}>
                   {campos.map(c => (
@@ -366,7 +412,7 @@
                           </div>
                           <div style={{ display: 'flex', gap: 10 }}>
                             <div style={{ flex: 1 }}>
-                              <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tamaño</label>
+                              <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tamaño (pt)</label>
                               <input type="number" min={6} max={60} value={c.fontSize || 12} onChange={e => upd(c.key, 'fontSize', parseInt(e.target.value) || 12)} style={{ width: '100%', padding: '6px 8px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 12 }} />
                             </div>
                             <div style={{ flex: 1 }}>

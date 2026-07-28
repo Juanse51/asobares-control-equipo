@@ -273,6 +273,167 @@
       );
     }
 
+    function CertPreviewModal({ persona, lote, plantilla, onDownload, onSaveToPlantilla, onClose }) {
+      const [campos, setCampos] = React.useState(() => JSON.parse(JSON.stringify(plantilla.campos || [])));
+      const [selKey, setSelKey] = React.useState(null);
+      const [containerW, setContainerW] = React.useState(700);
+      const [downloading, setDownloading] = React.useState(false);
+      const [savingPlantilla, setSavingPlantilla] = React.useState(false);
+      const imgRef = React.useRef(null);
+      const dragging = React.useRef(null);
+
+      const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(plantilla.imagen_path);
+
+      const fechaObj = lote.fecha ? new Date(lote.fecha + 'T12:00:00') : null;
+      const realVals = {
+        nombre_completo: [persona.nombre, persona.apellidos].filter(Boolean).join(' '),
+        empresa: persona.empresa || '',
+        documento: persona.documento || '',
+        nombre_lote: lote.nombre || '',
+        horas: lote.horas != null ? String(lote.horas) : '',
+        ciudad: lote.ciudad || '',
+        dia: fechaObj ? String(fechaObj.getDate()) : '',
+        mes: fechaObj ? fechaObj.toLocaleString('es-CO', { month: 'long' }) : '',
+        anio: fechaObj ? String(fechaObj.getFullYear()) : '',
+      };
+      const fieldLabels = { nombre_completo: 'Nombre completo', empresa: 'Empresa', documento: 'Documento', nombre_lote: 'Nombre del lote', horas: 'Horas', ciudad: 'Ciudad', dia: 'Día', mes: 'Mes', anio: 'Año' };
+
+      React.useEffect(() => {
+        if (!imgRef.current) return;
+        const obs = new ResizeObserver(entries => setContainerW(entries[0].contentRect.width));
+        obs.observe(imgRef.current);
+        return () => obs.disconnect();
+      }, []);
+
+      const ptToPx = pt => pt * (25.4 / 72) * (containerW / 297);
+      const alignOffset = align => align === 'center' ? '-50%, -50%' : align === 'right' ? '-100%, -50%' : '0, -50%';
+
+      const moveCampo = (clientX, clientY) => {
+        if (!dragging.current || !imgRef.current) return;
+        const rect = imgRef.current.getBoundingClientRect();
+        const x = Math.round(Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100)) * 10) / 10;
+        const y = Math.round(Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100)) * 10) / 10;
+        setCampos(prev => prev.map(c => c.key === dragging.current ? { ...c, x, y } : c));
+      };
+      const upd = (key, prop, val) => setCampos(prev => prev.map(c => c.key === key ? { ...c, [prop]: val } : c));
+
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.92)', zIndex: 300, display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 20px', background: '#0f0f1a', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ color: 'white', fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Vista previa — {realVals.nombre_completo}</p>
+              <p style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>Arrastra los textos o usa los controles para ajustar. Los cambios no afectan la plantilla salvo que uses "Guardar en plantilla".</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+              <button
+                onClick={async () => { setSavingPlantilla(true); await onSaveToPlantilla(campos); setSavingPlantilla(false); }}
+                style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(124,58,237,0.2)', color: '#c4b5fd', border: '1px solid rgba(124,58,237,0.4)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+              >{savingPlantilla ? 'Guardando...' : '💾 Guardar en plantilla'}</button>
+              <button
+                onClick={async () => { setDownloading(true); await onDownload(campos); setDownloading(false); }}
+                style={{ padding: '8px 18px', borderRadius: 8, background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: downloading ? 'default' : 'pointer', opacity: downloading ? 0.7 : 1 }}
+              >{downloading ? 'Generando...' : '📥 Descargar PDF'}</button>
+              <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.08)', color: '#94a3b8', fontSize: 22, cursor: 'pointer', lineHeight: 1, flexShrink: 0 }}>×</button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div style={{ flex: 1, overflow: 'auto', padding: '14px 16px', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+            {/* Certificate image with real text overlays */}
+            <div style={{ flex: '1 1 500px', minWidth: 0 }}>
+              <div
+                ref={imgRef}
+                style={{ position: 'relative', userSelect: 'none', borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', cursor: 'default', touchAction: 'none' }}
+                onMouseMove={e => moveCampo(e.clientX, e.clientY)}
+                onMouseUp={() => { dragging.current = null; }}
+                onMouseLeave={() => { dragging.current = null; }}
+                onTouchMove={e => { e.preventDefault(); moveCampo(e.touches[0].clientX, e.touches[0].clientY); }}
+                onTouchEnd={() => { dragging.current = null; }}
+              >
+                <img src={publicUrl} alt="Certificado" style={{ width: '100%', display: 'block', pointerEvents: 'none' }} />
+                {campos.map(c => {
+                  const val = realVals[c.key];
+                  if (!val) return null;
+                  const fsPx = ptToPx(c.fontSize || 12);
+                  const isSel = selKey === c.key;
+                  return (
+                    <div
+                      key={c.key}
+                      onMouseDown={e => { e.preventDefault(); e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }}
+                      onTouchStart={e => { e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }}
+                      onClick={() => setSelKey(k => k === c.key ? null : c.key)}
+                      style={{ position: 'absolute', left: `${c.x}%`, top: `${c.y}%`, transform: `translate(${alignOffset(c.align)})`, cursor: 'grab', zIndex: 10, touchAction: 'none', lineHeight: 1 }}
+                    >
+                      <span style={{ display: 'block', fontSize: `${fsPx}px`, fontWeight: c.fontStyle === 'bold' ? 700 : 400, color: c.color || '#000', fontFamily: 'Helvetica, Arial, sans-serif', whiteSpace: 'nowrap', outline: isSel ? '2px solid #7c3aed' : '1.5px dashed rgba(124,58,237,0.3)', outlineOffset: 2, borderRadius: 2, padding: '0 2px', background: isSel ? 'rgba(124,58,237,0.07)' : 'transparent' }}>
+                        {val}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Controls panel */}
+            <div style={{ flex: '0 0 256px', minWidth: 200 }}>
+              <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.09)' }}>
+                <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Campos — haz clic para editar</p>
+                </div>
+                <div style={{ maxHeight: 'calc(90vh - 130px)', overflowY: 'auto' }}>
+                  {campos.map(c => {
+                    const hasVal = !!realVals[c.key];
+                    return (
+                      <div key={c.key} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: selKey === c.key ? 'rgba(124,58,237,0.12)' : 'transparent' }}>
+                        <div onClick={() => setSelKey(k => k === c.key ? null : c.key)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 14px', cursor: 'pointer' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                            <div style={{ width: 7, height: 7, borderRadius: '50%', background: selKey === c.key ? '#a78bfa' : hasVal ? 'rgba(124,58,237,0.6)' : '#334155', flexShrink: 0 }} />
+                            <span style={{ fontSize: 12, fontWeight: 600, color: hasVal ? '#e2e8f0' : '#475569' }}>{fieldLabels[c.key] || c.key}</span>
+                          </div>
+                          <span style={{ fontSize: 10, color: '#475569', fontFamily: 'monospace' }}>{c.x},{c.y}</span>
+                        </div>
+                        {selKey === c.key && (
+                          <div style={{ padding: '0 14px 11px', display: 'flex', flexDirection: 'column', gap: 8 }} onClick={e => e.stopPropagation()}>
+                            {[['x', 'X — horizontal'], ['y', 'Y — vertical']].map(([prop, label]) => (
+                              <div key={prop}>
+                                <label style={{ fontSize: 9, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</label>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                  <input type="range" min={0} max={100} step={0.5} value={c[prop]} onChange={e => upd(c.key, prop, parseFloat(e.target.value))} style={{ flex: 1, accentColor: '#7c3aed' }} />
+                                  <input type="number" min={0} max={100} step={0.5} value={c[prop]} onChange={e => upd(c.key, prop, parseFloat(e.target.value) || 0)} style={{ width: 48, padding: '3px 4px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 5, fontSize: 11, textAlign: 'center', background: 'rgba(0,0,0,0.4)', color: 'white' }} />
+                                </div>
+                              </div>
+                            ))}
+                            <div style={{ display: 'flex', gap: 7 }}>
+                              <div style={{ flex: 1 }}>
+                                <label style={{ fontSize: 9, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tamaño</label>
+                                <input type="number" min={6} max={60} value={c.fontSize || 12} onChange={e => upd(c.key, 'fontSize', parseInt(e.target.value) || 12)} style={{ width: '100%', padding: '5px 6px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 5, fontSize: 11, background: 'rgba(0,0,0,0.4)', color: 'white' }} />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <label style={{ fontSize: 9, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Color</label>
+                                <input type="color" value={c.color || '#000000'} onChange={e => upd(c.key, 'color', e.target.value)} style={{ width: '100%', height: 28, border: '1px solid rgba(255,255,255,0.12)', borderRadius: 5, cursor: 'pointer', padding: 1, background: 'transparent' }} />
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              {['normal', 'bold'].map(fs => (
+                                <button key={fs} onClick={() => upd(c.key, 'fontStyle', fs)} style={{ flex: 1, padding: '4px 2px', border: `1.5px solid ${c.fontStyle === fs ? '#7c3aed' : 'rgba(255,255,255,0.12)'}`, borderRadius: 5, background: c.fontStyle === fs ? 'rgba(124,58,237,0.35)' : 'transparent', color: c.fontStyle === fs ? '#c4b5fd' : '#64748b', fontSize: 10, fontWeight: fs === 'bold' ? 700 : 400, cursor: 'pointer' }}>{fs === 'bold' ? 'Negrita' : 'Normal'}</button>
+                              ))}
+                              {[['left','←'],['center','⊡'],['right','→']].map(([al, icon]) => (
+                                <button key={al} onClick={() => upd(c.key, 'align', al)} style={{ flex: 1, padding: '4px 2px', border: `1.5px solid ${c.align === al ? '#7c3aed' : 'rgba(255,255,255,0.12)'}`, borderRadius: 5, background: c.align === al ? 'rgba(124,58,237,0.35)' : 'transparent', color: c.align === al ? '#c4b5fd' : '#64748b', fontSize: 11, cursor: 'pointer' }}>{icon}</button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     function CertEditor({ plantilla, campos, onCamposChange, onSave, onBack }) {
       const imgRef = React.useRef(null);
       const dragging = React.useRef(null);
@@ -563,6 +724,7 @@
       const [certShowPersonaModal, setCertShowPersonaModal] = useState(false);
       const [certPlantillaActiva, setCertPlantillaActiva] = useState(null);
       const [certEditorCampos, setCertEditorCampos] = useState([]);
+      const [certPreviewData, setCertPreviewData] = useState(null);
 
       useEffect(() => { loadData(); }, []);
       useEffect(() => { usersRef.current = users; }, [users]);
@@ -890,7 +1052,7 @@
         };
         reader.readAsText(file, 'UTF-8');
       };
-      const generarPDF = async (persona, lote, plantilla) => {
+      const generarPDF = async (persona, lote, plantilla, camposOverride = null) => {
         if (!window.jspdf) throw new Error('jsPDF no disponible — recarga la página');
         const { jsPDF } = window.jspdf;
         const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(plantilla.imagen_path);
@@ -908,7 +1070,7 @@
         doc.addImage(base64, 'JPEG', 0, 0, pW, pH);
         const fechaObj = lote.fecha ? new Date(lote.fecha + 'T12:00:00') : null;
         const vals = { nombre_completo: [persona.nombre, persona.apellidos].filter(Boolean).join(' '), nombre: persona.nombre || '', apellidos: persona.apellidos || '', empresa: persona.empresa || '', documento: persona.documento || '', ciudad: lote.ciudad || '', horas: lote.horas != null ? String(lote.horas) : '', nombre_lote: lote.nombre || '', dia: fechaObj ? String(fechaObj.getDate()) : '', mes: fechaObj ? fechaObj.toLocaleString('es-CO', { month: 'long' }) : '', anio: fechaObj ? String(fechaObj.getFullYear()) : '' };
-        for (const campo of (plantilla.campos || [])) {
+        for (const campo of (camposOverride || plantilla.campos || [])) {
           const val = vals[campo.key];
           if (val === undefined || val === null || val === '') continue;
           doc.setFontSize(campo.fontSize || 12);
@@ -1845,7 +2007,7 @@
                                 <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: est.bg, color: est.color, flexShrink: 0 }}>{est.label}</span>
                               </div>
                               <div style={{ display: 'flex', gap: 6 }}>
-                                {plantilla && <button onClick={() => descargarCertificado(p, certLoteActivo, plantilla)} style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>📥 PDF</button>}
+                                {plantilla && <button onClick={() => setCertPreviewData({ persona: p, lote: certLoteActivo, plantilla })} style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>📥 PDF</button>}
                                 <button onClick={() => deletePersona(p.id, certLoteActivo.id)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', fontSize: 12, cursor: 'pointer' }}>🗑️</button>
                               </div>
                             </div>
@@ -1856,7 +2018,7 @@
                               <p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#475569' }}>{p.documento || '—'}</p>
                               <span style={{ padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: est.bg, color: est.color, display: 'inline-block', width: 'fit-content' }}>{est.label}</span>
                               <div style={{ display: 'flex', gap: 6 }}>
-                                {plantilla && <button onClick={() => descargarCertificado(p, certLoteActivo, plantilla)} title="Generar y descargar PDF" style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontSize: 14, cursor: 'pointer' }}>📥</button>}
+                                {plantilla && <button onClick={() => setCertPreviewData({ persona: p, lote: certLoteActivo, plantilla })} title="Previsualizar y descargar PDF" style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontSize: 14, cursor: 'pointer' }}>📥</button>}
                                 <button onClick={() => deletePersona(p.id, certLoteActivo.id)} title="Eliminar" style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', fontSize: 14, cursor: 'pointer' }}>🗑️</button>
                               </div>
                             </div>
@@ -1891,6 +2053,24 @@
             {view === 'analytics' && (<div><div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)', gap: isMobile ? 12 : 20, marginBottom: isMobile ? 16 : 32 }}>{[{ icon: '📋', val: globalStats.total, label: `Total ${selectedMonth}`, color: '#1a1a2e' }, { icon: '✅', val: globalStats.completadas, label: 'Completadas', color: '#10b981' }, { icon: '🔄', val: globalStats.enCurso, label: 'En Curso', color: '#f59e0b' }, { icon: '📝', val: globalStats.pendientes, label: 'Pendientes', color: '#3b82f6' }, { icon: '⚠️', val: globalStats.retrasadas, label: 'No Cumplidas', color: '#E84338' }].map((s, i) => (<div key={i} style={{ background: 'white', borderRadius: 16, padding: 20, borderLeft: `4px solid ${s.color}` }}><span style={{ fontSize: 24 }}>{s.icon}</span><p style={{ fontSize: 32, fontWeight: 700, color: s.color, marginTop: 8 }}>{s.val}</p><p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{s.label}</p></div>))}</div><div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 24, marginBottom: 24 }}><div style={{ background: 'white', borderRadius: 16, padding: 24 }}><h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Cumplimiento - {selectedMonth}</h2><div style={{ display: 'flex', justifyContent: 'center' }}><div style={{ position: 'relative', width: 160, height: 160 }}><svg width="160" height="160" viewBox="0 0 160 160"><circle cx="80" cy="80" r="65" fill="none" stroke="#f1f5f9" strokeWidth="14" /><circle cx="80" cy="80" r="65" fill="none" stroke={globalStats.cumplimiento >= 70 ? '#10b981' : globalStats.cumplimiento >= 40 ? '#f59e0b' : '#E84338'} strokeWidth="14" strokeDasharray={`${(globalStats.cumplimiento / 100) * 408} 408`} strokeLinecap="round" transform="rotate(-90 80 80)" /></svg><div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 36, fontWeight: 700 }}>{globalStats.cumplimiento}%</span><span style={{ fontSize: 32 }}>{globalStats.cumplimiento >= 70 ? '🟢' : globalStats.cumplimiento >= 40 ? '🟡' : '🔴'}</span></div></div></div></div><div style={{ background: 'white', borderRadius: 16, padding: 24 }}><h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Por Miembro</h2><div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 300, overflowY: 'auto' }}>{userStats.sort((a, b) => b.cumplimiento - a.cumplimiento).map(m => (<div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: '#f8f9fa', borderRadius: 10 }}><span style={{ fontSize: 24 }}>{m.avatar}</span><div style={{ flex: 1 }}><p style={{ fontSize: 13, fontWeight: 600 }}>{m.name}</p><div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}><div style={{ flex: 1, height: 6, background: '#e5e7eb', borderRadius: 3 }}><div style={{ height: '100%', width: `${m.cumplimiento}%`, background: m.cumplimiento >= 70 ? '#10b981' : m.cumplimiento >= 40 ? '#f59e0b' : '#E84338', borderRadius: 3 }}></div></div><span style={{ fontSize: 11, fontWeight: 600, color: m.cumplimiento >= 70 ? '#10b981' : m.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}>{m.cumplimiento}%</span></div></div><span>{m.cumplimiento >= 70 ? '🟢' : m.cumplimiento >= 40 ? '🟡' : '🔴'}</span></div>))}</div></div></div><div style={{ background: 'white', borderRadius: 16, padding: 24 }}><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 24 }}>Ranking - {selectedMonth}</h2><div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}><thead><tr style={{ background: '#f8f9fa' }}><th style={{ padding: 14, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#64748b' }}>#</th><th style={{ padding: 14, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#64748b' }}>RESPONSABLE</th><th style={{ padding: 14, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#64748b' }}>TOTAL</th><th style={{ padding: 14, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#64748b' }}>HECHAS</th><th style={{ padding: 14, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#64748b' }}>PEND.</th><th style={{ padding: 14, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#64748b' }}>RETR.</th><th style={{ padding: 14, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#64748b' }}>CUMPLIMIENTO</th><th style={{ padding: 14 }}></th></tr></thead><tbody>{userStats.sort((a, b) => b.cumplimiento - a.cumplimiento).map((m, i) => (<tr key={m.id} style={{ borderTop: '1px solid #f1f5f9' }}><td style={{ padding: 16, fontSize: 18 }}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td><td style={{ padding: 16 }}><div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ fontSize: 24 }}>{m.avatar}</span><div><p style={{ fontWeight: 600 }}>{m.name}</p><p style={{ fontSize: 12, color: '#E84338' }}>{m.cargo}</p></div></div></td><td style={{ padding: 16, textAlign: 'center', fontWeight: 600 }}>{m.total}</td><td style={{ padding: 16, textAlign: 'center', fontWeight: 600, color: '#10b981' }}>{m.completadas}</td><td style={{ padding: 16, textAlign: 'center', fontWeight: 600, color: '#3b82f6' }}>{m.pendientes}</td><td style={{ padding: 16, textAlign: 'center', fontWeight: 600, color: '#E84338' }}>{m.retrasadas}</td><td style={{ padding: 16 }}><div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><div style={{ flex: 1, height: 10, background: '#f1f5f9', borderRadius: 5 }}><div style={{ height: '100%', width: `${m.cumplimiento}%`, background: m.cumplimiento >= 70 ? '#10b981' : m.cumplimiento >= 40 ? '#f59e0b' : '#E84338', borderRadius: 5 }}></div></div><span style={{ fontWeight: 700, minWidth: 45, color: m.cumplimiento >= 70 ? '#10b981' : m.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}>{m.cumplimiento}%</span></div></td><td style={{ padding: 16, fontSize: 24 }}>{m.cumplimiento >= 70 ? '🟢' : m.cumplimiento >= 40 ? '🟡' : '🔴'}</td></tr>))}</tbody></table></div></div></div>)}
           </main>
 
+          {certPreviewData && (
+            <CertPreviewModal
+              persona={certPreviewData.persona}
+              lote={certPreviewData.lote}
+              plantilla={certPreviewData.plantilla}
+              onClose={() => setCertPreviewData(null)}
+              onDownload={async (camposOverride) => {
+                try {
+                  const doc = await generarPDF(certPreviewData.persona, certPreviewData.lote, certPreviewData.plantilla, camposOverride);
+                  doc.save(`Certificado_${[certPreviewData.persona.nombre, certPreviewData.persona.apellidos].filter(Boolean).join('_')}.pdf`);
+                } catch (e) { showNotif('Error: ' + e.message); }
+              }}
+              onSaveToPlantilla={async (campos) => {
+                await saveEditorCampos(certPreviewData.plantilla.id, campos);
+                setCertPreviewData(prev => ({ ...prev, plantilla: { ...prev.plantilla, campos } }));
+              }}
+            />
+          )}
           {shareDocId && <div onClick={() => setShareDocId(null)} style={{ position: 'fixed', inset: 0, zIndex: 49 }} />}
           {showTaskModal && <TaskModal task={editingTask} users={users} currentUser={currentUser} onSave={handleSaveTask} onClose={() => { setShowTaskModal(false); setEditingTask(null); }} />}
           {showUserModal && <UserModal user={editingUser} cargos={cargos} onSave={handleSaveUser} onClose={() => { setShowUserModal(false); setEditingUser(null); }} />}

@@ -9,6 +9,7 @@
   <script src="https://unpkg.com/@babel/standalone@7.23.2/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -921,13 +922,13 @@
           boolStr(r.acepta_datos), (crmEstados[r.estado]||crmEstados['nuevo']).label,
           r.creado_en ? new Date(r.creado_en).toLocaleDateString('es-CO') : ''
         ]);
-        const csv = [headers, ...rows].map(row => row.map(c => '"' + String(c||'').replace(/"/g,'""') + '"').join(',')).join('\n');
-        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'artistas_area_en_vivo_' + new Date().toISOString().slice(0,10) + '.csv';
-        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-        showNotif('Archivo descargado');
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        const colWidths = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i]||'').length), 10) }));
+        ws['!cols'] = colWidths;
+        XLSX.utils.book_append_sheet(wb, ws, 'Artistas AeV');
+        XLSX.writeFile(wb, 'artistas_area_en_vivo_' + new Date().toISOString().slice(0,10) + '.xlsx');
+        showNotif('Archivo Excel descargado');
       };
       const loadFontur = async () => {
         setFonturLoading(true);

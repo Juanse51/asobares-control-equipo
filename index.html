@@ -1023,8 +1023,9 @@
         showNotif('Datos actualizados');
       };
       const deleteGastroPersona = async (id) => {
-        const { error } = await supabase.from('postulaciones_gastromarketing').delete().eq('id', id);
+        const { error, count } = await supabase.from('postulaciones_gastromarketing').delete({ count: 'exact' }).eq('id', id);
         if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar. Contacta al administrador.'); return; }
         setGastroData(prev => prev.filter(r => r.id !== id));
         setGastroDetalle(null);
         showNotif('Registro eliminado');

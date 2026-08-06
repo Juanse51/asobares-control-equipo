@@ -1,352 +1,353 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inscripción — Sonido, Video y Performance DJ | Área en Vivo Lab</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; color: #1a1a2e; }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    /* HERO */
-    .hero { background: #0d0505; }
-    .hero-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
-    .hero-img { overflow: hidden; max-height: 680px; }
-    .hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .hero-info { padding: 48px 44px; color: white; display: flex; flex-direction: column; justify-content: center; }
-    .tag { display: inline-block; font-size: 11px; font-weight: 700; color: #f59e0b; letter-spacing: 2.5px; margin-bottom: 14px; }
-    .hero-title { font-size: 38px; font-weight: 900; line-height: 1.05; margin-bottom: 16px; }
-    .badge-red { display: inline-block; background: #E84338; color: white; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 20px; margin-bottom: 24px; letter-spacing: 1px; }
-    .date-block { margin-bottom: 20px; }
-    .date-block .date { font-size: 20px; font-weight: 800; color: #E84338; }
-    .date-block .time { font-size: 14px; color: #94a3b8; margin-top: 3px; }
-    .venue-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 24px; }
-    .venue-row .name { font-weight: 700; font-size: 15px; }
-    .venue-row .addr { font-size: 13px; color: #94a3b8; margin-top: 2px; }
-    .speakers { margin-bottom: 28px; }
-    .speakers .lbl { font-size: 10px; color: #64748b; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 6px; }
-    .speakers .names { display: flex; flex-direction: column; gap: 3px; }
-    .speakers .names span { font-size: 14px; font-weight: 700; }
-    .free-badge { display: inline-flex; align-items: center; gap: 6px; border: 2px solid #E84338; color: #E84338; padding: 9px 22px; border-radius: 8px; font-weight: 700; font-size: 14px; }
+<style>
+#aev-lab-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+#aev-lab-wrap { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; width: 100%; }
 
-    /* FORM SECTION */
-    .form-wrap { max-width: 860px; margin: 0 auto; padding: 52px 20px 40px; }
-    .form-card { background: white; border-radius: 20px; padding: 40px; box-shadow: 0 2px 24px rgba(0,0,0,0.07); }
-    .section-head { font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 2px; margin-bottom: 18px; margin-top: 28px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; }
-    .section-head:first-child { margin-top: 0; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-    .fg { margin-bottom: 0; }
-    .fg label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; }
-    .fg input, .fg select { width: 100%; padding: 11px 13px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-family: inherit; background: white; color: #1a1a2e; transition: border-color 0.15s; appearance: auto; }
-    .fg input:focus, .fg select:focus { outline: none; border-color: #E84338; }
-    .req { color: #E84338; }
-    .full { grid-column: 1 / -1; }
+/* HERO */
+#aev-lab-wrap .al-hero { background: #0d0505; width: 100%; }
+#aev-lab-wrap .al-hero-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+#aev-lab-wrap .al-hero-img { overflow: hidden; max-height: 680px; }
+#aev-lab-wrap .al-hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#aev-lab-wrap .al-hero-info { padding: 48px 44px; color: white; display: flex; flex-direction: column; justify-content: center; }
+#aev-lab-wrap .al-tag { font-size: 11px; font-weight: 700; color: #f59e0b; letter-spacing: 2.5px; margin-bottom: 14px; display: block; }
+#aev-lab-wrap .al-title { font-size: 36px; font-weight: 900; line-height: 1.05; margin-bottom: 16px; color: white; }
+#aev-lab-wrap .al-badge { display: inline-block; background: #E84338; color: white; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 20px; margin-bottom: 24px; letter-spacing: 1px; }
+#aev-lab-wrap .al-date { font-size: 20px; font-weight: 800; color: #E84338; margin-bottom: 4px; }
+#aev-lab-wrap .al-time { font-size: 14px; color: #94a3b8; margin-bottom: 20px; }
+#aev-lab-wrap .al-venue { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 24px; }
+#aev-lab-wrap .al-venue-name { font-weight: 700; font-size: 15px; color: white; }
+#aev-lab-wrap .al-venue-addr { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+#aev-lab-wrap .al-speakers-lbl { font-size: 10px; color: #64748b; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 8px; }
+#aev-lab-wrap .al-speaker { font-size: 14px; font-weight: 700; color: white; line-height: 1.8; }
+#aev-lab-wrap .al-free { display: inline-flex; align-items: center; gap: 6px; border: 2px solid #E84338; color: #E84338; padding: 9px 22px; border-radius: 8px; font-weight: 700; font-size: 14px; margin-top: 24px; }
 
-    /* SUBMIT */
-    .submit-btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: linear-gradient(135deg, #E84338, #c41e16); color: white; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 28px; letter-spacing: 0.3px; transition: opacity 0.2s; }
-    .submit-btn:hover { opacity: 0.9; }
-    .submit-btn:disabled { opacity: 0.6; cursor: default; }
-    .legal { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 14px; }
-    .err-box { display: none; background: #fee2e2; color: #c41e16; padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-top: 16px; }
+/* FORM SECTION */
+#aev-lab-wrap .al-form-wrap { max-width: 860px; margin: 0 auto; padding: 52px 20px 40px; }
+#aev-lab-wrap .al-form-title { text-align: center; margin-bottom: 36px; }
+#aev-lab-wrap .al-form-title h2 { font-size: 28px; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; }
+#aev-lab-wrap .al-form-title p { color: #64748b; font-size: 15px; }
+#aev-lab-wrap .al-card { background: white; border-radius: 20px; padding: 40px; box-shadow: 0 2px 24px rgba(0,0,0,0.07); }
+#aev-lab-wrap .al-sec { font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 2px; margin-bottom: 18px; margin-top: 28px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; display: block; }
+#aev-lab-wrap .al-sec:first-child { margin-top: 0; }
+#aev-lab-wrap .al-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+#aev-lab-wrap .al-g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+#aev-lab-wrap .al-fg label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; }
+#aev-lab-wrap .al-fg input,
+#aev-lab-wrap .al-fg select { width: 100%; padding: 11px 13px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-family: inherit; background: white; color: #1a1a2e; transition: border-color 0.15s; -webkit-appearance: auto; appearance: auto; }
+#aev-lab-wrap .al-fg input:focus,
+#aev-lab-wrap .al-fg select:focus { outline: none; border-color: #E84338; }
+#aev-lab-wrap .al-req { color: #E84338; }
+#aev-lab-wrap .al-submit { width: 100%; padding: 16px; border: none; border-radius: 12px; background: linear-gradient(135deg, #E84338, #c41e16); color: white; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 28px; letter-spacing: 0.3px; transition: opacity 0.2s; font-family: inherit; }
+#aev-lab-wrap .al-submit:hover { opacity: 0.9; }
+#aev-lab-wrap .al-submit:disabled { opacity: 0.6; cursor: default; }
+#aev-lab-wrap .al-legal { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 14px; }
+#aev-lab-wrap .al-err { display: none; background: #fee2e2; color: #c41e16; padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-top: 16px; }
 
-    /* SUCCESS */
-    .success { display: none; text-align: center; padding: 60px 20px; }
-    .success .check { width: 84px; height: 84px; background: linear-gradient(135deg, #E84338, #c41e16); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 42px; color: white; margin: 0 auto 24px; }
-    .success h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; }
-    .success p { font-size: 15px; color: #475569; margin-bottom: 8px; line-height: 1.6; }
-    .success .event-confirm { color: #E84338; font-weight: 700; font-size: 16px; margin-top: 12px; }
+/* SUCCESS */
+#aev-lab-wrap .al-success { display: none; text-align: center; padding: 60px 20px; }
+#aev-lab-wrap .al-check { width: 84px; height: 84px; background: linear-gradient(135deg, #E84338, #c41e16); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 42px; color: white; margin: 0 auto 24px; }
+#aev-lab-wrap .al-success h2 { font-size: 26px; font-weight: 800; margin-bottom: 12px; color: #1a1a2e; }
+#aev-lab-wrap .al-success p { font-size: 15px; color: #475569; line-height: 1.6; margin-bottom: 6px; }
+#aev-lab-wrap .al-success .al-ev { color: #E84338; font-weight: 700; font-size: 16px; margin-top: 12px; }
 
-    /* SPONSORS */
-    .sponsors { background: #111; padding: 36px 20px; }
-    .sponsors-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
-    .sponsors .lbl { font-size: 10px; font-weight: 700; color: #444; letter-spacing: 2.5px; margin-bottom: 24px; }
-    .logos-row { display: flex; align-items: center; justify-content: center; gap: 44px; flex-wrap: wrap; }
-    .logos-row img { height: 42px; object-fit: contain; opacity: 0.7; filter: brightness(0) invert(1); transition: opacity 0.2s; }
-    .logos-row img:hover { opacity: 1; }
-    .credit { font-size: 11px; color: #444; margin-top: 28px; }
-    .credit a { color: #E84338; text-decoration: none; font-weight: 600; }
+/* SPONSORS */
+#aev-lab-wrap .al-sponsors { background: #111; padding: 36px 20px; }
+#aev-lab-wrap .al-sp-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
+#aev-lab-wrap .al-sp-lbl { font-size: 10px; font-weight: 700; color: #444; letter-spacing: 2.5px; margin-bottom: 24px; display: block; }
+#aev-lab-wrap .al-logos { display: flex; align-items: center; justify-content: center; gap: 44px; flex-wrap: wrap; }
+#aev-lab-wrap .al-logos img { height: 40px; object-fit: contain; opacity: 0.7; filter: brightness(0) invert(1); transition: opacity 0.2s; }
+#aev-lab-wrap .al-logos img:hover { opacity: 1; }
+#aev-lab-wrap .al-credit { font-size: 11px; color: #444; margin-top: 28px; }
+#aev-lab-wrap .al-credit a { color: #E84338; text-decoration: none; font-weight: 600; }
 
-    @media (max-width: 768px) {
-      .hero-inner { grid-template-columns: 1fr; }
-      .hero-img { max-height: 340px; }
-      .hero-info { padding: 32px 24px; }
-      .hero-title { font-size: 28px; }
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
-      .form-card { padding: 24px 18px; }
-    }
-  </style>
-</head>
-<body>
+@media (max-width: 768px) {
+  #aev-lab-wrap .al-hero-inner { grid-template-columns: 1fr; }
+  #aev-lab-wrap .al-hero-img { max-height: 300px; }
+  #aev-lab-wrap .al-hero-info { padding: 28px 20px; }
+  #aev-lab-wrap .al-title { font-size: 26px; }
+  #aev-lab-wrap .al-g2,
+  #aev-lab-wrap .al-g3 { grid-template-columns: 1fr; }
+  #aev-lab-wrap .al-card { padding: 20px 16px; }
+}
+</style>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-inner">
-    <div class="hero-img">
-      <img src="https://asobares.org/wp-content/uploads/2026/08/Octava.jpg" alt="Sonido, Video y Performance DJ — Área en Vivo Lab" />
-    </div>
-    <div class="hero-info">
-      <p class="tag">ÁREA EN VIVO LAB</p>
-      <h1 class="hero-title">SONIDO, VIDEO<br>Y PERFORMANCE DJ</h1>
-      <span class="badge-red">AGENDA ACADÉMICA</span>
-      <div class="date-block">
-        <p class="date">Miércoles 12 de Agosto</p>
-        <p class="time">4:00 p.m. a 8:00 p.m.</p>
+<div id="aev-lab-wrap">
+
+  <!-- HERO -->
+  <section class="al-hero">
+    <div class="al-hero-inner">
+      <div class="al-hero-img">
+        <img src="https://asobares.org/wp-content/uploads/2026/08/Octava.jpg" alt="Sonido, Video y Performance DJ — Área en Vivo Lab" />
       </div>
-      <div class="venue-row">
-        <span style="color:#E84338;font-size:18px;margin-top:2px;">📍</span>
-        <div>
-          <p class="name">Octava Club</p>
-          <p class="addr">Cra. 8 #63-41, Chapinero · Bogotá</p>
+      <div class="al-hero-info">
+        <span class="al-tag">ÁREA EN VIVO LAB</span>
+        <h1 class="al-title">SONIDO, VIDEO<br>Y PERFORMANCE DJ</h1>
+        <span class="al-badge">AGENDA ACADÉMICA</span>
+        <p class="al-date">Miércoles 12 de Agosto</p>
+        <p class="al-time">4:00 p.m. a 8:00 p.m.</p>
+        <div class="al-venue">
+          <span style="color:#E84338;font-size:18px;margin-top:2px;">📍</span>
+          <div>
+            <p class="al-venue-name">Octava Club</p>
+            <p class="al-venue-addr">Cra. 8 #63-41, Chapinero · Bogotá</p>
+          </div>
         </div>
+        <p class="al-speakers-lbl">PONENTES</p>
+        <p class="al-speaker">Ignacio Ángel</p>
+        <p class="al-speaker">Destro</p>
+        <p class="al-speaker">VJ Sánchez</p>
+        <span class="al-free">✓ Inscripción sin costo</span>
       </div>
-      <div class="speakers">
-        <p class="lbl">PONENTES</p>
-        <div class="names">
-          <span>Ignacio Ángel</span>
-          <span>Destro</span>
-          <span>VJ Sánchez</span>
-        </div>
-      </div>
-      <div class="free-badge">✓ Inscripción sin costo</div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- FORM WRAP -->
-<div class="form-wrap">
-  <div style="text-align:center;margin-bottom:36px;">
-    <h2 style="font-size:30px;font-weight:800;">Regístrate aquí</h2>
-    <p style="color:#64748b;margin-top:8px;font-size:15px;">Inscripción gratuita — cupos limitados</p>
-  </div>
+  <!-- FORM WRAP -->
+  <div class="al-form-wrap">
+    <div class="al-form-title">
+      <h2>Regístrate aquí</h2>
+      <p>Inscripción gratuita — cupos limitados</p>
+    </div>
 
-  <!-- SUCCESS -->
-  <div class="success" id="successState">
-    <div class="check">✓</div>
-    <h2>¡Inscripción exitosa!</h2>
-    <p>Hemos recibido tu registro correctamente.<br>Revisa tu correo electrónico — te enviamos la confirmación.</p>
-    <p class="event-confirm">Miércoles 12 de Agosto · 4:00 p.m. · Octava Club, Chapinero</p>
-  </div>
+    <!-- SUCCESS -->
+    <div class="al-success" id="alSuccess">
+      <div class="al-check">✓</div>
+      <h2>¡Inscripción exitosa!</h2>
+      <p>Hemos recibido tu registro correctamente.</p>
+      <p>Revisa tu correo — te enviamos la confirmación.</p>
+      <p class="al-ev">Miércoles 12 de Agosto · 4:00 p.m. · Octava Club, Chapinero</p>
+    </div>
 
-  <!-- FORM -->
-  <div class="form-card" id="formCard">
-    <form id="registroForm" autocomplete="off">
+    <!-- FORM CARD -->
+    <div class="al-card" id="alCard">
+      <form id="alForm" autocomplete="off">
 
-      <p class="section-head">DATOS PERSONALES</p>
-      <div class="grid-3" style="gap:16px;margin-bottom:16px;">
-        <div class="fg">
-          <label>Tipo de Identificación <span class="req">*</span></label>
-          <select name="tipo_identificacion" required>
+        <span class="al-sec">DATOS PERSONALES</span>
+        <div class="al-g3">
+          <div class="al-fg">
+            <label>Tipo de Identificación <span class="al-req">*</span></label>
+            <select name="tipo_identificacion" required>
+              <option value="">Selecciona...</option>
+              <option>CÉDULA</option>
+              <option>CÉDULA DE EXTRANJERÍA</option>
+              <option>PASAPORTE</option>
+            </select>
+          </div>
+          <div class="al-fg">
+            <label>Nº de Identificación <span class="al-req">*</span></label>
+            <input type="text" name="numero_identificacion" required placeholder="Ej: 1234567890" />
+          </div>
+          <div class="al-fg">
+            <label>Género <span class="al-req">*</span></label>
+            <select name="genero" required>
+              <option value="">Selecciona...</option>
+              <option>MASCULINO</option>
+              <option>FEMENINO</option>
+              <option>OTRO</option>
+              <option>NO SUMINISTRA</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="al-g2">
+          <div class="al-fg">
+            <label>Nombre <span class="al-req">*</span></label>
+            <input type="text" name="nombre" required placeholder="Tu nombre" />
+          </div>
+          <div class="al-fg">
+            <label>Apellido <span class="al-req">*</span></label>
+            <input type="text" name="apellidos" required placeholder="Tus apellidos" />
+          </div>
+        </div>
+
+        <div class="al-g3">
+          <div class="al-fg">
+            <label>Departamento / Ciudad <span class="al-req">*</span></label>
+            <select name="ciudad" required>
+              <option value="">Selecciona...</option>
+              <option>Amazonas</option><option>Antioquia</option><option>Arauca</option>
+              <option>Atlántico</option><option>Bolívar</option><option>Boyacá</option>
+              <option>Bogotá D.C.</option><option>Caldas</option><option>Caquetá</option>
+              <option>Casanare</option><option>Cauca</option><option>Cesar</option>
+              <option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option>
+              <option>Guainía</option><option>Guaviare</option><option>Huila</option>
+              <option>La Guajira</option><option>Magdalena</option><option>Meta</option>
+              <option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
+              <option>Quindío</option><option>Risaralda</option>
+              <option>San Andrés, Providencia y Santa Catalina</option>
+              <option>Santander</option><option>Sucre</option><option>Tolima</option>
+              <option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
+              <option>Internacional</option>
+            </select>
+          </div>
+          <div class="al-fg">
+            <label>Teléfono Celular <span class="al-req">*</span></label>
+            <input type="tel" name="telefono" required placeholder="3001234567" maxlength="10" />
+          </div>
+          <div class="al-fg">
+            <label>Correo Electrónico <span class="al-req">*</span></label>
+            <input type="email" name="email" required placeholder="tu@correo.com" />
+          </div>
+        </div>
+
+        <div class="al-fg" style="margin-bottom:0;">
+          <label>Profesión u Oficio <span class="al-req">*</span></label>
+          <select name="profesion" required>
             <option value="">Selecciona...</option>
-            <option>CÉDULA</option>
-            <option>CÉDULA DE EXTRANJERÍA</option>
-            <option>PASAPORTE</option>
+            <option>ABOGADO(A)</option><option>ADMINISTRADOR</option><option>AGENTE TURÍSTICO</option>
+            <option>ANALISTA CARRERAS AFINES</option><option>ARQUITECTO(A)</option><option>ARTISTA</option>
+            <option>ASESOR(A)</option><option>ASISTENTE</option><option>BARISTA</option>
+            <option>BARTENDER</option><option>CAJERO(A)</option><option>CEO</option>
+            <option>CHEF</option><option>COCINERO(A)</option><option>CONSULTOR(A)</option>
+            <option>CONTADOR(A)</option><option>COORDINADOR(A)</option><option>DIRECTOR(A)</option>
+            <option>DISEÑADOR(A)</option><option>DJ</option><option>DOCENTE CARRERAS AFINES</option>
+            <option>EMPRESARIO(A)</option><option>ENTIDAD-GOBIERNO</option>
+            <option>ESTUDIANTE CARRERAS AFINES</option><option>GERENTE</option>
+            <option>GERENTE DE MARCA</option><option>GREMIO</option><option>INGENIERO(A)</option>
+            <option>INGENIERO(A) DE SONIDO</option><option>JEFE DE COMPRAS</option>
+            <option>MANAGER</option><option>MARKETING</option><option>MESERO(A)</option>
+            <option>MÚSICO</option><option>OPERADOR(A) LOGÍSTICO</option>
+            <option>ORGANIZADOR(A) DE EVENTOS</option><option>PERIODISTA</option>
+            <option>PRODUCTOR(A)</option><option>PROPIETARIO(A)</option><option>PROVEEDOR(A)</option>
+            <option>RECURSOS HUMANOS</option><option>RELACIONES PÚBLICAS</option>
+            <option>REPRESENTANTE LEGAL</option><option>TÉCNICO CARRERAS AFINES</option>
+            <option>TRADUCTOR</option><option>OTRO</option><option>NO SUMINISTRA</option>
           </select>
         </div>
-        <div class="fg">
-          <label>Nº de Identificación <span class="req">*</span></label>
-          <input type="text" name="numero_identificacion" required placeholder="Ej: 1234567890" />
-        </div>
-        <div class="fg">
-          <label>Género <span class="req">*</span></label>
-          <select name="genero" required>
-            <option value="">Selecciona...</option>
-            <option>MASCULINO</option>
-            <option>FEMENINO</option>
-            <option>OTRO</option>
-            <option>NO SUMINISTRA</option>
-          </select>
-        </div>
-      </div>
 
-      <div class="grid-2" style="gap:16px;margin-bottom:16px;">
-        <div class="fg">
-          <label>Nombre <span class="req">*</span></label>
-          <input type="text" name="nombre" required placeholder="Tu nombre" />
-        </div>
-        <div class="fg">
-          <label>Apellido <span class="req">*</span></label>
-          <input type="text" name="apellidos" required placeholder="Tus apellidos" />
-        </div>
-      </div>
+        <span class="al-sec" style="margin-top:32px;">DATOS DE LA EMPRESA <span style="font-weight:400;color:#b0b0b0;">(OPCIONAL)</span></span>
 
-      <div class="grid-3" style="gap:16px;margin-bottom:16px;">
-        <div class="fg">
-          <label>Departamento / Ciudad <span class="req">*</span></label>
-          <select name="ciudad" required>
-            <option value="">Selecciona...</option>
-            <option>Amazonas</option><option>Antioquia</option><option>Arauca</option>
-            <option>Atlántico</option><option>Bolívar</option><option>Boyacá</option>
-            <option>Bogotá D.C.</option><option>Caldas</option><option>Caquetá</option>
-            <option>Casanare</option><option>Cauca</option><option>Cesar</option>
-            <option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option>
-            <option>Guainía</option><option>Guaviare</option><option>Huila</option>
-            <option>La Guajira</option><option>Magdalena</option><option>Meta</option>
-            <option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
-            <option>Quindío</option><option>Risaralda</option>
-            <option>San Andrés, Providencia y Santa Catalina</option>
-            <option>Santander</option><option>Sucre</option><option>Tolima</option>
-            <option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
-            <option>Internacional</option>
-          </select>
+        <div class="al-g2">
+          <div class="al-fg">
+            <label>Nombre o Razón Social</label>
+            <input type="text" name="empresa_nombre" placeholder="Nombre de la empresa" />
+          </div>
+          <div class="al-fg">
+            <label>Nº de Identificación (NIT)</label>
+            <input type="text" name="empresa_nit" placeholder="NIT empresa" />
+          </div>
         </div>
-        <div class="fg">
-          <label>Teléfono Celular <span class="req">*</span></label>
-          <input type="tel" name="telefono" required placeholder="3001234567" maxlength="10" />
+        <div class="al-g2">
+          <div class="al-fg">
+            <label>Dirección</label>
+            <input type="text" name="empresa_direccion" placeholder="Dirección empresa" />
+          </div>
+          <div class="al-fg">
+            <label>Teléfono de Contacto</label>
+            <input type="tel" name="empresa_telefono" placeholder="Teléfono empresa" />
+          </div>
         </div>
-        <div class="fg">
-          <label>Correo Electrónico <span class="req">*</span></label>
-          <input type="email" name="email" required placeholder="tu@correo.com" />
+        <div class="al-g3">
+          <div class="al-fg">
+            <label>Representante Legal</label>
+            <input type="text" name="empresa_representante" placeholder="Nombre del representante" />
+          </div>
+          <div class="al-fg">
+            <label>Cédula Representante Legal</label>
+            <input type="text" name="empresa_cedula_rep" placeholder="Cédula" />
+          </div>
+          <div class="al-fg">
+            <label>Correo Electrónico Empresa</label>
+            <input type="email" name="empresa_email" placeholder="correo@empresa.com" />
+          </div>
         </div>
-      </div>
 
-      <div class="fg" style="margin-bottom:0;">
-        <label>Profesión u Oficio <span class="req">*</span></label>
-        <select name="profesion" required>
-          <option value="">Selecciona...</option>
-          <option>ABOGADO(A)</option><option>ADMINISTRADOR</option><option>AGENTE TURÍSTICO</option>
-          <option>ANALISTA CARRERAS AFINES</option><option>ARQUITECTO(A)</option><option>ARTISTA</option>
-          <option>ASESOR(A)</option><option>ASISTENTE</option><option>BARISTA</option>
-          <option>BARTENDER</option><option>CAJERO(A)</option><option>CEO</option>
-          <option>CHEF</option><option>COCINERO(A)</option><option>CONSULTOR(A)</option>
-          <option>CONTADOR(A)</option><option>COORDINADOR(A)</option><option>DIRECTOR(A)</option>
-          <option>DISEÑADOR(A)</option><option>DJ</option><option>DOCENTE CARRERAS AFINES</option>
-          <option>EMPRESARIO(A)</option><option>ENTIDAD-GOBIERNO</option>
-          <option>ESTUDIANTE CARRERAS AFINES</option><option>GERENTE</option>
-          <option>GERENTE DE MARCA</option><option>GREMIO</option><option>INGENIERO(A)</option>
-          <option>INGENIERO(A) DE SONIDO</option><option>JEFE DE COMPRAS</option>
-          <option>MANAGER</option><option>MARKETING</option><option>MESERO(A)</option>
-          <option>MÚSICO</option><option>OPERADOR(A) LOGÍSTICO</option>
-          <option>ORGANIZADOR(A) DE EVENTOS</option><option>PERIODISTA</option>
-          <option>PRODUCTOR(A)</option><option>PROPIETARIO(A)</option><option>PROVEEDOR(A)</option>
-          <option>RECURSOS HUMANOS</option><option>RELACIONES PÚBLICAS</option>
-          <option>REPRESENTANTE LEGAL</option><option>TÉCNICO CARRERAS AFINES</option>
-          <option>TRADUCTOR</option><option>OTRO</option><option>NO SUMINISTRA</option>
-        </select>
-      </div>
+        <div class="al-err" id="alErr"></div>
 
-      <p class="section-head" style="margin-top:32px;">DATOS DE LA EMPRESA <span style="font-weight:400;color:#b0b0b0;">(OPCIONAL)</span></p>
-
-      <div class="grid-2" style="gap:16px;margin-bottom:16px;">
-        <div class="fg">
-          <label>Nombre o Razón Social</label>
-          <input type="text" name="empresa_nombre" placeholder="Nombre de la empresa" />
-        </div>
-        <div class="fg">
-          <label>Nº de Identificación (NIT)</label>
-          <input type="text" name="empresa_nit" placeholder="NIT empresa" />
-        </div>
-      </div>
-      <div class="grid-2" style="gap:16px;margin-bottom:16px;">
-        <div class="fg">
-          <label>Dirección</label>
-          <input type="text" name="empresa_direccion" placeholder="Dirección empresa" />
-        </div>
-        <div class="fg">
-          <label>Teléfono de Contacto</label>
-          <input type="tel" name="empresa_telefono" placeholder="Teléfono empresa" />
-        </div>
-      </div>
-      <div class="grid-3" style="gap:16px;">
-        <div class="fg">
-          <label>Representante Legal</label>
-          <input type="text" name="empresa_representante" placeholder="Nombre del representante" />
-        </div>
-        <div class="fg">
-          <label>Cédula Representante Legal</label>
-          <input type="text" name="empresa_cedula_rep" placeholder="Cédula" />
-        </div>
-        <div class="fg">
-          <label>Correo Electrónico Empresa</label>
-          <input type="email" name="empresa_email" placeholder="correo@empresa.com" />
-        </div>
-      </div>
-
-      <div class="err-box" id="errBox"></div>
-
-      <button type="submit" class="submit-btn" id="submitBtn">
-        Confirmar inscripción gratuita →
-      </button>
-      <p class="legal">Al inscribirte autorizas el uso de tus datos para gestionar tu participación en el evento.</p>
-    </form>
-  </div>
-</div>
-
-<!-- SPONSORS -->
-<footer class="sponsors">
-  <div class="sponsors-inner">
-    <p class="lbl">ORGANIZA Y APOYA</p>
-    <div class="logos-row">
-      <img src="https://asobares.org/wp-content/uploads/2026/01/Nuevo-logo-Asobares-Color-scaled.png" alt="Asobares" />
-      <img src="https://asobares.org/wp-content/uploads/2025/03/Cluster_DJ_Positivo_Color_Luz.png" alt="Cluster DJ" />
-      <img src="https://asobares.org/wp-content/uploads/2026/08/Logo_CCB_big.svg" alt="Cámara de Comercio de Bogotá" />
-      <img src="https://asobares.org/wp-content/uploads/2026/08/cluster-musica-bogota.png" alt="Cluster Música Bogotá" />
-      <img src="https://asobares.org/wp-content/uploads/2026/08/Bogota_marca_ciudad.svg.webp" alt="Bogotá" />
+        <button type="submit" class="al-submit" id="alSubmit">
+          Confirmar inscripción gratuita →
+        </button>
+        <p class="al-legal">Al inscribirte autorizas el uso de tus datos para gestionar tu participación en el evento.</p>
+      </form>
     </div>
-    <p class="credit">Sistema desarrollado por <a href="https://vamosarayar.com">vamosarayar.com</a></p>
   </div>
-</footer>
+
+  <!-- SPONSORS -->
+  <div class="al-sponsors">
+    <div class="al-sp-inner">
+      <span class="al-sp-lbl">ORGANIZA Y APOYA</span>
+      <div class="al-logos">
+        <img src="https://asobares.org/wp-content/uploads/2026/01/Nuevo-logo-Asobares-Color-scaled.png" alt="Asobares" />
+        <img src="https://asobares.org/wp-content/uploads/2025/03/Cluster_DJ_Positivo_Color_Luz.png" alt="Cluster DJ" />
+        <img src="https://asobares.org/wp-content/uploads/2026/08/Logo_CCB_big.svg" alt="Cámara de Comercio de Bogotá" />
+        <img src="https://asobares.org/wp-content/uploads/2026/08/cluster-musica-bogota.png" alt="Cluster Música Bogotá" />
+        <img src="https://asobares.org/wp-content/uploads/2026/08/Bogota_marca_ciudad.svg.webp" alt="Bogotá" />
+      </div>
+      <p class="al-credit">Sistema desarrollado por <a href="https://vamosarayar.com">vamosarayar.com</a></p>
+    </div>
+  </div>
+
+</div><!-- /#aev-lab-wrap -->
 
 <script>
-  const SUPA_URL = 'https://pbqmkodwmntujezbokgo.supabase.co';
-  const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34';
-  const db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
-
-  const form = document.getElementById('registroForm');
-  const formCard = document.getElementById('formCard');
-  const successState = document.getElementById('successState');
-  const submitBtn = document.getElementById('submitBtn');
-  const errBox = document.getElementById('errBox');
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    errBox.style.display = 'none';
-
-    const fd = new FormData(form);
-    const d = Object.fromEntries(fd.entries());
-
-    if (!/^\d{10}$/.test(d.telefono)) {
-      errBox.textContent = 'El teléfono debe ser un número celular colombiano de 10 dígitos (ej: 3001234567).';
-      errBox.style.display = 'block';
+(function() {
+  function initAevLab() {
+    if (typeof window.supabase === 'undefined') {
+      setTimeout(initAevLab, 100);
       return;
     }
+    const db = window.supabase.createClient(
+      'https://pbqmkodwmntujezbokgo.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34'
+    );
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Enviando...';
+    const form     = document.getElementById('alForm');
+    const card     = document.getElementById('alCard');
+    const success  = document.getElementById('alSuccess');
+    const submitBtn= document.getElementById('alSubmit');
+    const errBox   = document.getElementById('alErr');
 
-    const { error } = await db.from('inscripciones_aev_lab').insert({
-      tipo_identificacion: d.tipo_identificacion,
-      numero_identificacion: d.numero_identificacion,
-      nombre: d.nombre.trim(),
-      apellidos: d.apellidos.trim(),
-      genero: d.genero,
-      ciudad: d.ciudad,
-      profesion: d.profesion,
-      telefono: d.telefono,
-      email: d.email.trim().toLowerCase(),
-      empresa_nombre:       d.empresa_nombre       || null,
-      empresa_nit:          d.empresa_nit          || null,
-      empresa_direccion:    d.empresa_direccion    || null,
-      empresa_telefono:     d.empresa_telefono     || null,
-      empresa_representante:  d.empresa_representante  || null,
-      empresa_cedula_rep:   d.empresa_cedula_rep   || null,
-      empresa_email:        d.empresa_email        || null,
-      estado: 'inscrito'
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      errBox.style.display = 'none';
+
+      var fd = new FormData(form);
+      var d  = Object.fromEntries(fd.entries());
+
+      if (!/^\d{10}$/.test(d.telefono)) {
+        errBox.textContent = 'El teléfono debe ser un número celular colombiano de 10 dígitos (ej: 3001234567).';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+
+      var payload = {
+        tipo_identificacion:    d.tipo_identificacion,
+        numero_identificacion:  d.numero_identificacion,
+        nombre:                 d.nombre.trim(),
+        apellidos:              d.apellidos.trim(),
+        genero:                 d.genero,
+        ciudad:                 d.ciudad,
+        profesion:              d.profesion,
+        telefono:               d.telefono,
+        email:                  d.email.trim().toLowerCase(),
+        empresa_nombre:         d.empresa_nombre        || null,
+        empresa_nit:            d.empresa_nit           || null,
+        empresa_direccion:      d.empresa_direccion     || null,
+        empresa_telefono:       d.empresa_telefono      || null,
+        empresa_representante:  d.empresa_representante || null,
+        empresa_cedula_rep:     d.empresa_cedula_rep    || null,
+        empresa_email:          d.empresa_email         || null,
+        estado: 'inscrito'
+      };
+
+      var result = await db.from('inscripciones_aev_lab').insert(payload);
+
+      if (result.error) {
+        errBox.textContent = 'Ocurrió un error al enviar tu registro. Por favor intenta de nuevo.';
+        errBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Confirmar inscripción gratuita →';
+        return;
+      }
+
+      card.style.display    = 'none';
+      success.style.display = 'block';
+      window.scrollTo({ top: document.getElementById('aev-lab-wrap').offsetTop, behavior: 'smooth' });
     });
-
-    if (error) {
-      errBox.textContent = 'Ocurrió un error al enviar tu registro. Por favor intenta de nuevo.';
-      errBox.style.display = 'block';
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Confirmar inscripción gratuita →';
-      return;
-    }
-
-    formCard.style.display = 'none';
-    successState.style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  }
+  initAevLab();
+})();
 </script>
-</body>
-</html>

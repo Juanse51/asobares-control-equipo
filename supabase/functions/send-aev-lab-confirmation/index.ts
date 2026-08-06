@@ -38,7 +38,7 @@ serve(async (req) => {
         <!-- Header oscuro -->
         <tr>
           <td style="background:#0d0505;padding:32px 40px;text-align:center;">
-            <img src="https://asobares.org/wp-content/uploads/2026/01/Nuevo-logo-Asobares-Color-scaled.png" alt="Asobares" style="height:44px;object-fit:contain;margin-bottom:20px;display:block;margin-left:auto;margin-right:auto;" />
+            <img src="https://gestion.asobares.org/asobares_blanco.png" alt="Asobares" style="height:44px;object-fit:contain;margin-bottom:20px;display:block;margin-left:auto;margin-right:auto;" />
             <p style="margin:0;font-size:11px;font-weight:700;color:#f59e0b;letter-spacing:2.5px;">ÁREA EN VIVO LAB</p>
             <h1 style="margin:8px 0 4px;font-size:22px;font-weight:900;color:white;line-height:1.2;">SONIDO, VIDEO<br>Y PERFORMANCE DJ</h1>
             <span style="display:inline-block;background:#E84338;color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;margin-top:8px;letter-spacing:1px;">AGENDA ACADÉMICA</span>
@@ -86,12 +86,14 @@ serve(async (req) => {
 
         <!-- Logos sponsors -->
         <tr>
-          <td style="background:#f9fafb;padding:24px 40px;border-top:1px solid #e5e7eb;text-align:center;">
-            <p style="margin:0 0 16px;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:2px;">ORGANIZA Y APOYA</p>
+          <td style="background:#ffffff;padding:28px 32px;border-top:1px solid #e5e7eb;text-align:center;">
+            <p style="margin:0 0 20px;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:2px;">ORGANIZA Y APOYA</p>
             <table width="100%" cellpadding="0" cellspacing="0"><tr>
-              <td align="center" style="padding:0 8px;"><img src="https://asobares.org/wp-content/uploads/2026/01/Nuevo-logo-Asobares-Color-scaled.png" alt="Asobares" style="height:36px;object-fit:contain;" /></td>
-              <td align="center" style="padding:0 8px;"><img src="https://asobares.org/wp-content/uploads/2025/03/Cluster_DJ_Positivo_Color_Luz.png" alt="Cluster DJ" style="height:32px;object-fit:contain;" /></td>
-              <td align="center" style="padding:0 8px;"><img src="https://asobares.org/wp-content/uploads/2026/08/Logo_CCB_big.svg" alt="CCB" style="height:36px;object-fit:contain;" /></td>
+              <td align="center" style="padding:0 6px;"><img src="https://asobares.org/wp-content/uploads/2026/01/Nuevo-logo-Asobares-Color-scaled.png" alt="Asobares" style="height:40px;object-fit:contain;" /></td>
+              <td align="center" style="padding:0 6px;"><img src="https://asobares.org/wp-content/uploads/2025/03/Cluster_DJ_Positivo_Color_Luz.png" alt="Cluster DJ" style="height:40px;object-fit:contain;" /></td>
+              <td align="center" style="padding:0 6px;"><img src="https://asobares.org/wp-content/uploads/2026/08/Logo_CCB_big.svg" alt="Cámara de Comercio" style="height:40px;object-fit:contain;" /></td>
+              <td align="center" style="padding:0 6px;"><img src="https://asobares.org/wp-content/uploads/2026/08/cluster-musica-bogota.png" alt="Cluster Música Bogotá" style="height:40px;object-fit:contain;" /></td>
+              <td align="center" style="padding:0 6px;"><img src="https://asobares.org/wp-content/uploads/2026/08/Bogota_marca_ciudad.svg.webp" alt="Bogotá" style="height:40px;object-fit:contain;" /></td>
             </tr></table>
           </td>
         </tr>

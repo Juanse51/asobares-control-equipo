@@ -160,10 +160,10 @@
           </div>
         </div>
 
-        <div class="al-g3">
+        <div class="al-g2">
           <div class="al-fg">
-            <label>Departamento / Ciudad <span class="al-req">*</span></label>
-            <select name="ciudad" required>
+            <label>Departamento <span class="al-req">*</span></label>
+            <select name="departamento" required>
               <option value="">Selecciona...</option>
               <option>Amazonas</option><option>Antioquia</option><option>Arauca</option>
               <option>Atlántico</option><option>Bolívar</option><option>Boyacá</option>
@@ -180,6 +180,12 @@
               <option>Internacional</option>
             </select>
           </div>
+          <div class="al-fg">
+            <label>Ciudad <span class="al-req">*</span></label>
+            <input type="text" name="ciudad" required placeholder="Ej: Bogotá" />
+          </div>
+        </div>
+        <div class="al-g2">
           <div class="al-fg">
             <label>Teléfono Celular <span class="al-req">*</span></label>
             <input type="tel" name="telefono" required placeholder="3001234567" maxlength="10" />
@@ -270,7 +276,7 @@
         <img src="https://asobares.org/wp-content/uploads/2026/01/Nuevo-logo-Asobares-Color-scaled.png" alt="Asobares" />
         <img src="https://asobares.org/wp-content/uploads/2025/03/Cluster_DJ_Positivo_Color_Luz.png" alt="Cluster DJ" />
         <img src="https://asobares.org/wp-content/uploads/2026/08/Logo_CCB_big.svg" alt="Cámara de Comercio de Bogotá" />
-        <img src="https://asobares.org/wp-content/uploads/2026/08/cluster-musica-bogota.png" alt="Cluster Música Bogotá" />
+        <img src="https://asobares.org/wp-content/uploads/2026/08/cluster-musica-bogota.png" alt="Cluster Música Bogotá" style="height:76px;" />
         <img src="https://asobares.org/wp-content/uploads/2026/08/Bogota_marca_ciudad.svg.webp" alt="Bogotá" />
       </div>
     </div>
@@ -318,6 +324,7 @@
         nombre:                 d.nombre.trim(),
         apellidos:              d.apellidos.trim(),
         genero:                 d.genero,
+        departamento:           d.departamento,
         ciudad:                 d.ciudad,
         profesion:              d.profesion,
         telefono:               d.telefono,

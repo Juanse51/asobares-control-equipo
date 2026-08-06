@@ -1068,17 +1068,17 @@
         const q = aevLabSearch.toLowerCase();
         return aevLabData.filter(r => {
           if (aevLabFiltroEstado !== 'all' && r.estado !== aevLabFiltroEstado) return false;
-          if (q && ![r.nombre, r.apellidos, r.email, r.profesion, r.ciudad, r.empresa_nombre, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.profesion, r.ciudad, r.departamento, r.empresa_nombre, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
           return true;
         });
       };
       const exportAevLabExcel = () => {
         const filtered = getAevLabFiltered();
-        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
         const rows = filtered.map(r => [
           r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
           r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
-          r.genero, r.ciudad, r.profesion, r.empresa_nombre || '', r.empresa_nit || '',
+          r.genero, r.departamento || '', r.ciudad, r.profesion, r.empresa_nombre || '', r.empresa_nit || '',
           r.empresa_direccion || '', r.empresa_telefono || '', r.empresa_representante || '',
           r.empresa_cedula_rep || '', r.empresa_email || '', r.estado || '', r.notas || ''
         ]);
@@ -2448,7 +2448,7 @@
                             {inp('Tipo ID', 'tipo_identificacion')}{inp('Nº ID', 'numero_identificacion')}{inp('Profesión', 'profesion')}
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                            {inp('Ciudad', 'ciudad')}{inp('Género', 'genero')}
+                            {inp('Departamento', 'departamento')}{inp('Ciudad', 'ciudad')}{inp('Género', 'genero')}
                           </div>
                           <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>EMPRESA</p>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -2467,10 +2467,10 @@
                       <button onClick={() => setAevLabDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Capacitación Octava</button>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
-                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.profesion} · {r.ciudad} · {fmtDate(r.created_at)}</p>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.profesion} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
                       </div>
                       {badge(r.estado)}
-                      <button onClick={() => { setAevLabEditData({ nombre: r.nombre, apellidos: r.apellidos, email: r.email, telefono: r.telefono, tipo_identificacion: r.tipo_identificacion, numero_identificacion: r.numero_identificacion, profesion: r.profesion, ciudad: r.ciudad, genero: r.genero, empresa_nombre: r.empresa_nombre, empresa_nit: r.empresa_nit, empresa_direccion: r.empresa_direccion, empresa_telefono: r.empresa_telefono }); setAevLabEditModal(true); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#ede9fe', color: '#7c3aed', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>✏️ Editar</button>
+                      <button onClick={() => { setAevLabEditData({ nombre: r.nombre, apellidos: r.apellidos, email: r.email, telefono: r.telefono, tipo_identificacion: r.tipo_identificacion, numero_identificacion: r.numero_identificacion, profesion: r.profesion, departamento: r.departamento, ciudad: r.ciudad, genero: r.genero, empresa_nombre: r.empresa_nombre, empresa_nit: r.empresa_nit, empresa_direccion: r.empresa_direccion, empresa_telefono: r.empresa_telefono }); setAevLabEditModal(true); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#ede9fe', color: '#7c3aed', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>✏️ Editar</button>
                       <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteAevLabPersona(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>🗑️ Eliminar</button>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
@@ -2478,7 +2478,7 @@
                         <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
                           {sec('DATOS PERSONALES')}
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
-                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Ciudad', r.ciudad)}
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}
                           </div>
                         </div>
                         <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>

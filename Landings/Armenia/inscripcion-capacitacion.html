@@ -1,0 +1,309 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+#arm-cap-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+#arm-cap-wrap { font-family: 'Segoe UI', Arial, sans-serif; color: #1a2e1a; width: 100%; }
+
+/* BANNER */
+#arm-cap-wrap .ac-banner { width: 100%; line-height: 0; }
+#arm-cap-wrap .ac-banner img { width: 100%; display: block; }
+
+/* FORM SECTION */
+#arm-cap-wrap .ac-form-wrap { max-width: 1100px; margin: 0 auto; padding: 52px 24px 56px; }
+#arm-cap-wrap .ac-form-title { text-align: center; margin-bottom: 36px; }
+#arm-cap-wrap .ac-form-title h2 { font-size: 30px; font-weight: 800; color: #1a2e1a; margin-bottom: 8px; }
+#arm-cap-wrap .ac-form-title p { color: #64748b; font-size: 16px; }
+
+#arm-cap-wrap .ac-card { background: white; border-radius: 20px; padding: 48px 52px; box-shadow: 0 2px 24px rgba(0,0,0,0.07); }
+
+#arm-cap-wrap .ac-sec { font-size: 11px; font-weight: 700; color: #4a7c59; letter-spacing: 2px; margin-bottom: 20px; margin-top: 32px; padding-bottom: 10px; border-bottom: 2px solid #e8f5e9; display: block; }
+#arm-cap-wrap .ac-sec:first-child { margin-top: 0; }
+
+#arm-cap-wrap .ac-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+#arm-cap-wrap .ac-g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+#arm-cap-wrap .ac-fg label { display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+#arm-cap-wrap .ac-fg input,
+#arm-cap-wrap .ac-fg select { width: 100%; padding: 13px 15px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-family: inherit; background: white; color: #1a2e1a; transition: border-color 0.15s; -webkit-appearance: auto; appearance: auto; }
+#arm-cap-wrap .ac-fg input:focus,
+#arm-cap-wrap .ac-fg select:focus { outline: none; border-color: #2db84b; }
+#arm-cap-wrap .ac-req { color: #2db84b; }
+
+/* Checkboxes capacitaciones */
+#arm-cap-wrap .ac-caps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px; }
+#arm-cap-wrap .ac-cap-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+#arm-cap-wrap .ac-cap-item:has(input:checked) { border-color: #2db84b; background: #f0f9f4; }
+#arm-cap-wrap .ac-cap-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #2db84b; flex-shrink: 0; margin-top: 3px; cursor: pointer; }
+#arm-cap-wrap .ac-cap-item span { font-size: 14px; color: #374151; line-height: 1.45; }
+#arm-cap-wrap .ac-cap-date { display: block; font-size: 12px; color: #2db84b; font-weight: 600; margin-top: 4px; }
+
+/* Acepta datos */
+#arm-cap-wrap .ac-acepta-box { background: #f0f9f4; border: 2px solid #c8e6c9; border-radius: 12px; padding: 22px 26px; margin-bottom: 4px; }
+#arm-cap-wrap .ac-acepta-box p { font-size: 14px; color: #374151; line-height: 1.75; margin-bottom: 18px; }
+#arm-cap-wrap .ac-radio-row { display: flex; gap: 32px; }
+#arm-cap-wrap .ac-radio-row label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; color: #374151; font-weight: 600; }
+#arm-cap-wrap .ac-radio-row input[type="radio"] { width: 18px; height: 18px; accent-color: #2db84b; }
+
+/* Submit */
+#arm-cap-wrap .ac-submit { width: 100%; padding: 18px; border: none; border-radius: 12px; background: linear-gradient(135deg, #2db84b, #1e7c34); color: white; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 32px; font-family: inherit; transition: opacity 0.2s; letter-spacing: 0.3px; }
+#arm-cap-wrap .ac-submit:hover { opacity: 0.9; }
+#arm-cap-wrap .ac-submit:disabled { opacity: 0.6; cursor: default; }
+#arm-cap-wrap .ac-err { display: none; background: #fee2e2; color: #c41e16; padding: 14px 18px; border-radius: 10px; font-size: 14px; margin-top: 16px; }
+
+/* SUCCESS */
+#arm-cap-wrap .ac-success { display: none; text-align: center; padding: 64px 20px; }
+#arm-cap-wrap .ac-check { width: 88px; height: 88px; background: linear-gradient(135deg, #2db84b, #1e7c34); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 44px; color: white; margin: 0 auto 24px; }
+#arm-cap-wrap .ac-success h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; color: #1a2e1a; }
+#arm-cap-wrap .ac-success p { font-size: 15px; color: #475569; line-height: 1.6; margin-bottom: 6px; }
+
+@media (max-width: 768px) {
+  #arm-cap-wrap .ac-g2, #arm-cap-wrap .ac-g3 { grid-template-columns: 1fr; }
+  #arm-cap-wrap .ac-card { padding: 24px 20px; }
+  #arm-cap-wrap .ac-caps-grid { grid-template-columns: 1fr; }
+  #arm-cap-wrap .ac-radio-row { flex-direction: column; gap: 14px; }
+}
+</style>
+
+<div id="arm-cap-wrap">
+
+  <!-- BANNER -->
+  <div class="ac-banner">
+    <img src="https://asobares.org/wp-content/uploads/2026/08/Banner-forms-5-scaled.jpg" alt="Inscripción a Formación o Capacitación — Armenia, Quindío" />
+  </div>
+
+  <!-- FORM WRAP -->
+  <div class="ac-form-wrap">
+    <div class="ac-form-title">
+      <h2>Registro Capacitación Fortalecimiento Empresarial</h2>
+      <p>Programa de formación para el sector de bares y restaurantes del Quindío</p>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="ac-success" id="acSuccess">
+      <div class="ac-check">✓</div>
+      <h2>¡Inscripción exitosa!</h2>
+      <p>Hemos recibido tu registro correctamente.</p>
+      <p>Revisa tu correo — te enviamos la confirmación con los detalles de las capacitaciones.</p>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="ac-card" id="acCard">
+      <form id="acForm" autocomplete="off">
+
+        <span class="ac-sec">DATOS PERSONALES</span>
+
+        <div class="ac-g2">
+          <div class="ac-fg">
+            <label>Nombre</label>
+            <input type="text" name="nombre" placeholder="Tu nombre" />
+          </div>
+          <div class="ac-fg">
+            <label>Apellido <span class="ac-req">*</span></label>
+            <input type="text" name="apellidos" required placeholder="Tus apellidos" />
+          </div>
+        </div>
+
+        <div class="ac-g2">
+          <div class="ac-fg">
+            <label>Documento de Identificación <span class="ac-req">*</span></label>
+            <select name="tipo_identificacion" required>
+              <option value="">Selecciona...</option>
+              <option>Cédula</option>
+              <option>Pasaporte</option>
+              <option>Cédula de Extranjería</option>
+            </select>
+          </div>
+          <div class="ac-fg">
+            <label>Número de Identificación <span class="ac-req">*</span></label>
+            <input type="text" name="numero_identificacion" required placeholder="Ej: 1234567890" />
+          </div>
+        </div>
+
+        <div class="ac-g3">
+          <div class="ac-fg">
+            <label>Género</label>
+            <select name="genero">
+              <option value="">Selecciona...</option>
+              <option>MASCULINO</option>
+              <option>FEMENINO</option>
+              <option>NO SUMINISTRA</option>
+              <option>OTRO</option>
+            </select>
+          </div>
+          <div class="ac-fg">
+            <label>Departamento <span class="ac-req">*</span></label>
+            <select name="departamento" required>
+              <option value="">Selecciona...</option>
+              <option>Quindío</option>
+              <option>Amazonas</option><option>Antioquia</option><option>Arauca</option>
+              <option>Atlántico</option><option>Bogotá D.C.</option><option>Bolívar</option>
+              <option>Boyacá</option><option>Caldas</option><option>Caquetá</option>
+              <option>Casanare</option><option>Cauca</option><option>Cesar</option>
+              <option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option>
+              <option>Guainía</option><option>Guaviare</option><option>Huila</option>
+              <option>La Guajira</option><option>Magdalena</option><option>Meta</option>
+              <option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
+              <option>Risaralda</option>
+              <option>San Andrés, Providencia y Santa Catalina</option>
+              <option>Santander</option><option>Sucre</option><option>Tolima</option>
+              <option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
+              <option>Internacional</option>
+            </select>
+          </div>
+          <div class="ac-fg">
+            <label>Ciudad <span class="ac-req">*</span></label>
+            <input type="text" name="ciudad" required placeholder="Ej: Armenia" />
+          </div>
+        </div>
+
+        <div class="ac-g3">
+          <div class="ac-fg">
+            <label>Cargo <span class="ac-req">*</span></label>
+            <select name="cargo" required>
+              <option value="">Selecciona...</option>
+              <option>EMPRESARIO(A)</option><option>PROPIETARIO(A)</option><option>GERENTE</option>
+              <option>ADMINISTRADOR</option><option>JEFE DE COMPRAS</option><option>CONTADOR(A)</option>
+              <option>RELACIONES PUBLICAS</option><option>RECURSOS HUMANOS</option><option>CAJERO(A)</option>
+              <option>BARTENDER</option><option>MESERO(A)</option><option>COCINERO(A)</option>
+              <option>CHEF</option><option>INGENIERO(A) DE SONIDO</option><option>DJ</option>
+              <option>MÚSICO</option><option>PRODUCTOR(A)</option><option>OPERADOR(A) LOGÍSTICO</option>
+              <option>ARTISTA</option><option>MANAGER</option><option>DOCENTE CARRERAS AFINES</option>
+              <option>GERENTE DE MARCA</option><option>PROVEEDOR(A)</option><option>PERIODISTA</option>
+              <option>AGENTE TURÍSTICO</option><option>TRADUCTOR</option><option>REPRESENTANTE LEGAL</option>
+              <option>ESTUDIANTE CARRERAS AFINES</option><option>INGENIERO(A)</option><option>ABOGADO(A)</option>
+              <option>MARKETING</option><option>ORGANIZADOR(A) DE EVENTOS</option><option>CEO</option>
+              <option>GREMIO</option><option>ANALISTA CARRERAS AFINES</option><option>ASESOR(A)</option>
+              <option>ARQUITECTO(A)</option><option>ASISTENTE</option><option>BARISTA</option>
+              <option>CONSULTOR(A)</option><option>COORDINADOR(A)</option><option>DIRECTOR(A)</option>
+              <option>DISEÑADOR(A)</option><option>ENTIDAD-GOBIERNO</option>
+              <option>TECNICO CARRERAS AFINES</option><option>NO SUMINISTRA</option><option>OTRO</option>
+            </select>
+          </div>
+          <div class="ac-fg">
+            <label>Correo Electrónico <span class="ac-req">*</span></label>
+            <input type="email" name="email" required placeholder="tu@correo.com" />
+          </div>
+          <div class="ac-fg">
+            <label>Teléfono Celular <span style="font-size:12px;color:#94a3b8;font-weight:400;">(sin dígito país)</span> <span class="ac-req">*</span></label>
+            <input type="tel" name="telefono" required placeholder="3001234567" maxlength="10" />
+          </div>
+        </div>
+
+        <span class="ac-sec" style="margin-top:32px;">CAPACITACIÓN A LA CUAL SE INSCRIBE <span class="ac-req">*</span></span>
+        <p style="font-size:14px;color:#64748b;margin-bottom:18px;">Seleccione la(s) capacitación(es) en la cual está interesado en participar.</p>
+
+        <div class="ac-caps-grid">
+          <label class="ac-cap-item">
+            <input type="checkbox" name="capacitaciones" value="Cap 1: Del potencial al éxito: creando productos turísticos con valor — 12/08/2026" />
+            <span><strong>Cap 1 · </strong>Del potencial al éxito: creando productos turísticos con valor<span class="ac-cap-date">12 de agosto de 2026</span></span>
+          </label>
+          <label class="ac-cap-item">
+            <input type="checkbox" name="capacitaciones" value="Cap 2: ABC de la operación de los negocios — 18/08/2026" />
+            <span><strong>Cap 2 · </strong>ABC de la operación de los negocios<span class="ac-cap-date">18 de agosto de 2026</span></span>
+          </label>
+          <label class="ac-cap-item">
+            <input type="checkbox" name="capacitaciones" value="Cap 3: El pulso del sector y la base de la competitividad — 25/08/2026" />
+            <span><strong>Cap 3 · </strong>El pulso del sector y la base de la competitividad<span class="ac-cap-date">25 de agosto de 2026</span></span>
+          </label>
+          <label class="ac-cap-item">
+            <input type="checkbox" name="capacitaciones" value="Cap 4: Eventos de talla internacional, la música como producto turístico — 3/09/2026" />
+            <span><strong>Cap 4 · </strong>Eventos de talla internacional, la música como producto turístico<span class="ac-cap-date">3 de septiembre de 2026</span></span>
+          </label>
+          <label class="ac-cap-item">
+            <input type="checkbox" name="capacitaciones" value="Cap 5: IA: Economía de la experiencia y cultura regional — 08/09/2026" />
+            <span><strong>Cap 5 · </strong>IA: Economía de la experiencia y cultura regional<span class="ac-cap-date">8 de septiembre de 2026</span></span>
+          </label>
+          <label class="ac-cap-item">
+            <input type="checkbox" name="capacitaciones" value="Cap 6: Ingeniería del Menú, descubriendo el potencial del negocio — 15/09/2026" />
+            <span><strong>Cap 6 · </strong>Ingeniería del Menú, descubriendo el potencial del negocio<span class="ac-cap-date">15 de septiembre de 2026</span></span>
+          </label>
+        </div>
+
+        <span class="ac-sec" style="margin-top:32px;">ACEPTACIÓN DE USO DE DATOS <span class="ac-req">*</span></span>
+
+        <div class="ac-acepta-box">
+          <p>Por medio de la presente acepto el uso de los datos contemplados en este formulario por parte de Asobares, conforme a la política de la asociación, que en cualquier momento puede ser consultada en: <a href="https://asobares.org/politica-de-datos/" style="color:#2db84b;text-decoration:underline;" target="_blank">https://asobares.org/politica-de-datos/</a></p>
+          <div class="ac-radio-row">
+            <label><input type="radio" name="acepta_datos" value="si" required /> Sí</label>
+            <label><input type="radio" name="acepta_datos" value="no" /> No</label>
+          </div>
+        </div>
+
+        <div class="ac-err" id="acErr"></div>
+
+        <button type="submit" class="ac-submit" id="acSubmit">Confirmar inscripción →</button>
+
+      </form>
+    </div>
+  </div>
+
+</div><!-- /#arm-cap-wrap -->
+
+<script>
+(function() {
+  function initArmCap() {
+    if (typeof window.supabase === 'undefined') { setTimeout(initArmCap, 100); return; }
+    var db = window.supabase.createClient(
+      'https://pbqmkodwmntujezbokgo.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34'
+    );
+    var form      = document.getElementById('acForm');
+    var card      = document.getElementById('acCard');
+    var success   = document.getElementById('acSuccess');
+    var submitBtn = document.getElementById('acSubmit');
+    var errBox    = document.getElementById('acErr');
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      errBox.style.display = 'none';
+      var fd = new FormData(form);
+      var d  = Object.fromEntries(fd.entries());
+
+      var caps = Array.from(form.querySelectorAll('input[name="capacitaciones"]:checked')).map(function(c) { return c.value; });
+      if (caps.length === 0) {
+        errBox.textContent = 'Por favor selecciona al menos una capacitación.';
+        errBox.style.display = 'block'; return;
+      }
+      if (!d.acepta_datos || d.acepta_datos === 'no') {
+        errBox.textContent = 'Debes aceptar el uso de datos para continuar con la inscripción.';
+        errBox.style.display = 'block'; return;
+      }
+      if (!/^\d{10}$/.test(d.telefono)) {
+        errBox.textContent = 'El teléfono debe ser un número de 10 dígitos sin dígito país (ej: 3001234567).';
+        errBox.style.display = 'block'; return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+
+      var result = await db.from('inscripciones_armenia_cap').insert({
+        nombre:                (d.nombre || '').trim() || null,
+        apellidos:             d.apellidos.trim(),
+        tipo_identificacion:   d.tipo_identificacion,
+        numero_identificacion: d.numero_identificacion.trim(),
+        genero:                d.genero || null,
+        departamento:          d.departamento,
+        ciudad:                d.ciudad.trim(),
+        cargo:                 d.cargo,
+        email:                 d.email.trim().toLowerCase(),
+        telefono:              d.telefono,
+        capacitaciones:        caps.join(' | '),
+        acepta_datos:          true,
+        estado:                'inscrito'
+      });
+
+      if (result.error) {
+        errBox.textContent = 'Ocurrió un error al enviar tu registro. Por favor intenta de nuevo.';
+        errBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Confirmar inscripción →';
+        return;
+      }
+      card.style.display    = 'none';
+      success.style.display = 'block';
+      window.scrollTo({ top: document.getElementById('arm-cap-wrap').offsetTop, behavior: 'smooth' });
+    });
+  }
+  initArmCap();
+})();
+</script>

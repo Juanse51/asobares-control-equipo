@@ -1,0 +1,235 @@
+<style>
+#arm-asist-wrap*{box-sizing:border-box;margin:0;padding:0}
+#arm-asist-wrap{font-family:'Segoe UI',Arial,sans-serif;background:#f0f9f4;padding:24px 16px 48px;min-height:100vh}
+.aa-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden;max-width:680px;margin:0 auto 28px}
+.aa-banner img{width:100%;display:block}
+.aa-intro{padding:28px 32px 24px}
+.aa-intro h1{font-size:clamp(20px,3vw,26px);font-weight:700;color:#1a2e1a;line-height:1.3;margin-bottom:10px}
+.aa-intro p{font-size:14px;color:#64748b;line-height:1.6}
+.aa-body{padding:24px 28px}
+.aa-field{margin-bottom:18px}
+.aa-label{display:block;font-size:12px;font-weight:700;color:#334155;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px}
+.aa-req{color:#e53e3e;margin-left:3px}
+.aa-input,.aa-select{width:100%;padding:11px 14px;border:1.5px solid #d1d5db;border-radius:9px;font-size:14px;color:#1e293b;background:#fff;transition:border-color .2s;font-family:inherit}
+.aa-input:focus,.aa-select:focus{outline:none;border-color:#2db84b}
+.aa-g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.aa-g2{grid-template-columns:1fr}}
+.aa-radio-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.aa-radio-label{display:flex;align-items:center;gap:7px;padding:9px 16px;border:1.5px solid #d1d5db;border-radius:8px;cursor:pointer;font-size:13px;color:#334155;transition:all .15s;user-select:none}
+.aa-radio-label:has(input:checked){border-color:#2db84b;background:#f0fdf4;color:#166534;font-weight:600}
+.aa-radio-label input{accent-color:#2db84b}
+.aa-acepta-box{background:#f8fff9;border:1.5px solid #c8e6c9;border-radius:12px;padding:20px 24px}
+.aa-acepta-box p{font-size:14px;color:#334155;line-height:1.7;margin-bottom:14px}
+.aa-acepta-box a{color:#2db84b;font-weight:600}
+.aa-submit-wrap{padding:16px 28px 28px;text-align:center}
+.aa-btn{background:linear-gradient(135deg,#2db84b,#1e7c34);color:#fff;border:none;padding:15px 56px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:.3px}
+.aa-btn:hover{opacity:.9}
+.aa-btn:disabled{opacity:.6;cursor:not-allowed}
+.aa-error{background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin:0 28px 12px;font-size:13px;color:#dc2626;display:none}
+.aa-success{background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:28px;text-align:center;display:none}
+.aa-success h3{font-size:20px;color:#166534;margin-bottom:8px}
+.aa-success p{font-size:14px;color:#4a7c59}
+</style>
+
+<div id="arm-asist-wrap">
+
+  <!-- Banner + intro -->
+  <div class="aa-card">
+    <div class="aa-banner">
+      <img src="https://asobares.org/wp-content/uploads/2026/08/Banner-forms-4-scaled.jpg" alt="Asistencia Armenia 24"/>
+    </div>
+    <div class="aa-intro">
+      <h1>Registro Asistencia — Ciclo de Formación y Capacitaciones</h1>
+      <p>Fortalecimiento Empresarial para el sector de bares y restaurantes — Armenia, Quindío · Alcaldía de Armenia · Asobares · Quindío Convention Bureau.</p>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="aa-card">
+    <div class="aa-body">
+
+      <!-- Autorización -->
+      <div class="aa-field">
+        <div class="aa-acepta-box">
+          <p><strong>ACEPTACIÓN DE USO DE DATOS:</strong> Por medio de la presente acepto el uso de los datos contemplados en este formulario por parte de Asobares, conforme a la política de la asociación, que en cualquier momento puede ser consultada en: <a href="https://asobares.org/politica-de-datos/" target="_blank">https://asobares.org/politica-de-datos/</a> <span style="color:#e53e3e;">*</span></p>
+          <div class="aa-radio-group">
+            <label class="aa-radio-label"><input type="radio" name="acepta_datos" value="si"> Sí</label>
+            <label class="aa-radio-label"><input type="radio" name="acepta_datos" value="no"> No</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nombre y apellido -->
+      <div class="aa-g2">
+        <div class="aa-field">
+          <label class="aa-label">Nombre</label>
+          <input class="aa-input" name="nombre" type="text" placeholder="Tu nombre"/>
+        </div>
+        <div class="aa-field">
+          <label class="aa-label">Apellido<span class="aa-req">*</span></label>
+          <input class="aa-input" name="apellido" type="text" required placeholder="Tu apellido"/>
+        </div>
+      </div>
+
+      <!-- Documento -->
+      <div class="aa-field">
+        <label class="aa-label">Documento de Identificación<span class="aa-req">*</span></label>
+        <div class="aa-radio-group">
+          <label class="aa-radio-label"><input type="radio" name="tipo_documento" value="Cédula"> Cédula</label>
+          <label class="aa-radio-label"><input type="radio" name="tipo_documento" value="Pasaporte"> Pasaporte</label>
+          <label class="aa-radio-label"><input type="radio" name="tipo_documento" value="Cédula de Extranjería"> Cédula de Extranjería</label>
+        </div>
+      </div>
+
+      <div class="aa-field">
+        <label class="aa-label">Número de Identificación<span class="aa-req">*</span></label>
+        <input class="aa-input" name="numero_identificacion" type="text" required placeholder="Número sin puntos ni espacios"/>
+      </div>
+
+      <!-- Género -->
+      <div class="aa-field">
+        <label class="aa-label">Género</label>
+        <div class="aa-radio-group">
+          <label class="aa-radio-label"><input type="radio" name="genero" value="MASCULINO"> MASCULINO</label>
+          <label class="aa-radio-label"><input type="radio" name="genero" value="FEMENINO"> FEMENINO</label>
+          <label class="aa-radio-label"><input type="radio" name="genero" value="NO SUMINISTRA"> NO SUMINISTRA</label>
+          <label class="aa-radio-label"><input type="radio" name="genero" value="OTRO"> OTRO</label>
+        </div>
+      </div>
+
+      <!-- Departamento / Ciudad -->
+      <div class="aa-g2">
+        <div class="aa-field">
+          <label class="aa-label">Departamento<span class="aa-req">*</span></label>
+          <select class="aa-select" name="departamento" required>
+            <option value="">Seleccionar</option>
+            <option>Quindío</option>
+            <option>Amazonas</option><option>Antioquia</option><option>Arauca</option><option>Atlántico</option>
+            <option>Bogotá D.C.</option><option>Bolívar</option><option>Boyacá</option><option>Caldas</option>
+            <option>Caquetá</option><option>Casanare</option><option>Cauca</option><option>Cesar</option>
+            <option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option><option>Guainía</option>
+            <option>Guaviare</option><option>Huila</option><option>La Guajira</option><option>Magdalena</option>
+            <option>Meta</option><option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
+            <option>Risaralda</option><option>San Andrés y Providencia</option><option>Santander</option>
+            <option>Sucre</option><option>Tolima</option><option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
+          </select>
+        </div>
+        <div class="aa-field">
+          <label class="aa-label">Ciudad<span class="aa-req">*</span></label>
+          <input class="aa-input" name="ciudad" type="text" required placeholder="Ej: Armenia"/>
+        </div>
+      </div>
+
+      <!-- Cargo -->
+      <div class="aa-field">
+        <label class="aa-label">Cargo<span class="aa-req">*</span></label>
+        <select class="aa-select" name="cargo" required>
+          <option value="">Seleccionar</option>
+          <option>Propietario/a</option>
+          <option>Administrador/a</option>
+          <option>Gerente</option>
+          <option>Encargado/a</option>
+          <option>Mesero/a</option>
+          <option>Barista / Bartender</option>
+          <option>Cajero/a</option>
+          <option>Cocinero/a</option>
+          <option>Auxiliar de cocina</option>
+          <option>Domiciliario/a</option>
+          <option>Colaborador/a</option>
+          <option>Otro</option>
+        </select>
+      </div>
+
+      <!-- Correo y teléfono -->
+      <div class="aa-g2">
+        <div class="aa-field">
+          <label class="aa-label">Correo Electrónico<span class="aa-req">*</span></label>
+          <input class="aa-input" name="correo" type="email" required placeholder="correo@ejemplo.com"/>
+        </div>
+        <div class="aa-field">
+          <label class="aa-label">Teléfono Celular <span style="font-weight:400;font-size:11px;color:#94a3b8;">Sin dígito país</span><span class="aa-req">*</span></label>
+          <input class="aa-input" name="telefono" type="tel" required placeholder="3001234567" maxlength="10"/>
+        </div>
+      </div>
+
+    </div>
+    <div class="aa-error" id="aa-error-msg"></div>
+    <div class="aa-submit-wrap">
+      <div class="aa-success" id="aa-success">
+        <div style="font-size:48px;margin-bottom:12px">✅</div>
+        <h3>¡Registro exitoso!</h3>
+        <p>Quedaste registrado(a) en el ciclo de formación.<br/>Recibirás la confirmación en tu correo electrónico.</p>
+      </div>
+      <button class="aa-btn" id="aa-submit-btn" type="button" onclick="aaEnviar()">Registrarme</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+  var _sb;
+  function getSB(){
+    if(_sb) return _sb;
+    if(typeof supabase !== 'undefined' && supabase.createClient){
+      _sb = supabase.createClient(
+        'https://pbqmkodwmntujezbokgo.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34'
+      );
+      return _sb;
+    }
+    return null;
+  }
+  function vv(name){ var el=document.querySelector('[name="'+name+'"]'); return el ? el.value.trim() : ''; }
+  function radio(name){ var el=document.querySelector('[name="'+name+'"]:checked'); return el ? el.value : ''; }
+
+  window.aaEnviar = function(){
+    var sb = getSB();
+    if(!sb){ setTimeout(aaEnviar, 150); return; }
+
+    var errEl = document.getElementById('aa-error-msg');
+    errEl.style.display = 'none';
+
+    if(radio('acepta_datos') !== 'si'){ errEl.textContent='Debe aceptar el uso de datos para continuar.'; errEl.style.display='block'; return; }
+    if(!vv('apellido')){ errEl.textContent='El campo Apellido es obligatorio.'; errEl.style.display='block'; return; }
+    if(!radio('tipo_documento')){ errEl.textContent='Seleccione el tipo de documento de identificación.'; errEl.style.display='block'; return; }
+    if(!vv('numero_identificacion')){ errEl.textContent='El campo Número de Identificación es obligatorio.'; errEl.style.display='block'; return; }
+    if(!vv('departamento')){ errEl.textContent='Seleccione un departamento.'; errEl.style.display='block'; return; }
+    if(!vv('ciudad')){ errEl.textContent='El campo Ciudad es obligatorio.'; errEl.style.display='block'; return; }
+    if(!vv('cargo')){ errEl.textContent='El campo Cargo es obligatorio.'; errEl.style.display='block'; return; }
+    if(!vv('correo')){ errEl.textContent='El campo Correo Electrónico es obligatorio.'; errEl.style.display='block'; return; }
+    var tel = vv('telefono');
+    if(!tel || tel.length !== 10){ errEl.textContent='El teléfono debe tener exactamente 10 dígitos.'; errEl.style.display='block'; return; }
+
+    var btn = document.getElementById('aa-submit-btn');
+    btn.disabled = true; btn.textContent = 'Registrando...';
+
+    var payload = {
+      acepta_datos: true,
+      nombre: vv('nombre'),
+      apellido: vv('apellido'),
+      tipo_documento: radio('tipo_documento'),
+      numero_identificacion: vv('numero_identificacion'),
+      genero: radio('genero'),
+      departamento: vv('departamento'),
+      ciudad: vv('ciudad'),
+      cargo: vv('cargo'),
+      correo: vv('correo'),
+      telefono: tel
+    };
+
+    sb.from('inscripciones_armenia_asistencia').insert([payload]).then(function(res){
+      btn.disabled = false; btn.textContent = 'Registrarme';
+      if(res.error){
+        errEl.textContent = 'Error al registrar: ' + res.error.message;
+        errEl.style.display = 'block';
+      } else {
+        document.getElementById('aa-success').style.display = 'block';
+        btn.style.display = 'none';
+        document.getElementById('arm-asist-wrap').scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  };
+})();
+</script>

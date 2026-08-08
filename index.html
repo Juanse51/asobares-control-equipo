@@ -753,6 +753,13 @@
       const [armeniaDiagEditModal, setArmeniaDiagEditModal] = useState(false);
       const [armeniaDiagEditData, setArmeniaDiagEditData] = useState({});
 
+      const [armeniaAsistData, setArmeniaAsistData] = useState([]);
+      const [armeniaAsistLoading, setArmeniaAsistLoading] = useState(false);
+      const [armeniaAsistSearch, setArmeniaAsistSearch] = useState('');
+      const [armeniaAsistFiltroEstado, setArmeniaAsistFiltroEstado] = useState('all');
+      const [armeniaAsistDetalle, setArmeniaAsistDetalle] = useState(null);
+      const [armeniaAsistNotasEdit, setArmeniaAsistNotasEdit] = useState('');
+
       const [certPlantillas, setCertPlantillas] = useState([]);
       const [certLotes, setCertLotes] = useState([]);
       const [certPersonas, setCertPersonas] = useState([]);
@@ -783,6 +790,7 @@
       useEffect(() => { if (view === 'crm' || view === 'crm-aev-lab') { setAevLabDetalle(null); loadAevLab(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-armenia-cap') { setArmeniaCapDetalle(null); loadArmeniaCap(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-armenia-diag') { setArmeniaDiagDetalle(null); loadArmeniaDiag(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-armenia-asistencia') { setArmeniaAsistDetalle(null); loadArmeniaAsist(); } }, [view]);
 
       useEffect(() => {
         if (!currentUser) return;
@@ -1206,6 +1214,55 @@
           return true;
         });
       };
+      const loadArmeniaAsist = async () => {
+        setArmeniaAsistLoading(true);
+        const { data } = await supabase.from('inscripciones_armenia_asistencia').select('*').order('created_at', { ascending: false });
+        setArmeniaAsistData(data || []);
+        setArmeniaAsistLoading(false);
+      };
+      const updateArmeniaAsistEstado = async (id, estado) => {
+        await supabase.from('inscripciones_armenia_asistencia').update({ estado }).eq('id', id);
+        setArmeniaAsistData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setArmeniaAsistDetalle(prev => prev && prev.id === id ? { ...prev, estado } : prev);
+      };
+      const saveArmeniaAsistNotas = async (id, notas) => {
+        await supabase.from('inscripciones_armenia_asistencia').update({ notas }).eq('id', id);
+        setArmeniaAsistData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setArmeniaAsistDetalle(prev => prev && prev.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteArmeniaAsistPersona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_armenia_asistencia').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setArmeniaAsistData(prev => prev.filter(r => r.id !== id));
+        setArmeniaAsistDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getArmeniaAsistFiltered = () => {
+        const q = armeniaAsistSearch.toLowerCase();
+        return armeniaAsistData.filter(r => {
+          if (armeniaAsistFiltroEstado !== 'all' && r.estado !== armeniaAsistFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellido, r.correo, r.cargo, r.ciudad, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportArmeniaAsistExcel = () => {
+        const filtered = getArmeniaAsistFiltered();
+        const headers = ['Fecha','Nombre','Apellido','Tipo Doc.','Nº Doc.','Género','Departamento','Ciudad','Cargo','Correo','Teléfono','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre || '', r.apellido, r.tipo_documento, r.numero_identificacion,
+          r.genero || '', r.departamento, r.ciudad, r.cargo, r.correo, r.telefono,
+          r.estado || '', r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Asistencia Armenia');
+        XLSX.writeFile(wb, 'asistencia_armenia_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+
       const exportArmeniaDiagExcel = () => {
         const filtered = getArmeniaDiagFiltered();
         const headers = ['Fecha','Establecimiento','Razón Social','Representante','Ciudad','Tipo Negocio','CIIU Principal','Aforo','Nº Sillas','Días Op.','Horario','Estado','Notas'];
@@ -1480,7 +1537,7 @@
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
               <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
               <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>📁</span>Documentación</button>
-              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>🗂️</span>CRM</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>🗂️</span>CRM</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('certificaciones')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'certificaciones' ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'transparent', color: view === 'certificaciones' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'certificaciones' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>🎓</span>Certificaciones</button>}
               {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: '👥', label: 'Gestión de Equipo' }, { id: 'analytics', icon: '📈', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><span style={{ fontSize: 18 }}>{item.icon}</span>{item.label}</button>))}</>)}
             </nav>
@@ -1492,7 +1549,7 @@
 
           <main style={{ flex: 1, marginLeft: isMobile ? 0 : 260, padding: isMobile ? '16px 12px 80px' : '32px 32px 80px', minWidth: 0 }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 20 : 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
               <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'center', flexShrink: 0 }}>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}>🔔{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
@@ -1700,7 +1757,7 @@
                     { id: 'fontur', icon: '📋', title: 'Formulario FONTUR', desc: 'Inscripciones al programa NTC 6496:2020 financiado por FONTUR. Solo consulta y exportación.', count: fonturData.length, loading: fonturLoading, color: '#1e3a5f', bg: '#dbeafe' },
                     { id: 'registros', icon: '🏢', title: 'Registros de Formularios', desc: 'Envíos del formulario de afiliación de asobares.org. Establecimientos, datos de empresa y documentos adjuntos.', count: registrosData.length, loading: registrosLoading, color: '#059669', bg: '#d1fae5' },
                     { id: 'crm-gastro', icon: '🍽️', title: 'Postulados Gastromarketing Day', desc: 'Postulaciones al Gastromarketing Day — Catedral de Sal, 24-25 sep 2026. Gestiona estados y notas internas.', count: gastroData.length, loading: gastroLoading, color: '#f59e0b', bg: '#fef3c7' },
-                    { id: 'crm-armenia-folder', icon: '🏙️', title: 'Armenia 24', desc: 'Formularios del programa de Fortalecimiento Empresarial en Armenia, Quindío — Alcaldía de Armenia · Asobares · Quindío Convention Bureau.', count: armeniaCapData.length + armeniaDiagData.length, loading: armeniaCapLoading || armeniaDiagLoading, color: '#2db84b', bg: '#f0f9f4' }
+                    { id: 'crm-armenia-folder', icon: '🏙️', title: 'Armenia 24', desc: 'Formularios del programa de Fortalecimiento Empresarial en Armenia, Quindío — Alcaldía de Armenia · Asobares · Quindío Convention Bureau.', count: armeniaCapData.length + armeniaDiagData.length + armeniaAsistData.length, loading: armeniaCapLoading || armeniaDiagLoading || armeniaAsistLoading, color: '#2db84b', bg: '#f0f9f4' }
                   ].map(card => (
                     <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -1754,7 +1811,8 @@
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20, marginTop: 8 }}>
                   {[
                     { id: 'crm-armenia-cap', icon: '📋', title: 'Inscripción a Formación o Capacitación', desc: 'Registro Capacitación Fortalecimiento Empresarial — 6 capacitaciones, ago–sep 2026.', count: armeniaCapData.length, loading: armeniaCapLoading, color: '#2db84b', bg: '#f0f9f4' },
-                    { id: 'crm-armenia-diag', icon: '🔍', title: 'Instrumento Diagnóstico y Acompañamiento', desc: 'Diagnóstico de establecimientos de comercio — Asistencia técnica Ciudad de Armenia.', count: armeniaDiagData.length, loading: armeniaDiagLoading, color: '#1e7c34', bg: '#f0f9f4' }
+                    { id: 'crm-armenia-diag', icon: '🔍', title: 'Instrumento Diagnóstico y Acompañamiento', desc: 'Diagnóstico de establecimientos de comercio — Asistencia técnica Ciudad de Armenia.', count: armeniaDiagData.length, loading: armeniaDiagLoading, color: '#1e7c34', bg: '#f0f9f4' },
+                    { id: 'crm-armenia-asistencia', icon: '📝', title: 'Registro Asistencia — Ciclo de Formación', desc: 'Registro de asistentes al ciclo de formación y capacitaciones — Armenia, Quindío.', count: armeniaAsistData.length, loading: armeniaAsistLoading, color: '#2db84b', bg: '#f0f9f4' }
                   ].map(card => (
                     <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -3025,6 +3083,97 @@
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                                 {diagBadge(r.estado)}
+                                <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-armenia-asistencia' && (() => {
+              const asistBadge = (estado) => { const map = { registrado: { bg: '#dbeafe', color: '#1d4ed8', label: 'Registrado' }, asistio: { bg: '#dcfce7', color: '#166534', label: 'Asistió' }, no_asistio: { bg: '#fee2e2', color: '#991b1b', label: 'No asistió' }, cancelado: { bg: '#f1f5f9', color: '#475569', label: 'Cancelado' } }; const s = map[estado] || map.registrado; return React.createElement('span', { style: { padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color } }, s.label); };
+              const filtered = getArmeniaAsistFiltered();
+              return (
+                <div>
+                  {armeniaAsistDetalle ? (
+                    <div>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+                        <button onClick={() => setArmeniaAsistDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Armenia 24</button>
+                        {currentUser.role === 'admin' && <button onClick={() => { if(window.confirm('¿Eliminar este registro?')) deleteArmeniaAsistPersona(armeniaAsistDetalle.id); }} style={{ padding: '8px 16px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>🗑️ Eliminar</button>}
+                      </div>
+                      <div style={{ background: 'white', borderRadius: 16, padding: 28, marginBottom: 20 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+                          <div>
+                            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{[armeniaAsistDetalle.nombre, armeniaAsistDetalle.apellido].filter(Boolean).join(' ')}</h2>
+                            <p style={{ fontSize: 14, color: '#64748b' }}>{armeniaAsistDetalle.cargo} · {armeniaAsistDetalle.ciudad}</p>
+                            <p style={{ fontSize: 13, color: '#94a3b8' }}>{new Date(armeniaAsistDetalle.created_at).toLocaleDateString('es-CO')}</p>
+                          </div>
+                          {asistBadge(armeniaAsistDetalle.estado)}
+                        </div>
+                        <div style={{ marginBottom: 16 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '1px', marginBottom: 8 }}>ESTADO</p>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            {[['registrado','Registrado'],['asistio','Asistió'],['no_asistio','No asistió'],['cancelado','Cancelado']].map(([val, lbl]) => (
+                              <button key={val} onClick={() => updateArmeniaAsistEstado(armeniaAsistDetalle.id, val)} style={{ padding: '6px 14px', borderRadius: 8, border: `2px solid ${armeniaAsistDetalle.estado === val ? '#2db84b' : '#e5e7eb'}`, background: armeniaAsistDetalle.estado === val ? '#2db84b' : 'white', color: armeniaAsistDetalle.estado === val ? 'white' : '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
+                          {[['Tipo Doc.','tipo_documento'],['Nº Identificación','numero_identificacion'],['Género','genero'],['Departamento','departamento'],['Ciudad','ciudad'],['Cargo','cargo'],['Correo','correo'],['Teléfono','telefono']].map(([lbl, key]) => armeniaAsistDetalle[key] ? (
+                            <div key={key}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{armeniaAsistDetalle[key]}</p></div>
+                          ) : null)}
+                        </div>
+                        <div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '1px', marginBottom: 8 }}>NOTAS INTERNAS</p>
+                          <textarea value={armeniaAsistNotasEdit} onChange={e => setArmeniaAsistNotasEdit(e.target.value)} onFocus={() => setArmeniaAsistNotasEdit(armeniaAsistDetalle.notas || '')} style={{ width: '100%', padding: 12, border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', minHeight: 80, resize: 'vertical', boxSizing: 'border-box' }} placeholder="Añade notas sobre esta persona..."/>
+                          <button onClick={() => saveArmeniaAsistNotas(armeniaAsistDetalle.id, armeniaAsistNotasEdit)} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <button onClick={() => setView('crm-armenia-folder')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Armenia 24</button>
+                        <input value={armeniaAsistSearch} onChange={e => setArmeniaAsistSearch(e.target.value)} placeholder="Buscar por nombre, cédula, correo..." style={{ flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}/>
+                        <select value={armeniaAsistFiltroEstado} onChange={e => setArmeniaAsistFiltroEstado(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}>
+                          <option value="all">Todos</option>
+                          <option value="registrado">Registrado</option>
+                          <option value="asistio">Asistió</option>
+                          <option value="no_asistio">No asistió</option>
+                          <option value="cancelado">Cancelado</option>
+                        </select>
+                        <button onClick={loadArmeniaAsist} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}>🔄</button>
+                        <button onClick={exportArmeniaAsistExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12, marginBottom: 20 }}>
+                        {[['Total', armeniaAsistData.length, '#2db84b'], ['Registrado', armeniaAsistData.filter(r=>r.estado==='registrado'||!r.estado).length, '#3b82f6'], ['Asistió', armeniaAsistData.filter(r=>r.estado==='asistio').length, '#10b981'], ['No asistió', armeniaAsistData.filter(r=>r.estado==='no_asistio').length, '#E84338']].map(([lbl, val, color]) => (
+                          <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                            <p style={{ fontSize: 22, fontWeight: 700, color }}>{val}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{lbl}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {armeniaAsistLoading ? (
+                        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Cargando...</div>
+                      ) : filtered.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16, color: '#94a3b8' }}>No hay registros{armeniaAsistSearch ? ' que coincidan' : ''}.</div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                          {filtered.map((r, i) => (
+                            <div key={r.id} onClick={() => { setArmeniaAsistDetalle(r); setArmeniaAsistNotasEdit(r.notas || ''); }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i < filtered.length-1 ? '1px solid #f1f5f9' : 'none', cursor: 'pointer' }}
+                              onMouseOver={e=>e.currentTarget.style.background='#f8fff9'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg, #2db84b, #1e7c34)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>👤</div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 2 }}>{[r.nombre, r.apellido].filter(Boolean).join(' ')}</p>
+                                <p style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.cargo} · {r.ciudad}</p>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                                {asistBadge(r.estado)}
                                 <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
                               </div>
                             </div>

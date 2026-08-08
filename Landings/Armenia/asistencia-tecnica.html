@@ -54,6 +54,17 @@
 #arm-diag-wrap .ad-success h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; color: #1a2e1a; }
 #arm-diag-wrap .ad-success p { font-size: 15px; color: #475569; line-height: 1.6; margin-bottom: 6px; }
 
+#arm-diag-wrap .ad-upload-zone { border: 2px dashed #d1d5db; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: #fafafa; position: relative; }
+#arm-diag-wrap .ad-upload-zone:hover { border-color: #2db84b; background: #f0fdf4; }
+#arm-diag-wrap .ad-upload-zone.ad-has-file { border-color: #2db84b; background: #f0fdf4; }
+#arm-diag-wrap .ad-upload-zone input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+#arm-diag-wrap .ad-upload-icon { font-size: 28px; margin-bottom: 6px; }
+#arm-diag-wrap .ad-upload-txt { font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 4px; }
+#arm-diag-wrap .ad-upload-sub { font-size: 12px; color: #94a3b8; }
+#arm-diag-wrap .ad-upload-name { font-size: 13px; color: #2db84b; font-weight: 600; margin-top: 8px; display: none; }
+#arm-diag-wrap .ad-progress { height: 6px; background: #e5e7eb; border-radius: 10px; margin-top: 24px; overflow: hidden; display: none; }
+#arm-diag-wrap .ad-progress-bar { height: 100%; background: linear-gradient(90deg, #2db84b, #1e7c34); border-radius: 10px; transition: width 0.4s; }
+
 @media (max-width: 768px) {
   #arm-diag-wrap .ad-g2, #arm-diag-wrap .ad-g3, #arm-diag-wrap .ad-g2i { grid-template-columns: 1fr; }
   #arm-diag-wrap .ad-card { padding: 24px 20px; }
@@ -399,6 +410,43 @@
         <div class="ad-fg"><label style="font-size:13px">¿Su establecimiento hace parte de los programas de promoción turística de la ciudad? <span class="ad-req">*</span></label><div class="ad-radio-row"><label><input type="radio" name="programas_turismo" value="SI"> SI</label><label><input type="radio" name="programas_turismo" value="NO"> NO</label></div></div>
       </div>
 
+      <!-- ANEXOS DOCUMENTOS LEGALES -->
+      <span class="ad-sec">Anexos Documentos Legales del Establecimiento</span>
+      <p class="ad-sec-desc">Puede cargarse una imagen de los documentos como anexo para validación de la conformación legal del establecimiento.</p>
+
+      <div class="ad-g3">
+        <div class="ad-fg">
+          <label>Cámara de Comercio <span class="ad-req">*</span></label>
+          <div class="ad-upload-zone" id="zone-camara" onclick="document.getElementById('diag-file-camara').click()">
+            <input type="file" id="diag-file-camara" accept=".pdf,.jpg,.jpeg,.png" onchange="adFileChange(this,'zone-camara','diag-name-camara')"/>
+            <div class="ad-upload-icon">📄</div>
+            <div class="ad-upload-txt">Haz clic para seleccionar</div>
+            <div class="ad-upload-sub">PDF, JPG o PNG — máx. 10 MB</div>
+            <div class="ad-upload-name" id="diag-name-camara"></div>
+          </div>
+        </div>
+        <div class="ad-fg">
+          <label>Registro Único Tributario (RUT) <span class="ad-req">*</span></label>
+          <div class="ad-upload-zone" id="zone-rut" onclick="document.getElementById('diag-file-rut').click()">
+            <input type="file" id="diag-file-rut" accept=".pdf,.jpg,.jpeg,.png" onchange="adFileChange(this,'zone-rut','diag-name-rut')"/>
+            <div class="ad-upload-icon">📋</div>
+            <div class="ad-upload-txt">Haz clic para seleccionar</div>
+            <div class="ad-upload-sub">PDF, JPG o PNG — máx. 10 MB</div>
+            <div class="ad-upload-name" id="diag-name-rut"></div>
+          </div>
+        </div>
+        <div class="ad-fg">
+          <label>Copia Documento de Identificación del Representante Legal <span class="ad-req">*</span></label>
+          <div class="ad-upload-zone" id="zone-cedula" onclick="document.getElementById('diag-file-cedula').click()">
+            <input type="file" id="diag-file-cedula" accept=".pdf,.jpg,.jpeg,.png" onchange="adFileChange(this,'zone-cedula','diag-name-cedula')"/>
+            <div class="ad-upload-icon">🪪</div>
+            <div class="ad-upload-txt">Haz clic para seleccionar</div>
+            <div class="ad-upload-sub">PDF, JPG o PNG — máx. 10 MB</div>
+            <div class="ad-upload-name" id="diag-name-cedula"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- ENVÍO DE INFORME -->
       <span class="ad-sec">Envío de Informe de Visita</span>
       <p class="ad-sec-desc">A continuación diligencie la información para el envío del informe de visita general de su establecimiento.</p>
@@ -418,6 +466,7 @@
         </div>
       </div>
 
+      <div class="ad-progress" id="ad-progress"><div class="ad-progress-bar" id="ad-progress-bar" style="width:0%"></div></div>
       <div class="ad-err" id="ad-error-msg"></div>
       <button class="ad-submit" id="ad-submit-btn" type="button" onclick="adEnviar()">Enviar Instrumento</button>
 
@@ -426,6 +475,20 @@
 </div>
 
 <script>
+window.adFileChange = function(input, zoneId, nameId) {
+  var zone = document.getElementById(zoneId);
+  var nameEl = document.getElementById(nameId);
+  if(input.files && input.files[0]) {
+    var f = input.files[0];
+    if(f.size > 10 * 1024 * 1024) {
+      alert('El archivo "' + f.name + '" supera el límite de 10 MB.');
+      input.value = ''; zone.classList.remove('ad-has-file'); nameEl.style.display = 'none'; return;
+    }
+    zone.classList.add('ad-has-file');
+    nameEl.textContent = '✔ ' + f.name; nameEl.style.display = 'block';
+  } else { zone.classList.remove('ad-has-file'); nameEl.style.display = 'none'; }
+};
+
 (function(){
   var _sb;
   function getSB(){
@@ -443,7 +506,18 @@
   function radio(name){ var el=document.querySelector('[name="'+name+'"]:checked'); return el ? el.value : ''; }
   function checks(name){ return Array.from(document.querySelectorAll('[name="'+name+'"]:checked')).map(function(e){return e.value;}).join(' | '); }
 
-  window.adEnviar = function(){
+  var DIAG_BUCKET = 'armenia-diag';
+  function setProgress(pct){ var p=document.getElementById('ad-progress'); var b=document.getElementById('ad-progress-bar'); if(p) p.style.display='block'; if(b) b.style.width=pct+'%'; }
+  async function uploadFileDiag(file, folder) {
+    var safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    var path = folder + '/' + safeName;
+    var sb = getSB();
+    var res = await sb.storage.from(DIAG_BUCKET).upload(path, file, { upsert: true, contentType: file.type });
+    if(res.error) throw new Error('Error subiendo "' + file.name + '": ' + res.error.message);
+    return sb.storage.from(DIAG_BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  window.adEnviar = async function(){
     var sb = getSB();
     if(!sb){ setTimeout(adEnviar, 150); return; }
     var errEl = document.getElementById('ad-error-msg');
@@ -465,16 +539,35 @@
     var formas=checks('formas_pago'); if(!formas){ errEl.textContent='Seleccione al menos una forma de pago.'; errEl.style.display='block'; return; }
     var docs=checks('documentacion'); if(!docs){ errEl.textContent='Seleccione al menos un documento.'; errEl.style.display='block'; return; }
 
+    var fileCamara = document.getElementById('diag-file-camara').files[0];
+    var fileRut    = document.getElementById('diag-file-rut').files[0];
+    var fileCedula = document.getElementById('diag-file-cedula').files[0];
+    if(!fileCamara){ errEl.textContent='Debe adjuntar la Cámara de Comercio.'; errEl.style.display='block'; return; }
+    if(!fileRut){ errEl.textContent='Debe adjuntar el Registro Único Tributario (RUT).'; errEl.style.display='block'; return; }
+    if(!fileCedula){ errEl.textContent='Debe adjuntar la copia del documento de identificación del Representante Legal.'; errEl.style.display='block'; return; }
+
     var btn=document.getElementById('ad-submit-btn');
-    btn.disabled=true; btn.textContent='Enviando...';
+    btn.disabled=true; btn.textContent='Subiendo documentos...';
 
-    var payload={acepta_datos:true,razon_social:vv('razon_social'),tipo_identificacion:vv('tipo_identificacion'),numero_identificacion:vv('numero_identificacion'),nombre_representante:vv('nombre_representante'),departamento:vv('departamento'),ciudad_empresa:vv('ciudad_empresa'),telefono_representante:vv('telefono_representante'),correo_representante:vv('correo_representante'),regimen:radio('regimen'),nombre_establecimiento:vv('nombre_establecimiento'),telefono_establecimiento:vv('telefono_establecimiento'),direccion:vv('direccion'),correo_establecimiento:vv('correo_establecimiento'),ciudad_establecimiento:vv('ciudad_establecimiento'),barrio:vv('barrio'),estrato:vv('estrato'),pagina_web:vv('pagina_web'),facebook:vv('facebook'),instagram:vv('instagram'),tiene_sucursales:radio('tiene_sucursales'),numero_sucursales:vv('numero_sucursales'),edad_promedio_empleados:radio('edad_promedio_empleados'),aprendices_sena:radio('aprendices_sena'),colaboradores_lgbtiq:radio('colaboradores_lgbtiq'),personal_discapacidad:radio('personal_discapacidad'),local_tipo:radio('local_tipo'),area_establecimiento:vv('area_establecimiento'),documentacion:docs,actividad_principal_ciiu:vv('actividad_principal_ciiu'),actividad_secundaria_ciiu:vv('actividad_secundaria_ciiu'),otra_actividad_ciiu:vv('otra_actividad_ciiu'),tipo_negocio:vv('tipo_negocio'),concepto_establecimiento:vv('concepto_establecimiento'),musica_en_vivo:radio('musica_en_vivo'),edad_promedio_clientes:vv('edad_promedio_clientes'),dias_operacion:dias,horario_servicio:vv('horario_servicio'),cobro_cover:radio('cobro_cover'),formas_pago:formas,aforo:vv('aforo'),num_sillas:vv('num_sillas'),num_mesas:vv('num_mesas'),num_usuarios_pie:vv('num_usuarios_pie'),num_salidas:vv('num_salidas'),num_banos_hombres:vv('num_banos_hombres'),num_banos_mujeres:vv('num_banos_mujeres'),num_banos_discapacitados:vv('num_banos_discapacitados'),rampas_acceso:radio('rampas_acceso'),ventilacion_artificial:radio('ventilacion_artificial'),insonorizacion:radio('insonorizacion'),parqueadero:radio('parqueadero'),convenio_conductor:radio('convenio_conductor'),sistema_cctv:radio('sistema_cctv'),senalizacion_emergencia:radio('senalizacion_emergencia'),iluminacion_corredores:radio('iluminacion_corredores'),logistica_seguridad:radio('logistica_seguridad'),contratacion_directa:radio('contratacion_directa'),participar_formacion:radio('participar_formacion'),programas_bilinguismo:radio('programas_bilinguismo'),asesorias_juridicas:radio('asesorias_juridicas'),activacion_economica:radio('activacion_economica'),extension_horario:radio('extension_horario'),programas_institucionales:radio('programas_institucionales'),programas_turismo:radio('programas_turismo'),nombre_informe:vv('nombre_informe'),correo_informe:vv('correo_informe'),telefono_informe:vv('telefono_informe')};
+    try {
+      setProgress(10);
+      var urlCamara = await uploadFileDiag(fileCamara, 'camara-comercio');
+      setProgress(40);
+      var urlRut    = await uploadFileDiag(fileRut, 'rut');
+      setProgress(70);
+      var urlCedula = await uploadFileDiag(fileCedula, 'cedula-representante');
+      setProgress(90);
 
-    sb.from('inscripciones_armenia_diag').insert([payload]).then(function(res){
+      var payload={acepta_datos:true,razon_social:vv('razon_social'),tipo_identificacion:vv('tipo_identificacion'),numero_identificacion:vv('numero_identificacion'),nombre_representante:vv('nombre_representante'),departamento:vv('departamento'),ciudad_empresa:vv('ciudad_empresa'),telefono_representante:vv('telefono_representante'),correo_representante:vv('correo_representante'),regimen:radio('regimen'),nombre_establecimiento:vv('nombre_establecimiento'),telefono_establecimiento:vv('telefono_establecimiento'),direccion:vv('direccion'),correo_establecimiento:vv('correo_establecimiento'),ciudad_establecimiento:vv('ciudad_establecimiento'),barrio:vv('barrio'),estrato:vv('estrato'),pagina_web:vv('pagina_web'),facebook:vv('facebook'),instagram:vv('instagram'),tiene_sucursales:radio('tiene_sucursales'),numero_sucursales:vv('numero_sucursales'),edad_promedio_empleados:radio('edad_promedio_empleados'),aprendices_sena:radio('aprendices_sena'),colaboradores_lgbtiq:radio('colaboradores_lgbtiq'),personal_discapacidad:radio('personal_discapacidad'),local_tipo:radio('local_tipo'),area_establecimiento:vv('area_establecimiento'),documentacion:docs,actividad_principal_ciiu:vv('actividad_principal_ciiu'),actividad_secundaria_ciiu:vv('actividad_secundaria_ciiu'),otra_actividad_ciiu:vv('otra_actividad_ciiu'),tipo_negocio:vv('tipo_negocio'),concepto_establecimiento:vv('concepto_establecimiento'),musica_en_vivo:radio('musica_en_vivo'),edad_promedio_clientes:vv('edad_promedio_clientes'),dias_operacion:dias,horario_servicio:vv('horario_servicio'),cobro_cover:radio('cobro_cover'),formas_pago:formas,aforo:vv('aforo'),num_sillas:vv('num_sillas'),num_mesas:vv('num_mesas'),num_usuarios_pie:vv('num_usuarios_pie'),num_salidas:vv('num_salidas'),num_banos_hombres:vv('num_banos_hombres'),num_banos_mujeres:vv('num_banos_mujeres'),num_banos_discapacitados:vv('num_banos_discapacitados'),rampas_acceso:radio('rampas_acceso'),ventilacion_artificial:radio('ventilacion_artificial'),insonorizacion:radio('insonorizacion'),parqueadero:radio('parqueadero'),convenio_conductor:radio('convenio_conductor'),sistema_cctv:radio('sistema_cctv'),senalizacion_emergencia:radio('senalizacion_emergencia'),iluminacion_corredores:radio('iluminacion_corredores'),logistica_seguridad:radio('logistica_seguridad'),contratacion_directa:radio('contratacion_directa'),participar_formacion:radio('participar_formacion'),programas_bilinguismo:radio('programas_bilinguismo'),asesorias_juridicas:radio('asesorias_juridicas'),activacion_economica:radio('activacion_economica'),extension_horario:radio('extension_horario'),programas_institucionales:radio('programas_institucionales'),programas_turismo:radio('programas_turismo'),nombre_informe:vv('nombre_informe'),correo_informe:vv('correo_informe'),telefono_informe:vv('telefono_informe'),link_camara_comercio:urlCamara,link_rut:urlRut,link_cedula_representante:urlCedula};
+
+      var res = await sb.from('inscripciones_armenia_diag').insert([payload]);
       btn.disabled=false; btn.textContent='Enviar Instrumento';
       if(res.error){ errEl.textContent='Error al enviar: '+res.error.message; errEl.style.display='block'; }
       else { document.getElementById('ad-success').style.display='block'; document.getElementById('ad-card').style.display='none'; document.getElementById('arm-diag-wrap').scrollIntoView({behavior:'smooth'}); }
-    });
+    } catch(e) {
+      btn.disabled=false; btn.textContent='Enviar Instrumento';
+      errEl.textContent='Error al subir documentos: '+e.message; errEl.style.display='block';
+    }
   };
 })();
 </script>

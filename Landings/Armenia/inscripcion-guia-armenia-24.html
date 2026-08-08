@@ -44,6 +44,17 @@
 
 #arm-guia-wrap .ag-note { font-size: 12px; color: #94a3b8; margin-top: 6px; }
 
+#arm-guia-wrap .ag-upload-zone { border: 2px dashed #d1d5db; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: #fafafa; position: relative; }
+#arm-guia-wrap .ag-upload-zone:hover { border-color: #2db84b; background: #f0fdf4; }
+#arm-guia-wrap .ag-upload-zone.ag-has-file { border-color: #2db84b; background: #f0fdf4; }
+#arm-guia-wrap .ag-upload-zone input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+#arm-guia-wrap .ag-upload-icon { font-size: 28px; margin-bottom: 6px; }
+#arm-guia-wrap .ag-upload-txt { font-size: 14px; color: #374151; font-weight: 600; margin-bottom: 3px; }
+#arm-guia-wrap .ag-upload-sub { font-size: 12px; color: #94a3b8; }
+#arm-guia-wrap .ag-upload-name { font-size: 13px; color: #1e7c34; font-weight: 700; margin-top: 6px; word-break: break-all; display: none; }
+#arm-guia-wrap .ag-progress { height: 4px; background: #e5e7eb; border-radius: 4px; margin-top: 10px; overflow: hidden; display: none; }
+#arm-guia-wrap .ag-progress-bar { height: 100%; background: linear-gradient(90deg, #2db84b, #1e7c34); border-radius: 4px; transition: width 0.3s; width: 0; }
+
 #arm-guia-wrap .ag-submit { width: 100%; padding: 18px; border: none; border-radius: 12px; background: linear-gradient(135deg, #2db84b, #1e7c34); color: white; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 32px; font-family: inherit; transition: opacity 0.2s; letter-spacing: 0.3px; }
 #arm-guia-wrap .ag-submit:hover { opacity: 0.9; }
 #arm-guia-wrap .ag-submit:disabled { opacity: 0.6; cursor: default; }
@@ -231,21 +242,39 @@
 
       <!-- ANEXOS -->
       <span class="ag-sec">Anexos</span>
-      <p class="ag-sec-desc">Requerimos sus anexos para inclusión en la guía. Comparta los enlaces de descarga desde Google Drive, Dropbox u otro servicio con acceso público.</p>
+      <p class="ag-sec-desc">Requerimos sus anexos para inclusión en la guía. Formatos aceptados: PDF, JPG, PNG. Tamaño máximo 10 MB por archivo.</p>
 
       <div class="ag-fg">
-        <label>Cámara de Comercio — Link de descarga <span class="ag-req">*</span></label>
-        <input type="text" name="link_camara_comercio" required placeholder="https://drive.google.com/..."/>
-        <p class="ag-note">Comparta el enlace del archivo desde Google Drive, Dropbox u otro servicio con acceso público.</p>
+        <label>Cámara de Comercio <span class="ag-req">*</span></label>
+        <div class="ag-upload-zone" id="zone-camara" onclick="document.getElementById('file-camara').click()">
+          <input type="file" id="file-camara" accept=".pdf,.jpg,.jpeg,.png" onchange="agFileChange(this,'zone-camara','name-camara')"/>
+          <div class="ag-upload-icon">📄</div>
+          <div class="ag-upload-txt">Haz clic para seleccionar el archivo</div>
+          <div class="ag-upload-sub">PDF, JPG o PNG — máx. 10 MB</div>
+          <div class="ag-upload-name" id="name-camara"></div>
+        </div>
       </div>
       <div class="ag-fg">
-        <label>Fotografía del Establecimiento — Link de descarga <span class="ag-req">*</span></label>
-        <input type="text" name="link_foto_establecimiento" required placeholder="https://drive.google.com/..."/>
+        <label>Fotografía del Establecimiento <span class="ag-req">*</span></label>
+        <div class="ag-upload-zone" id="zone-foto" onclick="document.getElementById('file-foto').click()">
+          <input type="file" id="file-foto" accept=".jpg,.jpeg,.png,.webp" onchange="agFileChange(this,'zone-foto','name-foto')"/>
+          <div class="ag-upload-icon">📷</div>
+          <div class="ag-upload-txt">Haz clic para seleccionar la fotografía</div>
+          <div class="ag-upload-sub">JPG, PNG o WEBP — máx. 10 MB</div>
+          <div class="ag-upload-name" id="name-foto"></div>
+        </div>
       </div>
       <div class="ag-fg">
-        <label>Logo del Establecimiento — Link de descarga <span class="ag-req">*</span></label>
-        <input type="text" name="link_logo" required placeholder="https://drive.google.com/..."/>
+        <label>Logo del Establecimiento <span class="ag-req">*</span></label>
+        <div class="ag-upload-zone" id="zone-logo" onclick="document.getElementById('file-logo').click()">
+          <input type="file" id="file-logo" accept=".jpg,.jpeg,.png,.webp,.svg" onchange="agFileChange(this,'zone-logo','name-logo')"/>
+          <div class="ag-upload-icon">🖼️</div>
+          <div class="ag-upload-txt">Haz clic para seleccionar el logo</div>
+          <div class="ag-upload-sub">JPG, PNG, WEBP o SVG — máx. 10 MB</div>
+          <div class="ag-upload-name" id="name-logo"></div>
+        </div>
       </div>
+      <div class="ag-progress" id="ag-upload-progress"><div class="ag-progress-bar" id="ag-progress-bar"></div></div>
 
       <div class="ag-err" id="ag-error-msg"></div>
       <button class="ag-submit" id="ag-submit-btn" type="button" onclick="agEnviar()">Inscribir Establecimiento</button>
@@ -257,6 +286,8 @@
 <script>
 (function(){
   var _sb;
+  var BUCKET = 'armenia-guia';
+
   function getSB(){
     if(_sb) return _sb;
     if(typeof supabase !== 'undefined' && supabase.createClient){
@@ -268,11 +299,50 @@
     }
     return null;
   }
+
   function vv(name){ var el=document.querySelector('[name="'+name+'"]'); return el ? el.value.trim() : ''; }
   function radio(name){ var el=document.querySelector('[name="'+name+'"]:checked'); return el ? el.value : ''; }
   function checks(name){ return Array.from(document.querySelectorAll('[name="'+name+'"]:checked')).map(function(e){return e.value;}).join(' | '); }
 
-  window.agEnviar = function(){
+  window.agFileChange = function(input, zoneId, nameId) {
+    var zone = document.getElementById(zoneId);
+    var nameEl = document.getElementById(nameId);
+    if(input.files && input.files[0]) {
+      var f = input.files[0];
+      if(f.size > 10 * 1024 * 1024) {
+        alert('El archivo "' + f.name + '" supera el límite de 10 MB.');
+        input.value = '';
+        zone.classList.remove('ag-has-file');
+        nameEl.style.display = 'none';
+        return;
+      }
+      zone.classList.add('ag-has-file');
+      nameEl.textContent = '✔ ' + f.name;
+      nameEl.style.display = 'block';
+    } else {
+      zone.classList.remove('ag-has-file');
+      nameEl.style.display = 'none';
+    }
+  };
+
+  async function uploadFile(file, folder) {
+    var safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    var path = folder + '/' + safeName;
+    var sb = getSB();
+    var res = await sb.storage.from(BUCKET).upload(path, file, { upsert: true, contentType: file.type });
+    if(res.error) throw new Error('Error subiendo "' + file.name + '": ' + res.error.message);
+    return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  function setProgress(pct) {
+    var bar = document.getElementById('ag-progress-bar');
+    var wrap = document.getElementById('ag-upload-progress');
+    if(pct === null) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    bar.style.width = pct + '%';
+  }
+
+  window.agEnviar = async function(){
     var sb = getSB();
     if(!sb){ setTimeout(agEnviar, 150); return; }
     var errEl = document.getElementById('ag-error-msg');
@@ -280,7 +350,7 @@
 
     if(radio('acepta_datos') !== 'si'){ errEl.textContent='Debe aceptar el uso de datos para continuar.'; errEl.style.display='block'; return; }
 
-    var req=[['nombre_establecimiento','Nombre Establecimiento'],['telefono_establecimiento','Teléfono Establecimiento'],['direccion','Dirección'],['correo_establecimiento','Correo Establecimiento'],['instagram','Instagram'],['actividad_principal_ciiu','Actividad Principal CIIU'],['actividad_secundaria_ciiu','Actividad Secundaria CIIU'],['otra_actividad_ciiu','Otra Actividad CIIU'],['horario_servicio','Horario de Servicio'],['nombre_contacto','Nombre Contacto'],['correo_contacto','Correo Contacto'],['telefono_contacto','Teléfono Contacto'],['link_camara_comercio','Link Cámara de Comercio'],['link_foto_establecimiento','Link Fotografía'],['link_logo','Link Logo']];
+    var req=[['nombre_establecimiento','Nombre Establecimiento'],['telefono_establecimiento','Teléfono Establecimiento'],['direccion','Dirección'],['correo_establecimiento','Correo Establecimiento'],['instagram','Instagram'],['actividad_principal_ciiu','Actividad Principal CIIU'],['actividad_secundaria_ciiu','Actividad Secundaria CIIU'],['otra_actividad_ciiu','Otra Actividad CIIU'],['horario_servicio','Horario de Servicio'],['nombre_contacto','Nombre Contacto'],['correo_contacto','Correo Contacto'],['telefono_contacto','Teléfono Contacto']];
     for(var i=0;i<req.length;i++){ if(!vv(req[i][0])){ errEl.textContent='El campo "'+req[i][1]+'" es obligatorio.'; errEl.style.display='block'; return; } }
 
     if(!vv('estrato')){ errEl.textContent='Seleccione el Estrato.'; errEl.style.display='block'; return; }
@@ -292,28 +362,52 @@
     var dias=checks('dias_operacion'); if(!dias){ errEl.textContent='Seleccione al menos un día de operación.'; errEl.style.display='block'; return; }
     var docs=checks('documentacion'); if(!docs){ errEl.textContent='Seleccione al menos un documento con el que cuenta.'; errEl.style.display='block'; return; }
 
-    var btn=document.getElementById('ag-submit-btn');
-    btn.disabled=true; btn.textContent='Enviando...';
+    var fileCamara = document.getElementById('file-camara').files[0];
+    var fileFoto   = document.getElementById('file-foto').files[0];
+    var fileLogo   = document.getElementById('file-logo').files[0];
+    if(!fileCamara){ errEl.textContent='Adjunte la Cámara de Comercio.'; errEl.style.display='block'; return; }
+    if(!fileFoto){   errEl.textContent='Adjunte la fotografía del establecimiento.'; errEl.style.display='block'; return; }
+    if(!fileLogo){   errEl.textContent='Adjunte el logo del establecimiento.'; errEl.style.display='block'; return; }
 
-    sb.from('inscripciones_armenia_guia').insert([{
-      acepta_datos: true,
-      nombre_establecimiento: vv('nombre_establecimiento'), telefono_establecimiento: vv('telefono_establecimiento'),
-      direccion: vv('direccion'), correo_establecimiento: vv('correo_establecimiento'),
-      ciudad: vv('ciudad'), barrio: vv('barrio'), estrato: vv('estrato'),
-      pagina_web: vv('pagina_web'), facebook: vv('facebook'), instagram: vv('instagram'),
-      documentacion: docs,
-      actividad_principal_ciiu: vv('actividad_principal_ciiu'), actividad_secundaria_ciiu: vv('actividad_secundaria_ciiu'), otra_actividad_ciiu: vv('otra_actividad_ciiu'),
-      tipo_negocio: radio('tipo_negocio'), concepto_establecimiento: radio('concepto_establecimiento'),
-      musica_en_vivo: radio('musica_en_vivo'), edad_promedio_clientes: vv('edad_promedio_clientes'),
-      dias_operacion: dias, horario_servicio: vv('horario_servicio'),
-      acceso_discapacidad: radio('acceso_discapacidad'), parqueadero: radio('parqueadero'),
-      nombre_contacto: vv('nombre_contacto'), correo_contacto: vv('correo_contacto'), telefono_contacto: vv('telefono_contacto'),
-      link_camara_comercio: vv('link_camara_comercio'), link_foto_establecimiento: vv('link_foto_establecimiento'), link_logo: vv('link_logo')
-    }]).then(function(res){
+    var btn=document.getElementById('ag-submit-btn');
+    btn.disabled=true; btn.textContent='Subiendo archivos...';
+    setProgress(10);
+
+    try {
+      var urlCamara = await uploadFile(fileCamara, 'camara-comercio');
+      setProgress(40);
+      var urlFoto = await uploadFile(fileFoto, 'fotos');
+      setProgress(70);
+      var urlLogo = await uploadFile(fileLogo, 'logos');
+      setProgress(90);
+
+      btn.textContent = 'Guardando inscripción...';
+      var res = await sb.from('inscripciones_armenia_guia').insert([{
+        acepta_datos: true,
+        nombre_establecimiento: vv('nombre_establecimiento'), telefono_establecimiento: vv('telefono_establecimiento'),
+        direccion: vv('direccion'), correo_establecimiento: vv('correo_establecimiento'),
+        ciudad: vv('ciudad'), barrio: vv('barrio'), estrato: vv('estrato'),
+        pagina_web: vv('pagina_web'), facebook: vv('facebook'), instagram: vv('instagram'),
+        documentacion: docs,
+        actividad_principal_ciiu: vv('actividad_principal_ciiu'), actividad_secundaria_ciiu: vv('actividad_secundaria_ciiu'), otra_actividad_ciiu: vv('otra_actividad_ciiu'),
+        tipo_negocio: radio('tipo_negocio'), concepto_establecimiento: radio('concepto_establecimiento'),
+        musica_en_vivo: radio('musica_en_vivo'), edad_promedio_clientes: vv('edad_promedio_clientes'),
+        dias_operacion: dias, horario_servicio: vv('horario_servicio'),
+        acceso_discapacidad: radio('acceso_discapacidad'), parqueadero: radio('parqueadero'),
+        nombre_contacto: vv('nombre_contacto'), correo_contacto: vv('correo_contacto'), telefono_contacto: vv('telefono_contacto'),
+        link_camara_comercio: urlCamara, link_foto_establecimiento: urlFoto, link_logo: urlLogo
+      }]);
+
+      setProgress(null);
       btn.disabled=false; btn.textContent='Inscribir Establecimiento';
-      if(res.error){ errEl.textContent='Error al enviar: '+res.error.message; errEl.style.display='block'; }
+      if(res.error){ errEl.textContent='Error al guardar: '+res.error.message; errEl.style.display='block'; }
       else { document.getElementById('ag-success').style.display='block'; document.getElementById('ag-card').style.display='none'; document.getElementById('arm-guia-wrap').scrollIntoView({behavior:'smooth'}); }
-    });
+    } catch(e) {
+      setProgress(null);
+      btn.disabled=false; btn.textContent='Inscribir Establecimiento';
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+    }
   };
 })();
 </script>

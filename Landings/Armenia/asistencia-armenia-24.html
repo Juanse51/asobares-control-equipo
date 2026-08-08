@@ -1,172 +1,170 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
 <style>
-#arm-asist-wrap*{box-sizing:border-box;margin:0;padding:0}
-#arm-asist-wrap{font-family:'Segoe UI',Arial,sans-serif;background:#f0f9f4;padding:24px 16px 48px;min-height:100vh}
-.aa-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden;max-width:680px;margin:0 auto 28px}
-.aa-banner img{width:100%;display:block}
-.aa-intro{padding:28px 32px 24px}
-.aa-intro h1{font-size:clamp(20px,3vw,26px);font-weight:700;color:#1a2e1a;line-height:1.3;margin-bottom:10px}
-.aa-intro p{font-size:14px;color:#64748b;line-height:1.6}
-.aa-body{padding:24px 28px}
-.aa-field{margin-bottom:18px}
-.aa-label{display:block;font-size:12px;font-weight:700;color:#334155;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px}
-.aa-req{color:#e53e3e;margin-left:3px}
-.aa-input,.aa-select{width:100%;padding:11px 14px;border:1.5px solid #d1d5db;border-radius:9px;font-size:14px;color:#1e293b;background:#fff;transition:border-color .2s;font-family:inherit}
-.aa-input:focus,.aa-select:focus{outline:none;border-color:#2db84b}
-.aa-g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media(max-width:560px){.aa-g2{grid-template-columns:1fr}}
-.aa-radio-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.aa-radio-label{display:flex;align-items:center;gap:7px;padding:9px 16px;border:1.5px solid #d1d5db;border-radius:8px;cursor:pointer;font-size:13px;color:#334155;transition:all .15s;user-select:none}
-.aa-radio-label:has(input:checked){border-color:#2db84b;background:#f0fdf4;color:#166534;font-weight:600}
-.aa-radio-label input{accent-color:#2db84b}
-.aa-acepta-box{background:#f8fff9;border:1.5px solid #c8e6c9;border-radius:12px;padding:20px 24px}
-.aa-acepta-box p{font-size:14px;color:#334155;line-height:1.7;margin-bottom:14px}
-.aa-acepta-box a{color:#2db84b;font-weight:600}
-.aa-submit-wrap{padding:16px 28px 28px;text-align:center}
-.aa-btn{background:linear-gradient(135deg,#2db84b,#1e7c34);color:#fff;border:none;padding:15px 56px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:.3px}
-.aa-btn:hover{opacity:.9}
-.aa-btn:disabled{opacity:.6;cursor:not-allowed}
-.aa-error{background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin:0 28px 12px;font-size:13px;color:#dc2626;display:none}
-.aa-success{background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:28px;text-align:center;display:none}
-.aa-success h3{font-size:20px;color:#166534;margin-bottom:8px}
-.aa-success p{font-size:14px;color:#4a7c59}
+#arm-asist-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+#arm-asist-wrap { font-family: 'Segoe UI', Arial, sans-serif; color: #1a2e1a; width: 100%; }
+
+#arm-asist-wrap .aa-banner { width: 100%; line-height: 0; }
+#arm-asist-wrap .aa-banner img { width: 100%; display: block; }
+
+#arm-asist-wrap .aa-form-wrap { max-width: 1100px; margin: 0 auto; padding: 48px 24px 56px; }
+#arm-asist-wrap .aa-form-title { text-align: center; margin-bottom: 36px; }
+#arm-asist-wrap .aa-form-title h2 { font-size: clamp(22px, 3vw, 30px); font-weight: 800; color: #1a2e1a; margin-bottom: 8px; line-height: 1.3; }
+#arm-asist-wrap .aa-form-title p { color: #64748b; font-size: 16px; }
+
+#arm-asist-wrap .aa-card { background: white; border-radius: 20px; padding: 48px 52px; box-shadow: 0 2px 24px rgba(0,0,0,0.07); }
+
+#arm-asist-wrap .aa-sec { font-size: 11px; font-weight: 700; color: #4a7c59; letter-spacing: 2px; margin-bottom: 20px; margin-top: 36px; padding-bottom: 10px; border-bottom: 2px solid #e8f5e9; display: block; text-transform: uppercase; }
+#arm-asist-wrap .aa-sec:first-child { margin-top: 0; }
+
+#arm-asist-wrap .aa-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+#arm-asist-wrap .aa-g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+#arm-asist-wrap .aa-fg { margin-bottom: 20px; }
+#arm-asist-wrap .aa-fg label { display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+#arm-asist-wrap .aa-fg input,
+#arm-asist-wrap .aa-fg select { width: 100%; padding: 13px 15px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-family: inherit; background: white; color: #1a2e1a; transition: border-color 0.15s; -webkit-appearance: auto; appearance: auto; }
+#arm-asist-wrap .aa-fg input:focus,
+#arm-asist-wrap .aa-fg select:focus { outline: none; border-color: #2db84b; }
+#arm-asist-wrap .aa-req { color: #2db84b; }
+
+#arm-asist-wrap .aa-acepta-box { background: #f0f9f4; border: 2px solid #c8e6c9; border-radius: 12px; padding: 22px 26px; margin-bottom: 4px; }
+#arm-asist-wrap .aa-acepta-box p { font-size: 14px; color: #374151; line-height: 1.75; margin-bottom: 16px; }
+#arm-asist-wrap .aa-acepta-box a { color: #2db84b; font-weight: 600; }
+#arm-asist-wrap .aa-radio-row { display: flex; gap: 28px; flex-wrap: wrap; }
+#arm-asist-wrap .aa-radio-row label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; color: #374151; font-weight: 600; }
+#arm-asist-wrap .aa-radio-row input[type="radio"] { width: 18px; height: 18px; accent-color: #2db84b; }
+
+#arm-asist-wrap .aa-submit { width: 100%; padding: 18px; border: none; border-radius: 12px; background: linear-gradient(135deg, #2db84b, #1e7c34); color: white; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 32px; font-family: inherit; transition: opacity 0.2s; letter-spacing: 0.3px; }
+#arm-asist-wrap .aa-submit:hover { opacity: 0.9; }
+#arm-asist-wrap .aa-submit:disabled { opacity: 0.6; cursor: default; }
+#arm-asist-wrap .aa-err { display: none; background: #fee2e2; color: #c41e16; padding: 14px 18px; border-radius: 10px; font-size: 14px; margin-top: 16px; }
+
+#arm-asist-wrap .aa-success { display: none; text-align: center; padding: 64px 20px; }
+#arm-asist-wrap .aa-check-icon { width: 88px; height: 88px; background: linear-gradient(135deg, #2db84b, #1e7c34); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 44px; color: white; margin: 0 auto 24px; }
+#arm-asist-wrap .aa-success h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; color: #1a2e1a; }
+#arm-asist-wrap .aa-success p { font-size: 15px; color: #475569; line-height: 1.6; margin-bottom: 6px; }
+
+@media (max-width: 768px) {
+  #arm-asist-wrap .aa-g2, #arm-asist-wrap .aa-g3 { grid-template-columns: 1fr; }
+  #arm-asist-wrap .aa-card { padding: 24px 20px; }
+}
 </style>
 
 <div id="arm-asist-wrap">
 
-  <!-- Banner + intro -->
-  <div class="aa-card">
-    <div class="aa-banner">
-      <img src="https://asobares.org/wp-content/uploads/2026/08/Banner-forms-4-scaled.jpg" alt="Asistencia Armenia 24"/>
-    </div>
-    <div class="aa-intro">
-      <h1>Registro Asistencia — Ciclo de Formación y Capacitaciones</h1>
-      <p>Fortalecimiento Empresarial para el sector de bares y restaurantes — Armenia, Quindío · Alcaldía de Armenia · Asobares · Quindío Convention Bureau.</p>
-    </div>
+  <div class="aa-banner">
+    <img src="https://asobares.org/wp-content/uploads/2026/08/Banner-forms-4-scaled.jpg" alt="Registro Asistencia — Ciclo de Formación y Capacitaciones Armenia"/>
   </div>
 
-  <!-- Formulario -->
-  <div class="aa-card">
-    <div class="aa-body">
+  <div class="aa-form-wrap">
+    <div class="aa-form-title">
+      <h2>Registro Asistencia — Ciclo de Formación y Capacitaciones</h2>
+      <p>Fortalecimiento Empresarial para el sector de bares y restaurantes — Armenia, Quindío · Alcaldía de Armenia · Asobares · Quindío Convention Bureau</p>
+    </div>
 
-      <!-- Autorización -->
-      <div class="aa-field">
-        <div class="aa-acepta-box">
-          <p><strong>ACEPTACIÓN DE USO DE DATOS:</strong> Por medio de la presente acepto el uso de los datos contemplados en este formulario por parte de Asobares, conforme a la política de la asociación, que en cualquier momento puede ser consultada en: <a href="https://asobares.org/politica-de-datos/" target="_blank">https://asobares.org/politica-de-datos/</a> <span style="color:#e53e3e;">*</span></p>
-          <div class="aa-radio-group">
-            <label class="aa-radio-label"><input type="radio" name="acepta_datos" value="si"> Sí</label>
-            <label class="aa-radio-label"><input type="radio" name="acepta_datos" value="no"> No</label>
+    <div class="aa-success" id="aa-success">
+      <div class="aa-check-icon">✓</div>
+      <h2>¡Registro exitoso!</h2>
+      <p>Hemos recibido tu registro correctamente.</p>
+      <p>Revisa tu correo — te enviamos la confirmación.</p>
+    </div>
+
+    <div class="aa-card" id="aa-card">
+
+      <!-- AUTORIZACIÓN -->
+      <span class="aa-sec">Autorización de Uso de Datos</span>
+      <div class="aa-acepta-box">
+        <p>Por medio de la presente acepto el uso de los datos contemplados en este formulario por parte de Asobares, conforme a la política de la asociación, que puede ser consultada en: <a href="https://asobares.org/politica-de-datos/" target="_blank">https://asobares.org/politica-de-datos/</a> <span class="aa-req">*</span></p>
+        <div class="aa-radio-row">
+          <label><input type="radio" name="acepta_datos" value="si"> Sí, acepto</label>
+          <label><input type="radio" name="acepta_datos" value="no"> No</label>
+        </div>
+      </div>
+
+      <!-- DATOS PERSONALES -->
+      <span class="aa-sec">Datos Personales</span>
+
+      <div class="aa-g2">
+        <div class="aa-fg">
+          <label>Nombre</label>
+          <input type="text" name="nombre" placeholder="Tu nombre"/>
+        </div>
+        <div class="aa-fg">
+          <label>Apellido <span class="aa-req">*</span></label>
+          <input type="text" name="apellido" required placeholder="Tus apellidos"/>
+        </div>
+      </div>
+      <div class="aa-g2">
+        <div class="aa-fg">
+          <label>Documento de Identificación <span class="aa-req">*</span></label>
+          <div class="aa-radio-row" style="margin-top:4px">
+            <label><input type="radio" name="tipo_documento" value="Cédula"> Cédula</label>
+            <label><input type="radio" name="tipo_documento" value="Pasaporte"> Pasaporte</label>
+            <label><input type="radio" name="tipo_documento" value="Cédula de Extranjería"> C. Extranjería</label>
           </div>
         </div>
+        <div class="aa-fg">
+          <label>Número de Identificación <span class="aa-req">*</span></label>
+          <input type="text" name="numero_identificacion" required placeholder="Sin puntos ni espacios"/>
+        </div>
       </div>
-
-      <!-- Nombre y apellido -->
+      <div class="aa-fg">
+        <label>Género</label>
+        <div class="aa-radio-row">
+          <label><input type="radio" name="genero" value="MASCULINO"> Masculino</label>
+          <label><input type="radio" name="genero" value="FEMENINO"> Femenino</label>
+          <label><input type="radio" name="genero" value="NO SUMINISTRA"> No suministra</label>
+          <label><input type="radio" name="genero" value="OTRO"> Otro</label>
+        </div>
+      </div>
       <div class="aa-g2">
-        <div class="aa-field">
-          <label class="aa-label">Nombre</label>
-          <input class="aa-input" name="nombre" type="text" placeholder="Tu nombre"/>
-        </div>
-        <div class="aa-field">
-          <label class="aa-label">Apellido<span class="aa-req">*</span></label>
-          <input class="aa-input" name="apellido" type="text" required placeholder="Tu apellido"/>
-        </div>
-      </div>
-
-      <!-- Documento -->
-      <div class="aa-field">
-        <label class="aa-label">Documento de Identificación<span class="aa-req">*</span></label>
-        <div class="aa-radio-group">
-          <label class="aa-radio-label"><input type="radio" name="tipo_documento" value="Cédula"> Cédula</label>
-          <label class="aa-radio-label"><input type="radio" name="tipo_documento" value="Pasaporte"> Pasaporte</label>
-          <label class="aa-radio-label"><input type="radio" name="tipo_documento" value="Cédula de Extranjería"> Cédula de Extranjería</label>
-        </div>
-      </div>
-
-      <div class="aa-field">
-        <label class="aa-label">Número de Identificación<span class="aa-req">*</span></label>
-        <input class="aa-input" name="numero_identificacion" type="text" required placeholder="Número sin puntos ni espacios"/>
-      </div>
-
-      <!-- Género -->
-      <div class="aa-field">
-        <label class="aa-label">Género</label>
-        <div class="aa-radio-group">
-          <label class="aa-radio-label"><input type="radio" name="genero" value="MASCULINO"> MASCULINO</label>
-          <label class="aa-radio-label"><input type="radio" name="genero" value="FEMENINO"> FEMENINO</label>
-          <label class="aa-radio-label"><input type="radio" name="genero" value="NO SUMINISTRA"> NO SUMINISTRA</label>
-          <label class="aa-radio-label"><input type="radio" name="genero" value="OTRO"> OTRO</label>
-        </div>
-      </div>
-
-      <!-- Departamento / Ciudad -->
-      <div class="aa-g2">
-        <div class="aa-field">
-          <label class="aa-label">Departamento<span class="aa-req">*</span></label>
-          <select class="aa-select" name="departamento" required>
-            <option value="">Seleccionar</option>
-            <option>Quindío</option>
-            <option>Amazonas</option><option>Antioquia</option><option>Arauca</option><option>Atlántico</option>
-            <option>Bogotá D.C.</option><option>Bolívar</option><option>Boyacá</option><option>Caldas</option>
-            <option>Caquetá</option><option>Casanare</option><option>Cauca</option><option>Cesar</option>
-            <option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option><option>Guainía</option>
-            <option>Guaviare</option><option>Huila</option><option>La Guajira</option><option>Magdalena</option>
-            <option>Meta</option><option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
-            <option>Risaralda</option><option>San Andrés y Providencia</option><option>Santander</option>
-            <option>Sucre</option><option>Tolima</option><option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
+        <div class="aa-fg">
+          <label>Departamento <span class="aa-req">*</span></label>
+          <select name="departamento" required>
+            <option value="">Seleccionar...</option>
+            <option>Quindío</option><option>Amazonas</option><option>Antioquia</option><option>Arauca</option><option>Atlántico</option>
+            <option>Bogotá D.C.</option><option>Bolívar</option><option>Boyacá</option><option>Caldas</option><option>Caquetá</option>
+            <option>Casanare</option><option>Cauca</option><option>Cesar</option><option>Chocó</option><option>Córdoba</option>
+            <option>Cundinamarca</option><option>Guainía</option><option>Guaviare</option><option>Huila</option><option>La Guajira</option>
+            <option>Magdalena</option><option>Meta</option><option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
+            <option>Risaralda</option><option>San Andrés y Providencia</option><option>Santander</option><option>Sucre</option>
+            <option>Tolima</option><option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
           </select>
         </div>
-        <div class="aa-field">
-          <label class="aa-label">Ciudad<span class="aa-req">*</span></label>
-          <input class="aa-input" name="ciudad" type="text" required placeholder="Ej: Armenia"/>
+        <div class="aa-fg">
+          <label>Ciudad <span class="aa-req">*</span></label>
+          <input type="text" name="ciudad" required placeholder="Ej: Armenia"/>
         </div>
       </div>
-
-      <!-- Cargo -->
-      <div class="aa-field">
-        <label class="aa-label">Cargo<span class="aa-req">*</span></label>
-        <select class="aa-select" name="cargo" required>
-          <option value="">Seleccionar</option>
-          <option>Propietario/a</option>
-          <option>Administrador/a</option>
-          <option>Gerente</option>
-          <option>Encargado/a</option>
-          <option>Mesero/a</option>
-          <option>Barista / Bartender</option>
-          <option>Cajero/a</option>
-          <option>Cocinero/a</option>
-          <option>Auxiliar de cocina</option>
-          <option>Domiciliario/a</option>
-          <option>Colaborador/a</option>
-          <option>Otro</option>
+      <div class="aa-fg">
+        <label>Cargo <span class="aa-req">*</span></label>
+        <select name="cargo" required>
+          <option value="">Seleccionar...</option>
+          <option>Propietario/a</option><option>Administrador/a</option><option>Gerente</option>
+          <option>Encargado/a</option><option>Mesero/a</option><option>Barista / Bartender</option>
+          <option>Cajero/a</option><option>Cocinero/a</option><option>Auxiliar de cocina</option>
+          <option>Domiciliario/a</option><option>Colaborador/a</option><option>Otro</option>
         </select>
       </div>
-
-      <!-- Correo y teléfono -->
       <div class="aa-g2">
-        <div class="aa-field">
-          <label class="aa-label">Correo Electrónico<span class="aa-req">*</span></label>
-          <input class="aa-input" name="correo" type="email" required placeholder="correo@ejemplo.com"/>
+        <div class="aa-fg">
+          <label>Correo Electrónico <span class="aa-req">*</span></label>
+          <input type="email" name="correo" required placeholder="correo@ejemplo.com"/>
         </div>
-        <div class="aa-field">
-          <label class="aa-label">Teléfono Celular <span style="font-weight:400;font-size:11px;color:#94a3b8;">Sin dígito país</span><span class="aa-req">*</span></label>
-          <input class="aa-input" name="telefono" type="tel" required placeholder="3001234567" maxlength="10"/>
+        <div class="aa-fg">
+          <label>Teléfono Celular <span class="aa-req">*</span> <small style="font-weight:400;color:#94a3b8;">10 dígitos, sin código de país</small></label>
+          <input type="tel" name="telefono" required placeholder="3001234567" maxlength="10"/>
         </div>
       </div>
 
-    </div>
-    <div class="aa-error" id="aa-error-msg"></div>
-    <div class="aa-submit-wrap">
-      <div class="aa-success" id="aa-success">
-        <div style="font-size:48px;margin-bottom:12px">✅</div>
-        <h3>¡Registro exitoso!</h3>
-        <p>Quedaste registrado(a) en el ciclo de formación.<br/>Recibirás la confirmación en tu correo electrónico.</p>
-      </div>
-      <button class="aa-btn" id="aa-submit-btn" type="button" onclick="aaEnviar()">Registrarme</button>
+      <div class="aa-err" id="aa-error-msg"></div>
+      <button class="aa-submit" id="aa-submit-btn" type="button" onclick="aaEnviar()">Registrarme</button>
+
     </div>
   </div>
-
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 (function(){
   var _sb;
@@ -187,9 +185,8 @@
   window.aaEnviar = function(){
     var sb = getSB();
     if(!sb){ setTimeout(aaEnviar, 150); return; }
-
     var errEl = document.getElementById('aa-error-msg');
-    errEl.style.display = 'none';
+    errEl.style.display='none';
 
     if(radio('acepta_datos') !== 'si'){ errEl.textContent='Debe aceptar el uso de datos para continuar.'; errEl.style.display='block'; return; }
     if(!vv('apellido')){ errEl.textContent='El campo Apellido es obligatorio.'; errEl.style.display='block'; return; }
@@ -203,32 +200,18 @@
     if(!tel || tel.length !== 10){ errEl.textContent='El teléfono debe tener exactamente 10 dígitos.'; errEl.style.display='block'; return; }
 
     var btn = document.getElementById('aa-submit-btn');
-    btn.disabled = true; btn.textContent = 'Registrando...';
+    btn.disabled=true; btn.textContent='Registrando...';
 
-    var payload = {
+    sb.from('inscripciones_armenia_asistencia').insert([{
       acepta_datos: true,
-      nombre: vv('nombre'),
-      apellido: vv('apellido'),
-      tipo_documento: radio('tipo_documento'),
-      numero_identificacion: vv('numero_identificacion'),
-      genero: radio('genero'),
-      departamento: vv('departamento'),
-      ciudad: vv('ciudad'),
-      cargo: vv('cargo'),
-      correo: vv('correo'),
-      telefono: tel
-    };
-
-    sb.from('inscripciones_armenia_asistencia').insert([payload]).then(function(res){
-      btn.disabled = false; btn.textContent = 'Registrarme';
-      if(res.error){
-        errEl.textContent = 'Error al registrar: ' + res.error.message;
-        errEl.style.display = 'block';
-      } else {
-        document.getElementById('aa-success').style.display = 'block';
-        btn.style.display = 'none';
-        document.getElementById('arm-asist-wrap').scrollIntoView({ behavior: 'smooth' });
-      }
+      nombre: vv('nombre'), apellido: vv('apellido'),
+      tipo_documento: radio('tipo_documento'), numero_identificacion: vv('numero_identificacion'),
+      genero: radio('genero'), departamento: vv('departamento'), ciudad: vv('ciudad'),
+      cargo: vv('cargo'), correo: vv('correo'), telefono: tel
+    }]).then(function(res){
+      btn.disabled=false; btn.textContent='Registrarme';
+      if(res.error){ errEl.textContent='Error al registrar: '+res.error.message; errEl.style.display='block'; }
+      else { document.getElementById('aa-success').style.display='block'; document.getElementById('aa-card').style.display='none'; document.getElementById('arm-asist-wrap').scrollIntoView({behavior:'smooth'}); }
     });
   };
 })();

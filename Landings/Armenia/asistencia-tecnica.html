@@ -1,0 +1,683 @@
+<style>
+#arm-diag-wrap*{box-sizing:border-box;margin:0;padding:0}
+#arm-diag-wrap{font-family:'Segoe UI',Arial,sans-serif;background:#f0f9f4;padding:24px 16px 48px;min-height:100vh}
+.ad-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden;max-width:780px;margin:0 auto 32px}
+.ad-banner img{width:100%;display:block}
+.ad-intro{padding:28px 32px 24px}
+.ad-intro h1{font-size:clamp(20px,3vw,28px);font-weight:700;color:#1a2e1a;line-height:1.3;margin-bottom:10px}
+.ad-intro p{font-size:14px;color:#64748b;line-height:1.6}
+.ad-section-head{background:#2db84b;padding:14px 24px}
+.ad-section-head h2{font-size:14px;font-weight:700;color:#fff;letter-spacing:.5px;text-transform:uppercase}
+.ad-section-desc{background:#f8fff9;border-bottom:1px solid #e8f5e9;padding:12px 24px;font-size:13px;color:#4a7c59;font-style:italic}
+.ad-body{padding:20px 24px}
+.ad-field{margin-bottom:18px}
+.ad-label{display:block;font-size:12px;font-weight:700;color:#334155;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px}
+.ad-req{color:#e53e3e;margin-left:3px}
+.ad-input,.ad-select{width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;color:#1e293b;background:#fff;transition:border-color .2s}
+.ad-input:focus,.ad-select:focus{outline:none;border-color:#2db84b}
+.ad-g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ad-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:600px){.ad-g2,.ad-g3{grid-template-columns:1fr}}
+.ad-radio-group,.ad-check-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.ad-radio-label,.ad-check-label{display:flex;align-items:center;gap:7px;padding:8px 14px;border:1.5px solid #d1d5db;border-radius:8px;cursor:pointer;font-size:13px;color:#334155;transition:all .15s;user-select:none}
+.ad-radio-label:has(input:checked),.ad-check-label:has(input:checked){border-color:#2db84b;background:#f0fdf4;color:#166534;font-weight:600}
+.ad-radio-label input,.ad-check-label input{accent-color:#2db84b}
+.ad-acepta-box{background:#f8fff9;border:1.5px solid #c8e6c9;border-radius:12px;padding:20px 24px;margin-bottom:0}
+.ad-acepta-box p{font-size:14px;color:#334155;line-height:1.7;margin-bottom:14px}
+.ad-acepta-box a{color:#2db84b;font-weight:600}
+.ad-submit-wrap{padding:20px 24px 28px;text-align:center}
+.ad-btn{background:linear-gradient(135deg,#2db84b,#1e7c34);color:#fff;border:none;padding:14px 48px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:.3px}
+.ad-btn:hover{opacity:.9}
+.ad-btn:disabled{opacity:.6;cursor:not-allowed}
+.ad-error{background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin:12px 24px;font-size:13px;color:#dc2626;display:none}
+.ad-success{background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:28px;text-align:center;display:none}
+.ad-success h3{font-size:20px;color:#166534;margin-bottom:8px}
+.ad-success p{font-size:14px;color:#4a7c59}
+.ad-note{font-size:12px;color:#94a3b8;margin-top:4px}
+</style>
+
+<div id="arm-diag-wrap">
+
+  <!-- Banner -->
+  <div class="ad-card">
+    <div class="ad-banner">
+      <img src="https://asobares.org/wp-content/uploads/2026/08/Banner-forms-2-scaled.jpg" alt="Asistencia Técnica Armenia 24"/>
+    </div>
+    <div class="ad-intro">
+      <h1>Instrumento Diagnóstico y Acompañamiento — Establecimientos de Comercio Ciudad de Armenia</h1>
+      <p>La información suministrada es de carácter confidencial y su uso exclusivo para Alcaldía de Armenia, Bureau Convención Quindío y Asobares Colombia.</p>
+    </div>
+  </div>
+
+  <!-- Autorización -->
+  <div class="ad-card">
+    <div class="ad-body">
+      <div class="ad-acepta-box">
+        <p><strong>AUTORIZACIÓN DE USO DE DATOS:</strong> Por medio de la presente acepto el uso de datos contemplados en el formulario por parte de Asobares, conforme a la política de la asociación, la cual puede ser consultada en el siguiente enlace: <a href="https://asobares.org/politica-de-datos/" target="_blank">https://asobares.org/politica-de-datos/</a> <span style="color:#e53e3e;">*</span></p>
+        <div class="ad-radio-group">
+          <label class="ad-radio-label"><input type="radio" name="acepta_datos" value="si"> Acepta</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATOS DE LA EMPRESA -->
+  <div class="ad-card">
+    <div class="ad-section-head"><h2>Datos de la empresa</h2></div>
+    <div class="ad-section-desc">Información de la organización o compañía</div>
+    <div class="ad-body">
+      <div class="ad-field">
+        <label class="ad-label">Nombre de la Razón Social de la Empresa o Persona Natural<span class="ad-req">*</span></label>
+        <input class="ad-input" name="razon_social" type="text" required/>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Tipo de Identificación<span class="ad-req">*</span></label>
+          <select class="ad-select" name="tipo_identificacion" required>
+            <option value="">Seleccionar</option>
+            <option>NIT</option>
+            <option>CÉDULA</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Nº de Identificación<span class="ad-req">*</span></label>
+          <input class="ad-input" name="numero_identificacion" type="text" required/>
+        </div>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label">Nombre Representante Legal o Propietario<span class="ad-req">*</span></label>
+        <input class="ad-input" name="nombre_representante" type="text" required/>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Departamento<span class="ad-req">*</span></label>
+          <select class="ad-select" name="departamento" required>
+            <option value="">Seleccionar</option>
+            <option>Quindío</option>
+            <option>Amazonas</option><option>Antioquia</option><option>Arauca</option><option>Atlántico</option>
+            <option>Bogotá D.C.</option><option>Bolívar</option><option>Boyacá</option><option>Caldas</option>
+            <option>Caquetá</option><option>Casanare</option><option>Cauca</option><option>Cesar</option>
+            <option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option><option>Guainía</option>
+            <option>Guaviare</option><option>Huila</option><option>La Guajira</option><option>Magdalena</option>
+            <option>Meta</option><option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
+            <option>Risaralda</option><option>San Andrés y Providencia</option><option>Santander</option>
+            <option>Sucre</option><option>Tolima</option><option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
+          </select>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Ciudad<span class="ad-req">*</span></label>
+          <input class="ad-input" name="ciudad_empresa" type="text" required/>
+        </div>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Teléfono Representante Legal<span class="ad-req">*</span></label>
+          <input class="ad-input" name="telefono_representante" type="tel" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Correo Electrónico Representante Legal<span class="ad-req">*</span></label>
+          <input class="ad-input" name="correo_representante" type="email" required/>
+        </div>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label">Régimen de la Compañía<span class="ad-req">*</span></label>
+        <div class="ad-radio-group">
+          <label class="ad-radio-label"><input type="radio" name="regimen" value="COMÚN"> COMÚN</label>
+          <label class="ad-radio-label"><input type="radio" name="regimen" value="SIMPLIFICADO"> SIMPLIFICADO</label>
+          <label class="ad-radio-label"><input type="radio" name="regimen" value="Otro"> Otro</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATOS DEL ESTABLECIMIENTO -->
+  <div class="ad-card">
+    <div class="ad-section-head"><h2>Datos del Establecimiento</h2></div>
+    <div class="ad-section-desc">Datos relacionados con el establecimiento de comercio.</div>
+    <div class="ad-body">
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Nombre Establecimiento<span class="ad-req">*</span></label>
+          <input class="ad-input" name="nombre_establecimiento" type="text" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Teléfono Establecimiento<span class="ad-req">*</span></label>
+          <input class="ad-input" name="telefono_establecimiento" type="tel" required/>
+        </div>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label">Dirección del Establecimiento<span class="ad-req">*</span></label>
+        <input class="ad-input" name="direccion" type="text" required/>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Correo Electrónico del Establecimiento<span class="ad-req">*</span></label>
+          <input class="ad-input" name="correo_establecimiento" type="email" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Ciudad</label>
+          <input class="ad-input" name="ciudad_establecimiento" type="text"/>
+        </div>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Barrio</label>
+          <input class="ad-input" name="barrio" type="text"/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Estrato<span class="ad-req">*</span></label>
+          <select class="ad-select" name="estrato" required>
+            <option value="">Seleccionar</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+          </select>
+        </div>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Página Web</label>
+          <input class="ad-input" name="pagina_web" type="text"/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Facebook</label>
+          <input class="ad-input" name="facebook" type="text"/>
+        </div>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label">Instagram<span class="ad-req">*</span></label>
+        <input class="ad-input" name="instagram" type="text" required/>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">El Establecimiento Tiene Sucursales<span class="ad-req">*</span></label>
+          <div class="ad-radio-group">
+            <label class="ad-radio-label"><input type="radio" name="tiene_sucursales" value="SI"> SI</label>
+            <label class="ad-radio-label"><input type="radio" name="tiene_sucursales" value="NO"> NO</label>
+          </div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Número de Sucursales</label>
+          <input class="ad-input" name="numero_sucursales" type="text"/>
+        </div>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label">Edad Promedio de los Empleados</label>
+        <div class="ad-radio-group">
+          <label class="ad-radio-label"><input type="radio" name="edad_promedio_empleados" value="DE 18 A 25 AÑOS"> DE 18 A 25 AÑOS</label>
+          <label class="ad-radio-label"><input type="radio" name="edad_promedio_empleados" value="DE 26 A 35 AÑOS"> DE 26 A 35 AÑOS</label>
+          <label class="ad-radio-label"><input type="radio" name="edad_promedio_empleados" value="DE 36 A 45 AÑOS"> DE 36 A 45 AÑOS</label>
+          <label class="ad-radio-label"><input type="radio" name="edad_promedio_empleados" value="DE 46 A MAS"> DE 46 A MÁS</label>
+        </div>
+      </div>
+      <div class="ad-g3">
+        <div class="ad-field">
+          <label class="ad-label">Cuenta con Aprendices SENA</label>
+          <div class="ad-radio-group">
+            <label class="ad-radio-label"><input type="radio" name="aprendices_sena" value="Sí"> Sí</label>
+            <label class="ad-radio-label"><input type="radio" name="aprendices_sena" value="No"> No</label>
+          </div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Cuenta con Colaboradores LGBTIQ+</label>
+          <div class="ad-radio-group">
+            <label class="ad-radio-label"><input type="radio" name="colaboradores_lgbtiq" value="Sí"> Sí</label>
+            <label class="ad-radio-label"><input type="radio" name="colaboradores_lgbtiq" value="No"> No</label>
+          </div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Personal con Discapacidad</label>
+          <div class="ad-radio-group">
+            <label class="ad-radio-label"><input type="radio" name="personal_discapacidad" value="Sí"> Sí</label>
+            <label class="ad-radio-label"><input type="radio" name="personal_discapacidad" value="No"> No</label>
+          </div>
+        </div>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">El Local Donde Funciona el Establecimiento Es</label>
+          <div class="ad-radio-group">
+            <label class="ad-radio-label"><input type="radio" name="local_tipo" value="PROPIO"> PROPIO</label>
+            <label class="ad-radio-label"><input type="radio" name="local_tipo" value="ARRIENDADO"> ARRIENDADO</label>
+          </div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Área del Establecimiento (m²)<span class="ad-req">*</span></label>
+          <input class="ad-input" name="area_establecimiento" type="text" required/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENTACIÓN -->
+  <div class="ad-card">
+    <div class="ad-section-head"><h2>Documentación</h2></div>
+    <div class="ad-section-desc">¿El establecimiento de comercio cuenta con los siguientes documentos?</div>
+    <div class="ad-body">
+      <div class="ad-field">
+        <label class="ad-label">¿Cuenta con la Documentación?<span class="ad-req">*</span></label>
+        <div class="ad-check-group" style="flex-direction:column;gap:6px">
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="CAMARA DE COMERCIO"> CÁMARA DE COMERCIO</label>
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="CONCEPTO BOMBEROS"> CONCEPTO BOMBEROS</label>
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="CONCEPTO SANIDAD"> CONCEPTO SANIDAD</label>
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="CEDULA REPRESENTANTE LEGAL"> CÉDULA REPRESENTANTE LEGAL</label>
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="USO DEL SUELO"> USO DEL SUELO</label>
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="LICENCIA CONSTRUCCION"> LICENCIA CONSTRUCCIÓN</label>
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="POLIZA DE RESPONSABILIDAD CIVIL Y EXTRACONTRACTUAL"> PÓLIZA DE RESPONSABILIDAD CIVIL Y EXTRACONTRACTUAL</label>
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="RESOLUCION FACTURACION"> RESOLUCIÓN FACTURACIÓN</label>
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="REGISTRO UNICO TRIBUTARIO (RUT)"> REGISTRO ÚNICO TRIBUTARIO (RUT)</label>
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="RIT"> RIT</label>
+          <label class="ad-check-label"><input type="checkbox" name="documentacion" value="REGISTRO NACIONAL DE TURISMO (RNT)"> REGISTRO NACIONAL DE TURISMO (RNT)</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFORMACIÓN DE FUNCIONAMIENTO -->
+  <div class="ad-card">
+    <div class="ad-section-head"><h2>Información de Funcionamiento</h2></div>
+    <div class="ad-section-desc">Datos relacionados con la actividad del establecimiento.</div>
+    <div class="ad-body">
+      <div class="ad-g3">
+        <div class="ad-field">
+          <label class="ad-label">Actividad Principal CIIU<span class="ad-req">*</span></label>
+          <input class="ad-input" name="actividad_principal_ciiu" type="text" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Actividad Secundaria CIIU</label>
+          <input class="ad-input" name="actividad_secundaria_ciiu" type="text"/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Cuenta con Otra Actividad CIIU</label>
+          <input class="ad-input" name="otra_actividad_ciiu" type="text"/>
+        </div>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Tipo de Negocio<span class="ad-req">*</span></label>
+          <select class="ad-select" name="tipo_negocio" required>
+            <option value="">Seleccionar</option>
+            <option>CERVECERÍA</option><option>CAFÉ-BAR</option><option>GASTROBAR</option>
+            <option>BAR</option><option>DISCOTECA</option><option>CLUB</option><option>RESTAURANTE</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Concepto del Establecimiento<span class="ad-req">*</span></label>
+          <select class="ad-select" name="concepto_establecimiento" required>
+            <option value="">Seleccionar</option>
+            <option>ROCK</option><option>SALSA</option><option>VALLENATO</option><option>CROSSOVER</option>
+            <option>POPULAR</option><option>ELECTRÓNICA</option><option>REGUETÓN</option>
+            <option>POPULAR MEXICANO</option><option>Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Maneja Música en Vivo<span class="ad-req">*</span></label>
+          <div class="ad-radio-group">
+            <label class="ad-radio-label"><input type="radio" name="musica_en_vivo" value="Sí"> Sí</label>
+            <label class="ad-radio-label"><input type="radio" name="musica_en_vivo" value="No"> No</label>
+          </div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Edad Promedio de sus Clientes<span class="ad-req">*</span></label>
+          <select class="ad-select" name="edad_promedio_clientes" required>
+            <option value="">Seleccionar</option>
+            <option>18 A 25</option><option>26 A 35</option><option>36 A 45</option>
+            <option>45 A 55</option><option>55 EN ADELANTE</option>
+          </select>
+        </div>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label">Días de Operación<span class="ad-req">*</span></label>
+        <div class="ad-check-group">
+          <label class="ad-check-label"><input type="checkbox" name="dias_operacion" value="LUNES"> LUNES</label>
+          <label class="ad-check-label"><input type="checkbox" name="dias_operacion" value="MARTES"> MARTES</label>
+          <label class="ad-check-label"><input type="checkbox" name="dias_operacion" value="MIÉRCOLES"> MIÉRCOLES</label>
+          <label class="ad-check-label"><input type="checkbox" name="dias_operacion" value="JUEVES"> JUEVES</label>
+          <label class="ad-check-label"><input type="checkbox" name="dias_operacion" value="VIERNES"> VIERNES</label>
+          <label class="ad-check-label"><input type="checkbox" name="dias_operacion" value="SÁBADO"> SÁBADO</label>
+          <label class="ad-check-label"><input type="checkbox" name="dias_operacion" value="DOMINGO"> DOMINGO</label>
+        </div>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Horario de Servicio<span class="ad-req">*</span></label>
+          <input class="ad-input" name="horario_servicio" type="text" placeholder="Ej: 6pm - 3am" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Cobro de Cover<span class="ad-req">*</span></label>
+          <div class="ad-radio-group">
+            <label class="ad-radio-label"><input type="radio" name="cobro_cover" value="SI"> SI</label>
+            <label class="ad-radio-label"><input type="radio" name="cobro_cover" value="NO"> NO</label>
+          </div>
+        </div>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label">Formas de Pago en Establecimiento<span class="ad-req">*</span></label>
+        <div class="ad-check-group" style="flex-direction:column;gap:6px">
+          <label class="ad-check-label"><input type="checkbox" name="formas_pago" value="EFECTIVO"> EFECTIVO</label>
+          <label class="ad-check-label"><input type="checkbox" name="formas_pago" value="TARJETA CRÉDITO"> TARJETA CRÉDITO</label>
+          <label class="ad-check-label"><input type="checkbox" name="formas_pago" value="TARJETA DÉBITO"> TARJETA DÉBITO</label>
+          <label class="ad-check-label"><input type="checkbox" name="formas_pago" value="TRANSFERENCIAS DIGITALES (NEQUI-DAVIPLATA-BREB)"> TRANSFERENCIAS DIGITALES (NEQUI-DAVIPLATA-BREB)</label>
+        </div>
+      </div>
+      <div class="ad-g3">
+        <div class="ad-field">
+          <label class="ad-label">Aforo Establecimiento<span class="ad-req">*</span></label>
+          <input class="ad-input" name="aforo" type="text" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Nº de Sillas<span class="ad-req">*</span></label>
+          <input class="ad-input" name="num_sillas" type="text" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Nº de Mesas</label>
+          <input class="ad-input" name="num_mesas" type="text"/>
+        </div>
+      </div>
+      <div class="ad-g3">
+        <div class="ad-field">
+          <label class="ad-label">Nº Usuarios de Pie<span class="ad-req">*</span></label>
+          <input class="ad-input" name="num_usuarios_pie" type="text" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Número de Salidas<span class="ad-req">*</span></label>
+          <input class="ad-input" name="num_salidas" type="text" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Nº Baños Hombres<span class="ad-req">*</span></label>
+          <input class="ad-input" name="num_banos_hombres" type="text" required/>
+        </div>
+      </div>
+      <div class="ad-g3">
+        <div class="ad-field">
+          <label class="ad-label">Nº Baños Mujeres<span class="ad-req">*</span></label>
+          <input class="ad-input" name="num_banos_mujeres" type="text" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Nº Baños Discapacitados<span class="ad-req">*</span></label>
+          <input class="ad-input" name="num_banos_discapacitados" type="text" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">¿Rampas de Acceso Discapacitados?<span class="ad-req">*</span></label>
+          <div class="ad-radio-group">
+            <label class="ad-radio-label"><input type="radio" name="rampas_acceso" value="SI"> SI</label>
+            <label class="ad-radio-label"><input type="radio" name="rampas_acceso" value="No"> No</label>
+          </div>
+        </div>
+      </div>
+      <!-- Infraestructura SI/NO -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="ad-field">
+          <label class="ad-label">Sistema Artificial de Ventilación</label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="ventilacion_artificial" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="ventilacion_artificial" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Insonorización</label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="insonorizacion" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="insonorizacion" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Servicio de Parqueadero</label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="parqueadero" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="parqueadero" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Convenio Conductor Elegido o Taxi Seguro</label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="convenio_conductor" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="convenio_conductor" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Sistema de Seguridad Electrónica CCTV</label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="sistema_cctv" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="sistema_cctv" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Señalización de Emergencia</label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="senalizacion_emergencia" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="senalizacion_emergencia" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Iluminación Corredores y Accesos</label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="iluminacion_corredores" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="iluminacion_corredores" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">¿Logística para Seguridad de la Operación?</label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="logistica_seguridad" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="logistica_seguridad" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Contratación Directa</label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="contratacion_directa" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="contratacion_directa" value="NO"> NO</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFORMACIÓN COMPLEMENTARIA -->
+  <div class="ad-card">
+    <div class="ad-section-head"><h2>Información Complementaria</h2></div>
+    <div class="ad-section-desc">A continuación encontrará unas preguntas de interés para el fortalecimiento del sector.</div>
+    <div class="ad-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="ad-field">
+          <label class="ad-label" style="font-size:11px">¿Estaría dispuesto a participar en actividades de formación específicas para el sector de gastroentretenimiento?<span class="ad-req">*</span></label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="participar_formacion" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="participar_formacion" value="No"> No</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label" style="font-size:11px">¿Está interesado en participar en programas de bilingüismo para su personal?<span class="ad-req">*</span></label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="programas_bilinguismo" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="programas_bilinguismo" value="No"> No</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label" style="font-size:11px">¿Está interesado en asesorías jurídicas para su negocio?<span class="ad-req">*</span></label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="asesorias_juridicas" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="asesorias_juridicas" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label" style="font-size:11px">¿Está interesado en participar en iniciativas para activación económica del sector?<span class="ad-req">*</span></label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="activacion_economica" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="activacion_economica" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label" style="font-size:11px">¿Está interesado en tener una extensión de horario para el desarrollo de la actividad de su negocio?<span class="ad-req">*</span></label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="extension_horario" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="extension_horario" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label" style="font-size:11px">¿Conoce de los programas institucionales de la ciudad que benefician su negocio?<span class="ad-req">*</span></label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="programas_institucionales" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="programas_institucionales" value="NO"> NO</label></div>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label" style="font-size:11px">¿Su establecimiento hace parte de los programas de promoción turística de la ciudad?<span class="ad-req">*</span></label>
+          <div class="ad-radio-group"><label class="ad-radio-label"><input type="radio" name="programas_turismo" value="SI"> SI</label><label class="ad-radio-label"><input type="radio" name="programas_turismo" value="NO"> NO</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENVÍO DE INFORME DE VISITA -->
+  <div class="ad-card">
+    <div class="ad-section-head"><h2>Envío de Informe de Visita</h2></div>
+    <div class="ad-section-desc">A continuación diligencie la información para el envío del informe de visita general de su establecimiento.</div>
+    <div class="ad-body">
+      <div class="ad-field">
+        <label class="ad-label">Nombre de la Persona que Recibirá el Informe de Visita<span class="ad-req">*</span></label>
+        <input class="ad-input" name="nombre_informe" type="text" required/>
+      </div>
+      <div class="ad-g2">
+        <div class="ad-field">
+          <label class="ad-label">Correo Electrónico<span class="ad-req">*</span></label>
+          <input class="ad-input" name="correo_informe" type="email" required/>
+        </div>
+        <div class="ad-field">
+          <label class="ad-label">Teléfono<span class="ad-req">*</span></label>
+          <input class="ad-input" name="telefono_informe" type="tel" required/>
+        </div>
+      </div>
+    </div>
+    <div class="ad-error" id="ad-error-msg"></div>
+    <div class="ad-submit-wrap">
+      <div class="ad-success" id="ad-success">
+        <div style="font-size:48px;margin-bottom:12px">✅</div>
+        <h3>¡Instrumento enviado exitosamente!</h3>
+        <p>Hemos recibido la información de su establecimiento.<br/>Recibirá el informe de visita al correo registrado.</p>
+      </div>
+      <button class="ad-btn" id="ad-submit-btn" type="button" onclick="adEnviar()">Enviar Instrumento</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+  var _sb;
+  function getSB(){
+    if(_sb) return _sb;
+    if(typeof supabase !== 'undefined' && supabase.createClient){
+      _sb = supabase.createClient(
+        'https://pbqmkodwmntujezbokgo.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34'
+      );
+      return _sb;
+    }
+    return null;
+  }
+
+  function v(name){ return document.querySelector('[name="'+name+'"]'); }
+  function vv(name){ var el=v(name); return el ? el.value.trim() : ''; }
+  function radio(name){ var el=document.querySelector('[name="'+name+'"]:checked'); return el ? el.value : ''; }
+  function checks(name){ return Array.from(document.querySelectorAll('[name="'+name+'"]:checked')).map(function(e){return e.value;}).join(' | '); }
+
+  window.adEnviar = function(){
+    var sb = getSB();
+    if(!sb){ setTimeout(adEnviar, 150); return; }
+
+    var errEl = document.getElementById('ad-error-msg');
+    errEl.style.display='none';
+
+    // Validaciones
+    var acepta = radio('acepta_datos');
+    if(acepta !== 'si'){ errEl.textContent='Debe aceptar el uso de datos para continuar.'; errEl.style.display='block'; return; }
+
+    var req = [
+      ['razon_social','Razón Social'],['tipo_identificacion','Tipo de Identificación'],
+      ['numero_identificacion','Nº de Identificación'],['nombre_representante','Nombre Representante Legal'],
+      ['departamento','Departamento'],['ciudad_empresa','Ciudad Empresa'],
+      ['telefono_representante','Teléfono Representante'],['correo_representante','Correo Representante'],
+      ['nombre_establecimiento','Nombre Establecimiento'],['telefono_establecimiento','Teléfono Establecimiento'],
+      ['direccion','Dirección'],['correo_establecimiento','Correo Establecimiento'],
+      ['instagram','Instagram'],['area_establecimiento','Área del Establecimiento'],
+      ['actividad_principal_ciiu','Actividad Principal CIIU'],
+      ['horario_servicio','Horario de Servicio'],
+      ['aforo','Aforo'],['num_sillas','Nº de Sillas'],
+      ['num_usuarios_pie','Nº Usuarios de Pie'],['num_salidas','Número de Salidas'],
+      ['num_banos_hombres','Nº Baños Hombres'],['num_banos_mujeres','Nº Baños Mujeres'],
+      ['num_banos_discapacitados','Nº Baños Discapacitados'],
+      ['nombre_informe','Nombre Informe'],['correo_informe','Correo Informe'],['telefono_informe','Teléfono Informe']
+    ];
+    for(var i=0;i<req.length;i++){
+      if(!vv(req[i][0])){ errEl.textContent='El campo "'+req[i][1]+'" es obligatorio.'; errEl.style.display='block'; return; }
+    }
+
+    var radioReq = [
+      ['regimen','Régimen de la Compañía'],['tiene_sucursales','El establecimiento tiene sucursales'],
+      ['tipo_negocio','Tipo de Negocio'],['concepto_establecimiento','Concepto del Establecimiento'],
+      ['musica_en_vivo','Maneja Música en Vivo'],['edad_promedio_clientes','Edad Promedio de Clientes'],
+      ['cobro_cover','Cobro de Cover'],['rampas_acceso','Rampas de Acceso'],
+      ['participar_formacion','Participar en Formación'],['programas_bilinguismo','Programas de Bilingüismo'],
+      ['asesorias_juridicas','Asesorías Jurídicas'],['activacion_economica','Activación Económica'],
+      ['extension_horario','Extensión de Horario'],['programas_institucionales','Programas Institucionales'],
+      ['programas_turismo','Programas de Turismo']
+    ];
+    for(var j=0;j<radioReq.length;j++){
+      if(!radio(radioReq[j][0])){ errEl.textContent='El campo "'+radioReq[j][1]+'" es obligatorio.'; errEl.style.display='block'; return; }
+    }
+
+    var estrato = vv('estrato');
+    if(!estrato){ errEl.textContent='El campo "Estrato" es obligatorio.'; errEl.style.display='block'; return; }
+
+    var dias = checks('dias_operacion');
+    if(!dias){ errEl.textContent='Seleccione al menos un día de operación.'; errEl.style.display='block'; return; }
+    var formas = checks('formas_pago');
+    if(!formas){ errEl.textContent='Seleccione al menos una forma de pago.'; errEl.style.display='block'; return; }
+
+    var btn = document.getElementById('ad-submit-btn');
+    btn.disabled=true; btn.textContent='Enviando...';
+
+    var payload = {
+      acepta_datos: true,
+      razon_social: vv('razon_social'),
+      tipo_identificacion: vv('tipo_identificacion'),
+      numero_identificacion: vv('numero_identificacion'),
+      nombre_representante: vv('nombre_representante'),
+      departamento: vv('departamento'),
+      ciudad_empresa: vv('ciudad_empresa'),
+      telefono_representante: vv('telefono_representante'),
+      correo_representante: vv('correo_representante'),
+      regimen: radio('regimen'),
+      nombre_establecimiento: vv('nombre_establecimiento'),
+      telefono_establecimiento: vv('telefono_establecimiento'),
+      direccion: vv('direccion'),
+      correo_establecimiento: vv('correo_establecimiento'),
+      ciudad_establecimiento: vv('ciudad_establecimiento'),
+      barrio: vv('barrio'),
+      estrato: estrato,
+      pagina_web: vv('pagina_web'),
+      facebook: vv('facebook'),
+      instagram: vv('instagram'),
+      tiene_sucursales: radio('tiene_sucursales'),
+      numero_sucursales: vv('numero_sucursales'),
+      edad_promedio_empleados: radio('edad_promedio_empleados'),
+      aprendices_sena: radio('aprendices_sena'),
+      colaboradores_lgbtiq: radio('colaboradores_lgbtiq'),
+      personal_discapacidad: radio('personal_discapacidad'),
+      local_tipo: radio('local_tipo'),
+      area_establecimiento: vv('area_establecimiento'),
+      documentacion: checks('documentacion'),
+      actividad_principal_ciiu: vv('actividad_principal_ciiu'),
+      actividad_secundaria_ciiu: vv('actividad_secundaria_ciiu'),
+      otra_actividad_ciiu: vv('otra_actividad_ciiu'),
+      tipo_negocio: vv('tipo_negocio'),
+      concepto_establecimiento: vv('concepto_establecimiento'),
+      musica_en_vivo: radio('musica_en_vivo'),
+      edad_promedio_clientes: vv('edad_promedio_clientes'),
+      dias_operacion: dias,
+      horario_servicio: vv('horario_servicio'),
+      cobro_cover: radio('cobro_cover'),
+      formas_pago: formas,
+      aforo: vv('aforo'),
+      num_sillas: vv('num_sillas'),
+      num_mesas: vv('num_mesas'),
+      num_usuarios_pie: vv('num_usuarios_pie'),
+      num_salidas: vv('num_salidas'),
+      num_banos_hombres: vv('num_banos_hombres'),
+      num_banos_mujeres: vv('num_banos_mujeres'),
+      num_banos_discapacitados: vv('num_banos_discapacitados'),
+      rampas_acceso: radio('rampas_acceso'),
+      ventilacion_artificial: radio('ventilacion_artificial'),
+      insonorizacion: radio('insonorizacion'),
+      parqueadero: radio('parqueadero'),
+      convenio_conductor: radio('convenio_conductor'),
+      sistema_cctv: radio('sistema_cctv'),
+      senalizacion_emergencia: radio('senalizacion_emergencia'),
+      iluminacion_corredores: radio('iluminacion_corredores'),
+      logistica_seguridad: radio('logistica_seguridad'),
+      contratacion_directa: radio('contratacion_directa'),
+      participar_formacion: radio('participar_formacion'),
+      programas_bilinguismo: radio('programas_bilinguismo'),
+      asesorias_juridicas: radio('asesorias_juridicas'),
+      activacion_economica: radio('activacion_economica'),
+      extension_horario: radio('extension_horario'),
+      programas_institucionales: radio('programas_institucionales'),
+      programas_turismo: radio('programas_turismo'),
+      nombre_informe: vv('nombre_informe'),
+      correo_informe: vv('correo_informe'),
+      telefono_informe: vv('telefono_informe')
+    };
+
+    sb.from('inscripciones_armenia_diag').insert([payload]).then(function(res){
+      btn.disabled=false; btn.textContent='Enviar Instrumento';
+      if(res.error){
+        errEl.textContent='Error al enviar: '+res.error.message;
+        errEl.style.display='block';
+      } else {
+        document.getElementById('ad-success').style.display='block';
+        btn.style.display='none';
+        document.getElementById('arm-diag-wrap').scrollIntoView({behavior:'smooth'});
+      }
+    });
+  };
+})();
+</script>

@@ -1,0 +1,407 @@
+<style>
+#arm-guia-wrap*{box-sizing:border-box;margin:0;padding:0}
+#arm-guia-wrap{font-family:'Segoe UI',Arial,sans-serif;background:#f0f9f4;padding:24px 16px 48px;min-height:100vh}
+.ag-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden;max-width:780px;margin:0 auto 28px}
+.ag-banner img{width:100%;display:block}
+.ag-intro{padding:28px 32px 24px}
+.ag-intro h1{font-size:clamp(20px,3vw,26px);font-weight:700;color:#1a2e1a;line-height:1.3;margin-bottom:10px}
+.ag-intro p{font-size:14px;color:#64748b;line-height:1.6}
+.ag-section-head{background:#2db84b;padding:14px 24px}
+.ag-section-head h2{font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px;text-transform:uppercase}
+.ag-section-desc{background:#f8fff9;border-bottom:1px solid #e8f5e9;padding:11px 24px;font-size:13px;color:#4a7c59;font-style:italic}
+.ag-body{padding:20px 24px}
+.ag-field{margin-bottom:18px}
+.ag-label{display:block;font-size:12px;font-weight:700;color:#334155;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px}
+.ag-req{color:#e53e3e;margin-left:3px}
+.ag-input,.ag-select{width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;color:#1e293b;background:#fff;transition:border-color .2s;font-family:inherit}
+.ag-input:focus,.ag-select:focus{outline:none;border-color:#2db84b}
+.ag-g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ag-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:600px){.ag-g2,.ag-g3{grid-template-columns:1fr}}
+.ag-radio-group,.ag-check-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.ag-radio-label,.ag-check-label{display:flex;align-items:center;gap:7px;padding:8px 14px;border:1.5px solid #d1d5db;border-radius:8px;cursor:pointer;font-size:13px;color:#334155;transition:all .15s;user-select:none}
+.ag-radio-label:has(input:checked),.ag-check-label:has(input:checked){border-color:#2db84b;background:#f0fdf4;color:#166534;font-weight:600}
+.ag-radio-label input,.ag-check-label input{accent-color:#2db84b}
+.ag-acepta-box{background:#f8fff9;border:1.5px solid #c8e6c9;border-radius:12px;padding:20px 24px}
+.ag-acepta-box p{font-size:14px;color:#334155;line-height:1.7;margin-bottom:14px}
+.ag-acepta-box a{color:#2db84b;font-weight:600}
+.ag-submit-wrap{padding:16px 24px 28px;text-align:center}
+.ag-btn{background:linear-gradient(135deg,#2db84b,#1e7c34);color:#fff;border:none;padding:14px 52px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:.3px}
+.ag-btn:hover{opacity:.9}
+.ag-btn:disabled{opacity:.6;cursor:not-allowed}
+.ag-error{background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin:0 24px 12px;font-size:13px;color:#dc2626;display:none}
+.ag-success{background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:28px;text-align:center;display:none}
+.ag-success h3{font-size:20px;color:#166534;margin-bottom:8px}
+.ag-success p{font-size:14px;color:#4a7c59}
+.ag-note{font-size:12px;color:#94a3b8;margin-top:5px;font-style:italic}
+</style>
+
+<div id="arm-guia-wrap">
+
+  <!-- Banner + intro -->
+  <div class="ag-card">
+    <div class="ag-banner">
+      <img src="https://asobares.org/wp-content/uploads/2026/08/Banner-forms-3-scaled.jpg" alt="Inscripción Guía Gastroentretenimiento Armenia"/>
+    </div>
+    <div class="ag-intro">
+      <h1>Inscripción Guía de Establecimientos de Gastroentretenimiento Armenia</h1>
+      <p>La información suministrada es de carácter confidencial y su uso exclusivo para Alcaldía de Armenia, Bureau Convención Quindío y Asobares Colombia.</p>
+    </div>
+  </div>
+
+  <!-- Autorización -->
+  <div class="ag-card">
+    <div class="ag-body">
+      <div class="ag-acepta-box">
+        <p><strong>AUTORIZACIÓN DE USO DE DATOS:</strong> Por medio de la presente acepto el uso de datos contemplados en el formulario por parte de Asobares, conforme a la política de la asociación, la cual puede ser consultada en el siguiente enlace: <a href="https://asobares.org/politica-de-datos/" target="_blank">https://asobares.org/politica-de-datos/</a> <span style="color:#e53e3e;">*</span></p>
+        <div class="ag-radio-group">
+          <label class="ag-radio-label"><input type="radio" name="acepta_datos" value="si"> Acepta</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATOS DEL ESTABLECIMIENTO -->
+  <div class="ag-card">
+    <div class="ag-section-head"><h2>Datos del Establecimiento</h2></div>
+    <div class="ag-section-desc">Datos relacionados con el establecimiento de comercio.</div>
+    <div class="ag-body">
+      <div class="ag-g2">
+        <div class="ag-field">
+          <label class="ag-label">Nombre Establecimiento<span class="ag-req">*</span></label>
+          <input class="ag-input" name="nombre_establecimiento" type="text" required/>
+        </div>
+        <div class="ag-field">
+          <label class="ag-label">Teléfono Establecimiento<span class="ag-req">*</span></label>
+          <input class="ag-input" name="telefono_establecimiento" type="tel" required/>
+        </div>
+      </div>
+      <div class="ag-field">
+        <label class="ag-label">Dirección del Establecimiento<span class="ag-req">*</span></label>
+        <input class="ag-input" name="direccion" type="text" required/>
+      </div>
+      <div class="ag-g2">
+        <div class="ag-field">
+          <label class="ag-label">Correo Electrónico del Establecimiento<span class="ag-req">*</span></label>
+          <input class="ag-input" name="correo_establecimiento" type="email" required/>
+        </div>
+        <div class="ag-field">
+          <label class="ag-label">Ciudad</label>
+          <input class="ag-input" name="ciudad" type="text"/>
+        </div>
+      </div>
+      <div class="ag-g2">
+        <div class="ag-field">
+          <label class="ag-label">Barrio</label>
+          <input class="ag-input" name="barrio" type="text"/>
+        </div>
+        <div class="ag-field">
+          <label class="ag-label">Estrato<span class="ag-req">*</span></label>
+          <select class="ag-select" name="estrato" required>
+            <option value="">Seleccionar</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+          </select>
+        </div>
+      </div>
+      <div class="ag-g2">
+        <div class="ag-field">
+          <label class="ag-label">Página Web</label>
+          <input class="ag-input" name="pagina_web" type="text" placeholder="https://..."/>
+        </div>
+        <div class="ag-field">
+          <label class="ag-label">Facebook</label>
+          <input class="ag-input" name="facebook" type="text"/>
+        </div>
+      </div>
+      <div class="ag-field">
+        <label class="ag-label">Instagram<span class="ag-req">*</span></label>
+        <input class="ag-input" name="instagram" type="text" required placeholder="@usuario"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENTACIÓN -->
+  <div class="ag-card">
+    <div class="ag-section-head"><h2>Documentación</h2></div>
+    <div class="ag-section-desc">¿El establecimiento de comercio cuenta con los siguientes documentos para operación?</div>
+    <div class="ag-body">
+      <div class="ag-field">
+        <label class="ag-label">¿Cuenta con la Documentación?<span class="ag-req">*</span></label>
+        <div class="ag-check-group" style="flex-direction:column;gap:6px">
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="CAMARA DE COMERCIO"> CÁMARA DE COMERCIO</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="CONCEPTO BOMBEROS"> CONCEPTO BOMBEROS</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="CONCEPTO SANIDAD"> CONCEPTO SANIDAD</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="CEDULA REPRESENTANTE LEGAL"> CÉDULA REPRESENTANTE LEGAL</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="USO DEL SUELO"> USO DEL SUELO</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="LICENCIA CONSTRUCCION"> LICENCIA CONSTRUCCIÓN</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="POLIZA DE RESPONSABILIDAD CIVIL Y EXTRACONTRACTUAL"> PÓLIZA DE RESPONSABILIDAD CIVIL Y EXTRACONTRACTUAL</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="RESOLUCION FACTURACION"> RESOLUCIÓN FACTURACIÓN</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="REGISTRO UNICO TRIBUTARIO (RUT)"> REGISTRO ÚNICO TRIBUTARIO (RUT)</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="RIT"> RIT</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="REGISTRO NACIONAL DE TURISMO (RNT)"> REGISTRO NACIONAL DE TURISMO (RNT)</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="FACTURACION ELECTRONICA"> FACTURACIÓN ELECTRÓNICA</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="NOMINA ELECTRONICA"> NÓMINA ELECTRÓNICA</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="RETIE (CERTIFICACION DE REDES ELECTRICAS)"> RETIE (CERTIFICACIÓN DE REDES ELÉCTRICAS)</label>
+          <label class="ag-check-label"><input type="checkbox" name="documentacion" value="PERMISO DE AVISOS Y TABLEROS"> PERMISO DE AVISOS Y TABLEROS</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFORMACIÓN DE FUNCIONAMIENTO -->
+  <div class="ag-card">
+    <div class="ag-section-head"><h2>Información de Funcionamiento</h2></div>
+    <div class="ag-section-desc">Datos relacionados con la actividad del establecimiento.</div>
+    <div class="ag-body">
+      <div class="ag-g3">
+        <div class="ag-field">
+          <label class="ag-label">Actividad Principal CIIU<span class="ag-req">*</span></label>
+          <input class="ag-input" name="actividad_principal_ciiu" type="text" required/>
+        </div>
+        <div class="ag-field">
+          <label class="ag-label">Actividad Secundaria CIIU<span class="ag-req">*</span></label>
+          <input class="ag-input" name="actividad_secundaria_ciiu" type="text" required/>
+        </div>
+        <div class="ag-field">
+          <label class="ag-label">Otra Actividad CIIU<span class="ag-req">*</span></label>
+          <input class="ag-input" name="otra_actividad_ciiu" type="text" required/>
+        </div>
+      </div>
+      <div class="ag-field">
+        <label class="ag-label">Tipo de Negocio<span class="ag-req">*</span></label>
+        <div class="ag-radio-group">
+          <label class="ag-radio-label"><input type="radio" name="tipo_negocio" value="CERVECERÍA"> CERVECERÍA</label>
+          <label class="ag-radio-label"><input type="radio" name="tipo_negocio" value="CAFÉ-BAR"> CAFÉ-BAR</label>
+          <label class="ag-radio-label"><input type="radio" name="tipo_negocio" value="GASTROBAR"> GASTROBAR</label>
+          <label class="ag-radio-label"><input type="radio" name="tipo_negocio" value="BAR"> BAR</label>
+          <label class="ag-radio-label"><input type="radio" name="tipo_negocio" value="DISCOTECA"> DISCOTECA</label>
+          <label class="ag-radio-label"><input type="radio" name="tipo_negocio" value="CLUB"> CLUB</label>
+          <label class="ag-radio-label"><input type="radio" name="tipo_negocio" value="RESTAURANTE"> RESTAURANTE</label>
+          <label class="ag-radio-label"><input type="radio" name="tipo_negocio" value="CAFÉ-PANADERÍA"> CAFÉ-PANADERÍA</label>
+          <label class="ag-radio-label"><input type="radio" name="tipo_negocio" value="HOTEL"> HOTEL</label>
+          <label class="ag-radio-label"><input type="radio" name="tipo_negocio" value="Otro"> Otro</label>
+        </div>
+      </div>
+      <div class="ag-field">
+        <label class="ag-label">Concepto del Establecimiento<span class="ag-req">*</span></label>
+        <div class="ag-radio-group">
+          <label class="ag-radio-label"><input type="radio" name="concepto_establecimiento" value="ROCK"> ROCK</label>
+          <label class="ag-radio-label"><input type="radio" name="concepto_establecimiento" value="SALSA"> SALSA</label>
+          <label class="ag-radio-label"><input type="radio" name="concepto_establecimiento" value="VALLENATO"> VALLENATO</label>
+          <label class="ag-radio-label"><input type="radio" name="concepto_establecimiento" value="CROSSOVER"> CROSSOVER</label>
+          <label class="ag-radio-label"><input type="radio" name="concepto_establecimiento" value="POPULAR"> POPULAR</label>
+          <label class="ag-radio-label"><input type="radio" name="concepto_establecimiento" value="ELECTRÓNICA"> ELECTRÓNICA</label>
+          <label class="ag-radio-label"><input type="radio" name="concepto_establecimiento" value="REGUETÓN"> REGUETÓN</label>
+          <label class="ag-radio-label"><input type="radio" name="concepto_establecimiento" value="POPULAR MEXICANO"> POPULAR MEXICANO</label>
+          <label class="ag-radio-label"><input type="radio" name="concepto_establecimiento" value="Otro"> Otro</label>
+        </div>
+      </div>
+      <div class="ag-g2">
+        <div class="ag-field">
+          <label class="ag-label">Maneja Música en Vivo<span class="ag-req">*</span></label>
+          <div class="ag-radio-group">
+            <label class="ag-radio-label"><input type="radio" name="musica_en_vivo" value="Sí"> Sí</label>
+            <label class="ag-radio-label"><input type="radio" name="musica_en_vivo" value="No"> No</label>
+          </div>
+        </div>
+        <div class="ag-field">
+          <label class="ag-label">Edad Promedio de sus Clientes<span class="ag-req">*</span></label>
+          <select class="ag-select" name="edad_promedio_clientes" required>
+            <option value="">Seleccionar</option>
+            <option>18 A 25</option><option>26 A 35</option><option>36 A 45</option>
+            <option>45 A 55</option><option>55 EN ADELANTE</option>
+          </select>
+        </div>
+      </div>
+      <div class="ag-field">
+        <label class="ag-label">Días de Operación<span class="ag-req">*</span></label>
+        <div class="ag-check-group">
+          <label class="ag-check-label"><input type="checkbox" name="dias_operacion" value="LUNES"> LUNES</label>
+          <label class="ag-check-label"><input type="checkbox" name="dias_operacion" value="MARTES"> MARTES</label>
+          <label class="ag-check-label"><input type="checkbox" name="dias_operacion" value="MIÉRCOLES"> MIÉRCOLES</label>
+          <label class="ag-check-label"><input type="checkbox" name="dias_operacion" value="JUEVES"> JUEVES</label>
+          <label class="ag-check-label"><input type="checkbox" name="dias_operacion" value="VIERNES"> VIERNES</label>
+          <label class="ag-check-label"><input type="checkbox" name="dias_operacion" value="SÁBADO"> SÁBADO</label>
+          <label class="ag-check-label"><input type="checkbox" name="dias_operacion" value="DOMINGO"> DOMINGO</label>
+        </div>
+      </div>
+      <div class="ag-field">
+        <label class="ag-label">Horario de Servicio<span class="ag-req">*</span></label>
+        <input class="ag-input" name="horario_servicio" type="text" required placeholder="Ej: 6pm - 3am"/>
+      </div>
+      <div class="ag-g2">
+        <div class="ag-field">
+          <label class="ag-label">¿Cuenta con Acceso a Personas con Discapacidad?<span class="ag-req">*</span></label>
+          <div class="ag-radio-group">
+            <label class="ag-radio-label"><input type="radio" name="acceso_discapacidad" value="SI"> SI</label>
+            <label class="ag-radio-label"><input type="radio" name="acceso_discapacidad" value="No"> No</label>
+          </div>
+        </div>
+        <div class="ag-field">
+          <label class="ag-label">Servicio de Parqueadero</label>
+          <div class="ag-radio-group">
+            <label class="ag-radio-label"><input type="radio" name="parqueadero" value="SI"> SI</label>
+            <label class="ag-radio-label"><input type="radio" name="parqueadero" value="NO"> NO</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFORMACIÓN DE CONTACTO -->
+  <div class="ag-card">
+    <div class="ag-section-head"><h2>Información de Contacto del Establecimiento</h2></div>
+    <div class="ag-section-desc">A continuación diligencie la información para el envío del informe de visita general de su establecimiento.</div>
+    <div class="ag-body">
+      <div class="ag-field">
+        <label class="ag-label">Nombre Persona de Contacto del Establecimiento<span class="ag-req">*</span></label>
+        <input class="ag-input" name="nombre_contacto" type="text" required/>
+      </div>
+      <div class="ag-g2">
+        <div class="ag-field">
+          <label class="ag-label">Correo Electrónico<span class="ag-req">*</span></label>
+          <input class="ag-input" name="correo_contacto" type="email" required/>
+        </div>
+        <div class="ag-field">
+          <label class="ag-label">Teléfono<span class="ag-req">*</span></label>
+          <input class="ag-input" name="telefono_contacto" type="tel" required/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANEXOS -->
+  <div class="ag-card">
+    <div class="ag-section-head"><h2>Anexos</h2></div>
+    <div class="ag-section-desc">Requerimos sus anexos para inclusión en la guía. Comparta los enlaces de descarga (Google Drive, Dropbox, etc.).</div>
+    <div class="ag-body">
+      <div class="ag-field">
+        <label class="ag-label">Cámara de Comercio — Link de descarga<span class="ag-req">*</span></label>
+        <input class="ag-input" name="link_camara_comercio" type="text" required placeholder="https://drive.google.com/..."/>
+        <p class="ag-note">Comparta el enlace del archivo desde Google Drive, Dropbox u otro servicio con acceso público.</p>
+      </div>
+      <div class="ag-field">
+        <label class="ag-label">Fotografía del Establecimiento — Link de descarga<span class="ag-req">*</span></label>
+        <input class="ag-input" name="link_foto_establecimiento" type="text" required placeholder="https://drive.google.com/..."/>
+      </div>
+      <div class="ag-field">
+        <label class="ag-label">Logo del Establecimiento — Link de descarga<span class="ag-req">*</span></label>
+        <input class="ag-input" name="link_logo" type="text" required placeholder="https://drive.google.com/..."/>
+      </div>
+    </div>
+    <div class="ag-error" id="ag-error-msg"></div>
+    <div class="ag-submit-wrap">
+      <div class="ag-success" id="ag-success">
+        <div style="font-size:48px;margin-bottom:12px">✅</div>
+        <h3>¡Inscripción recibida exitosamente!</h3>
+        <p>Tu establecimiento quedó inscrito en la Guía de Gastroentretenimiento de Armenia.<br/>Recibirás la confirmación en tu correo electrónico.</p>
+      </div>
+      <button class="ag-btn" id="ag-submit-btn" type="button" onclick="agEnviar()">Inscribir Establecimiento</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+  var _sb;
+  function getSB(){
+    if(_sb) return _sb;
+    if(typeof supabase !== 'undefined' && supabase.createClient){
+      _sb = supabase.createClient(
+        'https://pbqmkodwmntujezbokgo.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34'
+      );
+      return _sb;
+    }
+    return null;
+  }
+  function vv(name){ var el=document.querySelector('[name="'+name+'"]'); return el ? el.value.trim() : ''; }
+  function radio(name){ var el=document.querySelector('[name="'+name+'"]:checked'); return el ? el.value : ''; }
+  function checks(name){ return Array.from(document.querySelectorAll('[name="'+name+'"]:checked')).map(function(e){return e.value;}).join(' | '); }
+
+  window.agEnviar = function(){
+    var sb = getSB();
+    if(!sb){ setTimeout(agEnviar, 150); return; }
+
+    var errEl = document.getElementById('ag-error-msg');
+    errEl.style.display = 'none';
+
+    if(radio('acepta_datos') !== 'si'){ errEl.textContent='Debe aceptar el uso de datos para continuar.'; errEl.style.display='block'; return; }
+
+    var req = [
+      ['nombre_establecimiento','Nombre Establecimiento'],['telefono_establecimiento','Teléfono Establecimiento'],
+      ['direccion','Dirección'],['correo_establecimiento','Correo Establecimiento'],
+      ['instagram','Instagram'],['actividad_principal_ciiu','Actividad Principal CIIU'],
+      ['actividad_secundaria_ciiu','Actividad Secundaria CIIU'],['otra_actividad_ciiu','Otra Actividad CIIU'],
+      ['horario_servicio','Horario de Servicio'],
+      ['nombre_contacto','Nombre Contacto'],['correo_contacto','Correo Contacto'],['telefono_contacto','Teléfono Contacto'],
+      ['link_camara_comercio','Link Cámara de Comercio'],['link_foto_establecimiento','Link Fotografía'],['link_logo','Link Logo']
+    ];
+    for(var i=0;i<req.length;i++){
+      if(!vv(req[i][0])){ errEl.textContent='El campo "'+req[i][1]+'" es obligatorio.'; errEl.style.display='block'; return; }
+    }
+
+    var estrato = vv('estrato');
+    if(!estrato){ errEl.textContent='El campo "Estrato" es obligatorio.'; errEl.style.display='block'; return; }
+    if(!radio('tipo_negocio')){ errEl.textContent='Seleccione el tipo de negocio.'; errEl.style.display='block'; return; }
+    if(!radio('concepto_establecimiento')){ errEl.textContent='Seleccione el concepto del establecimiento.'; errEl.style.display='block'; return; }
+    if(!radio('musica_en_vivo')){ errEl.textContent='Indique si maneja música en vivo.'; errEl.style.display='block'; return; }
+    if(!vv('edad_promedio_clientes')){ errEl.textContent='Seleccione la edad promedio de clientes.'; errEl.style.display='block'; return; }
+    if(!radio('acceso_discapacidad')){ errEl.textContent='Indique si cuenta con acceso a personas con discapacidad.'; errEl.style.display='block'; return; }
+
+    var dias = checks('dias_operacion');
+    if(!dias){ errEl.textContent='Seleccione al menos un día de operación.'; errEl.style.display='block'; return; }
+    var docs = checks('documentacion');
+    if(!docs){ errEl.textContent='Seleccione al menos un documento con el que cuenta.'; errEl.style.display='block'; return; }
+
+    var btn = document.getElementById('ag-submit-btn');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+
+    var payload = {
+      acepta_datos: true,
+      nombre_establecimiento: vv('nombre_establecimiento'),
+      telefono_establecimiento: vv('telefono_establecimiento'),
+      direccion: vv('direccion'),
+      correo_establecimiento: vv('correo_establecimiento'),
+      ciudad: vv('ciudad'),
+      barrio: vv('barrio'),
+      estrato: estrato,
+      pagina_web: vv('pagina_web'),
+      facebook: vv('facebook'),
+      instagram: vv('instagram'),
+      documentacion: docs,
+      actividad_principal_ciiu: vv('actividad_principal_ciiu'),
+      actividad_secundaria_ciiu: vv('actividad_secundaria_ciiu'),
+      otra_actividad_ciiu: vv('otra_actividad_ciiu'),
+      tipo_negocio: radio('tipo_negocio'),
+      concepto_establecimiento: radio('concepto_establecimiento'),
+      musica_en_vivo: radio('musica_en_vivo'),
+      edad_promedio_clientes: vv('edad_promedio_clientes'),
+      dias_operacion: dias,
+      horario_servicio: vv('horario_servicio'),
+      acceso_discapacidad: radio('acceso_discapacidad'),
+      parqueadero: radio('parqueadero'),
+      nombre_contacto: vv('nombre_contacto'),
+      correo_contacto: vv('correo_contacto'),
+      telefono_contacto: vv('telefono_contacto'),
+      link_camara_comercio: vv('link_camara_comercio'),
+      link_foto_establecimiento: vv('link_foto_establecimiento'),
+      link_logo: vv('link_logo')
+    };
+
+    sb.from('inscripciones_armenia_guia').insert([payload]).then(function(res){
+      btn.disabled = false; btn.textContent = 'Inscribir Establecimiento';
+      if(res.error){
+        errEl.textContent = 'Error al enviar: ' + res.error.message;
+        errEl.style.display = 'block';
+      } else {
+        document.getElementById('ag-success').style.display = 'block';
+        btn.style.display = 'none';
+        document.getElementById('arm-guia-wrap').scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  };
+})();
+</script>

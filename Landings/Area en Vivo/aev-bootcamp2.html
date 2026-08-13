@@ -1,361 +1,348 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+/* ─── RESET & WRAPPER ────────────────────────────────── */
 #aev-boot2-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
-#aev-boot2-wrap { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; width: 100%; }
+#aev-boot2-wrap {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #000;
+  color: #fff;
+  /* romper ancho del contenedor Elementor */
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
-/* HERO */
-#aev-boot2-wrap .ab2-hero { background: #0a0a1a; width: 100%; }
-#aev-boot2-wrap .ab2-hero-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; min-height: 540px; }
-#aev-boot2-wrap .ab2-hero-program { padding: 40px 36px; background: linear-gradient(160deg, #0d0d22 0%, #1a0a3a 100%); display: flex; flex-direction: column; justify-content: center; }
-#aev-boot2-wrap .ab2-hero-info { padding: 48px 44px; color: white; display: flex; flex-direction: column; justify-content: center; }
+/* ─── MAIN BODY (portada + formulario) ───────────────── */
+#aev-boot2-wrap .ab2-main {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  width: 100%;
+  align-items: start;
+}
 
-/* Certificates */
-#aev-boot2-wrap .ab2-certs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
-#aev-boot2-wrap .ab2-cert { font-size: 10px; font-weight: 800; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 20px; }
-#aev-boot2-wrap .ab2-cert-emmat { background: rgba(124,58,237,0.25); color: #c4b5fd; border: 1px solid rgba(124,58,237,0.5); }
-#aev-boot2-wrap .ab2-cert-creartech { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.4); }
-#aev-boot2-wrap .ab2-cert-alqumia { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.4); }
+/* columna izquierda: imagen portada */
+#aev-boot2-wrap .ab2-portada { line-height: 0; }
+#aev-boot2-wrap .ab2-portada img { width: 100%; height: auto; display: block; }
 
-/* Program lbl */
-#aev-boot2-wrap .ab2-prog-lbl { font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: 2px; margin-bottom: 16px; }
+/* info compacta sobre el formulario */
+#aev-boot2-wrap .ab2-form-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: #0d0505;
+  border: 1px solid #2a0a0a;
+  border-radius: 12px;
+}
+#aev-boot2-wrap .ab2-form-meta .ab2-met {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+#aev-boot2-wrap .ab2-form-meta .ab2-met strong { color: #fff; font-size: 14px; }
+#aev-boot2-wrap .ab2-form-meta .ab2-met-ico { font-size: 18px; }
 
-/* Module rows */
-#aev-boot2-wrap .ab2-mod { display: flex; gap: 14px; margin-bottom: 12px; }
-#aev-boot2-wrap .ab2-mod-time { font-size: 11px; font-weight: 700; color: #7c3aed; white-space: nowrap; width: 84px; flex-shrink: 0; padding-top: 2px; }
-#aev-boot2-wrap .ab2-mod-body { flex: 1; padding: 10px 14px; border-radius: 10px; border-left: 3px solid #7c3aed; background: rgba(124,58,237,0.1); }
-#aev-boot2-wrap .ab2-mod-body.live { border-color: #E84338; background: rgba(232,67,56,0.1); }
-#aev-boot2-wrap .ab2-mod-body.network { border-color: #10b981; background: rgba(16,185,129,0.1); }
-#aev-boot2-wrap .ab2-mod-tag { font-size: 9px; font-weight: 800; color: #7c3aed; letter-spacing: 1.5px; display: block; margin-bottom: 3px; }
-#aev-boot2-wrap .ab2-mod-body.live .ab2-mod-tag { color: #E84338; }
-#aev-boot2-wrap .ab2-mod-body.network .ab2-mod-tag { color: #10b981; }
-#aev-boot2-wrap .ab2-mod-title { font-size: 13px; font-weight: 700; color: white; line-height: 1.3; margin-bottom: 2px; }
-#aev-boot2-wrap .ab2-mod-speaker { font-size: 11px; color: #94a3b8; }
-
-/* Hero right */
-#aev-boot2-wrap .ab2-tag { font-size: 11px; font-weight: 700; color: #a78bfa; letter-spacing: 2.5px; margin-bottom: 14px; display: block; }
-#aev-boot2-wrap .ab2-title { font-size: 34px; font-weight: 900; line-height: 1.05; margin-bottom: 14px; color: white; }
-#aev-boot2-wrap .ab2-badge { display: inline-block; background: #7c3aed; color: white; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 20px; margin-bottom: 22px; letter-spacing: 1px; }
-#aev-boot2-wrap .ab2-date { font-size: 20px; font-weight: 800; color: #a78bfa; margin-bottom: 4px; }
-#aev-boot2-wrap .ab2-time { font-size: 14px; color: #94a3b8; margin-bottom: 20px; }
-#aev-boot2-wrap .ab2-venue { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 24px; }
-#aev-boot2-wrap .ab2-venue-name { font-weight: 700; font-size: 15px; color: white; }
-#aev-boot2-wrap .ab2-venue-addr { font-size: 13px; color: #94a3b8; margin-top: 2px; }
-#aev-boot2-wrap .ab2-speakers-lbl { font-size: 10px; color: #64748b; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 8px; }
-#aev-boot2-wrap .ab2-speaker { font-size: 14px; font-weight: 700; color: white; line-height: 1.8; }
-#aev-boot2-wrap .ab2-free { display: inline-flex; align-items: center; gap: 6px; border: 2px solid #7c3aed; color: #a78bfa; padding: 9px 22px; border-radius: 8px; font-weight: 700; font-size: 14px; margin-top: 22px; }
-
-/* FORM SECTION */
-#aev-boot2-wrap .ab2-form-wrap { max-width: 1100px; margin: 0 auto; padding: 52px 24px 40px; }
-#aev-boot2-wrap .ab2-form-title { text-align: center; margin-bottom: 36px; }
-#aev-boot2-wrap .ab2-form-title h2 { font-size: 32px; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; }
-#aev-boot2-wrap .ab2-form-title p { color: #64748b; font-size: 17px; }
-#aev-boot2-wrap .ab2-card { background: white; border-radius: 20px; padding: 48px 52px; box-shadow: 0 2px 24px rgba(0,0,0,0.07); }
-#aev-boot2-wrap .ab2-sec { font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 2px; margin-bottom: 20px; margin-top: 32px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; display: block; }
+/* ─── FORM PANEL ──────────────────────────────────────── */
+#aev-boot2-wrap .ab2-form-panel { width: 100%; padding: 36px 40px 48px; }
+#aev-boot2-wrap .ab2-form-head { margin-bottom: 20px; }
+#aev-boot2-wrap .ab2-form-head h2 { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+#aev-boot2-wrap .ab2-form-head p { font-size: 13px; color: #64748b; }
+#aev-boot2-wrap .ab2-card {
+  background: #0d0505;
+  border: 1px solid #2a0a0a;
+  border-radius: 16px;
+  padding: 36px 40px;
+}
+#aev-boot2-wrap .ab2-sec {
+  font-size: 10px;
+  font-weight: 800;
+  color: #cc1a1a;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+  margin-top: 28px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #1e0606;
+  display: block;
+  text-transform: uppercase;
+}
 #aev-boot2-wrap .ab2-sec:first-child { margin-top: 0; }
-#aev-boot2-wrap .ab2-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-#aev-boot2-wrap .ab2-g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-#aev-boot2-wrap .ab2-fg label { display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+#aev-boot2-wrap .ab2-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+#aev-boot2-wrap .ab2-g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+#aev-boot2-wrap .ab2-fg label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
 #aev-boot2-wrap .ab2-fg input,
-#aev-boot2-wrap .ab2-fg select { width: 100%; padding: 13px 15px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-family: inherit; background: white; color: #1a1a2e; transition: border-color 0.15s; -webkit-appearance: auto; appearance: auto; }
+#aev-boot2-wrap .ab2-fg select {
+  width: 100%; padding: 11px 13px;
+  border: 1.5px solid #2a0a0a;
+  border-radius: 8px; font-size: 14px; font-family: inherit;
+  background: #050000; color: #fff;
+  transition: border-color 0.15s;
+  -webkit-appearance: auto; appearance: auto;
+}
+#aev-boot2-wrap .ab2-fg input::placeholder { color: #374151; }
 #aev-boot2-wrap .ab2-fg input:focus,
-#aev-boot2-wrap .ab2-fg select:focus { outline: none; border-color: #7c3aed; }
-#aev-boot2-wrap .ab2-req { color: #7c3aed; }
-#aev-boot2-wrap .ab2-submit { width: 100%; padding: 18px; border: none; border-radius: 12px; background: linear-gradient(135deg, #7c3aed, #5b21b6); color: white; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 32px; letter-spacing: 0.3px; transition: opacity 0.2s; font-family: inherit; }
-#aev-boot2-wrap .ab2-submit:hover { opacity: 0.9; }
-#aev-boot2-wrap .ab2-submit:disabled { opacity: 0.6; cursor: default; }
-#aev-boot2-wrap .ab2-legal { text-align: center; font-size: 13px; color: #94a3b8; margin-top: 16px; }
-#aev-boot2-wrap .ab2-err { display: none; background: #ede9fe; color: #5b21b6; padding: 14px 18px; border-radius: 10px; font-size: 14px; margin-top: 16px; }
+#aev-boot2-wrap .ab2-fg select:focus { outline: none; border-color: #cc1a1a; }
+#aev-boot2-wrap .ab2-fg select option { background: #0d0505; color: #fff; }
+#aev-boot2-wrap .ab2-req { color: #cc1a1a; }
+#aev-boot2-wrap .ab2-submit {
+  width: 100%; padding: 16px; border: none; border-radius: 10px;
+  background: #cc1a1a; color: #fff;
+  font-size: 16px; font-weight: 800; cursor: pointer;
+  margin-top: 24px; letter-spacing: 0.3px;
+  transition: background 0.2s; font-family: inherit;
+  text-transform: uppercase;
+}
+#aev-boot2-wrap .ab2-submit:hover { background: #e01e1e; }
+#aev-boot2-wrap .ab2-submit:disabled { opacity: 0.5; cursor: default; }
+#aev-boot2-wrap .ab2-legal { text-align: center; font-size: 12px; color: #374151; margin-top: 12px; }
+#aev-boot2-wrap .ab2-err { display: none; background: #2d0505; color: #fca5a5; border: 1px solid #7f1d1d; padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-top: 14px; }
 
 /* SUCCESS */
 #aev-boot2-wrap .ab2-success { display: none; text-align: center; padding: 60px 20px; }
-#aev-boot2-wrap .ab2-check { width: 84px; height: 84px; background: linear-gradient(135deg, #7c3aed, #5b21b6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 42px; color: white; margin: 0 auto 24px; }
-#aev-boot2-wrap .ab2-success h2 { font-size: 26px; font-weight: 800; margin-bottom: 12px; color: #1a1a2e; }
-#aev-boot2-wrap .ab2-success p { font-size: 15px; color: #475569; line-height: 1.6; margin-bottom: 6px; }
-#aev-boot2-wrap .ab2-success .ab2-ev { color: #7c3aed; font-weight: 700; font-size: 16px; margin-top: 12px; }
+#aev-boot2-wrap .ab2-check { width: 80px; height: 80px; background: #cc1a1a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 38px; color: #fff; margin: 0 auto 24px; }
+#aev-boot2-wrap .ab2-success h2 { font-size: 24px; font-weight: 800; margin-bottom: 10px; color: #fff; }
+#aev-boot2-wrap .ab2-success p { font-size: 15px; color: #94a3b8; line-height: 1.6; margin-bottom: 6px; }
+#aev-boot2-wrap .ab2-success .ab2-ev { color: #cc1a1a; font-weight: 700; font-size: 15px; margin-top: 12px; }
 
-/* SPONSORS */
-#aev-boot2-wrap .ab2-sponsors { background: #f5f5f5; padding: 44px 20px; }
+/* ─── MÓDULOS GRID (debajo del fold) ──────────────────── */
+#aev-boot2-wrap .ab2-modgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+}
+#aev-boot2-wrap .ab2-modgrid img { width: 100%; display: block; }
+
+/* ─── CIERRE ──────────────────────────────────────────── */
+#aev-boot2-wrap .ab2-cierre img { width: 100%; display: block; }
+
+/* ─── SPONSORS ────────────────────────────────────────── */
+#aev-boot2-wrap .ab2-sponsors { background: #000; padding: 40px 20px; border-top: 1px solid #111; }
 #aev-boot2-wrap .ab2-sp-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
-#aev-boot2-wrap .ab2-sp-lbl { font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 2.5px; margin-bottom: 32px; display: block; }
-#aev-boot2-wrap .ab2-logos { display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap; }
-#aev-boot2-wrap .ab2-logos img { height: 52px; object-fit: contain; transition: opacity 0.2s; }
-#aev-boot2-wrap .ab2-logos img:hover { opacity: 0.8; }
+#aev-boot2-wrap .ab2-sp-lbl { font-size: 10px; font-weight: 700; color: #374151; letter-spacing: 2.5px; margin-bottom: 24px; display: block; text-transform: uppercase; }
+#aev-boot2-wrap .ab2-logos { display: flex; align-items: center; justify-content: center; gap: 36px; flex-wrap: wrap; }
+#aev-boot2-wrap .ab2-logos img { height: 44px; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.55; transition: opacity 0.2s; }
+#aev-boot2-wrap .ab2-logos img:hover { opacity: 0.9; }
 
-@media (max-width: 768px) {
-  #aev-boot2-wrap .ab2-hero-inner { grid-template-columns: 1fr; }
-  #aev-boot2-wrap .ab2-hero-program { padding: 28px 20px; }
-  #aev-boot2-wrap .ab2-hero-info { padding: 28px 20px; }
-  #aev-boot2-wrap .ab2-title { font-size: 26px; }
-  #aev-boot2-wrap .ab2-g2,
-  #aev-boot2-wrap .ab2-g3 { grid-template-columns: 1fr; }
-  #aev-boot2-wrap .ab2-card { padding: 24px 20px; }
-  #aev-boot2-wrap .ab2-logos img { height: 40px; }
-  #aev-boot2-wrap .ab2-logos { gap: 28px; }
+/* ─── RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  #aev-boot2-wrap .ab2-main { grid-template-columns: 1fr; }
+  #aev-boot2-wrap .ab2-form-panel { padding: 28px 20px 40px; }
+  #aev-boot2-wrap .ab2-g2, #aev-boot2-wrap .ab2-g3 { grid-template-columns: 1fr; }
+  #aev-boot2-wrap .ab2-card { padding: 24px 18px; }
+  #aev-boot2-wrap .ab2-modgrid { grid-template-columns: 1fr; }
 }
 </style>
 
 <div id="aev-boot2-wrap">
 
-  <!-- HERO -->
-  <section class="ab2-hero">
-    <div class="ab2-hero-inner">
+  <!-- MAIN: PORTADA + FORMULARIO (lado a lado) -->
+  <div class="ab2-main" id="ab2FormSection">
 
-      <!-- LEFT: PROGRAM -->
-      <div class="ab2-hero-program">
-        <div class="ab2-certs">
-          <span class="ab2-cert ab2-cert-emmat">EMMAT</span>
-          <span class="ab2-cert ab2-cert-creartech">CREARTECH</span>
-          <span class="ab2-cert ab2-cert-alqumia">ALQUMIA</span>
-        </div>
-        <p class="ab2-prog-lbl">PROGRAMA DEL EVENTO</p>
+    <!-- COLUMNA IZQUIERDA: imagen portada completa -->
+    <div class="ab2-portada">
+      <img src="https://asobares.org/wp-content/uploads/2026/08/Pieza-inicial.jpg" alt="Área En Vivo Bootcamp 2 — Miércoles 19 de Agosto" />
+    </div>
 
-        <div class="ab2-mod">
-          <div class="ab2-mod-time">4:15–5 PM</div>
-          <div class="ab2-mod-body">
-            <span class="ab2-mod-tag">M1 · MASTERCLASS</span>
-            <p class="ab2-mod-title">Tú no quieres vivir de la música</p>
-            <p class="ab2-mod-speaker">Jose Camacho · Director EMMAT</p>
-          </div>
-        </div>
-
-        <div class="ab2-mod">
-          <div class="ab2-mod-time">5–5:45 PM</div>
-          <div class="ab2-mod-body">
-            <span class="ab2-mod-tag">M2 · TALLER</span>
-            <p class="ab2-mod-title">Cómo crear un track en WAVO</p>
-            <p class="ab2-mod-speaker">Kelly Mello · Creartech</p>
-          </div>
-        </div>
-
-        <div class="ab2-mod">
-          <div class="ab2-mod-time">5:45–6:45 PM</div>
-          <div class="ab2-mod-body">
-            <span class="ab2-mod-tag">M3 · IA & AUDIOVISUAL</span>
-            <p class="ab2-mod-title">IA para audiovisuales: de la creación al show</p>
-            <p class="ab2-mod-speaker">Bray y Joan · ALQM-IA</p>
-          </div>
-        </div>
-
-        <div class="ab2-mod">
-          <div class="ab2-mod-time">6:45–7:15 PM</div>
-          <div class="ab2-mod-body live">
-            <span class="ab2-mod-tag">M4 · SHOWCASE EN VIVO</span>
-            <p class="ab2-mod-title">Marianna Claros</p>
-            <p class="ab2-mod-speaker">Presentación en vivo</p>
-          </div>
-        </div>
-
-        <div class="ab2-mod">
-          <div class="ab2-mod-time">7:15–8 PM</div>
-          <div class="ab2-mod-body network">
-            <span class="ab2-mod-tag">M5 · NETWORKING</span>
-            <p class="ab2-mod-title">Espacio de relacionamiento creativo</p>
-            <p class="ab2-mod-speaker">Panelistas · Artistas · Empresarios</p>
-          </div>
-        </div>
+    <!-- COLUMNA DERECHA: FORMULARIO -->
+    <div class="ab2-form-panel">
+      <div class="ab2-form-head">
+        <h2>Reserva tu cupo</h2>
+        <p>Inscripción sin costo — cupos limitados</p>
       </div>
 
-      <!-- RIGHT: EVENT INFO -->
-      <div class="ab2-hero-info">
-        <span class="ab2-tag">ÁREA EN VIVO · BOOTCAMP 2</span>
-        <h1 class="ab2-title">MUSIC BUSINESS<br>E INDUSTRIA<br>MUSICAL</h1>
-        <span class="ab2-badge">PROGRAMA CERTIFICADO</span>
-        <p class="ab2-date">Miércoles 19 de Agosto</p>
-        <p class="ab2-time">4:15 p.m. a 8:00 p.m.</p>
-        <div class="ab2-venue">
-          <span style="color:#a78bfa;font-size:18px;margin-top:2px;">📍</span>
-          <div>
-            <p class="ab2-venue-name">Auditorio EMMAT</p>
-            <p class="ab2-venue-addr">Cra. 58 #90-80 · Bogotá</p>
-          </div>
-        </div>
-        <p class="ab2-speakers-lbl">PONENTES</p>
-        <p class="ab2-speaker">Jose Camacho · EMMAT</p>
-        <p class="ab2-speaker">Kelly Mello · Creartech</p>
-        <p class="ab2-speaker">Bray y Joan · ALQM-IA</p>
-        <p class="ab2-speaker">Marianna Claros</p>
-        <span class="ab2-free">✓ Inscripción sin costo</span>
+      <!-- INFO COMPACTA -->
+      <div class="ab2-form-meta">
+        <div class="ab2-met"><span class="ab2-met-ico">📅</span><div><strong>Miércoles 19 de Agosto</strong>4:15 p.m.</div></div>
+        <div class="ab2-met"><span class="ab2-met-ico">📍</span><div><strong>Auditorio EMMAT</strong>Cra 58 #90-80, Barrios Unidos · Bogotá</div></div>
       </div>
 
-    </div>
-  </section>
+      <!-- SUCCESS -->
+      <div class="ab2-success" id="ab2Success">
+        <div class="ab2-check">✓</div>
+        <h2>¡Inscripción exitosa!</h2>
+        <p>Hemos recibido tu registro correctamente.</p>
+        <p>Revisa tu correo — te enviamos la confirmación.</p>
+        <p class="ab2-ev">Miércoles 19 de Agosto · 4:15 p.m. · Auditorio EMMAT</p>
+      </div>
 
-  <!-- FORM WRAP -->
-  <div class="ab2-form-wrap">
-    <div class="ab2-form-title">
-      <h2>Regístrate aquí</h2>
-      <p>Inscripción gratuita — cupos limitados</p>
-    </div>
+      <!-- FORM CARD -->
+      <div class="ab2-card" id="ab2Card">
+        <form id="ab2Form" autocomplete="off">
 
-    <!-- SUCCESS -->
-    <div class="ab2-success" id="ab2Success">
-      <div class="ab2-check">✓</div>
-      <h2>¡Inscripción exitosa!</h2>
-      <p>Hemos recibido tu registro correctamente.</p>
-      <p>Revisa tu correo — te enviamos la confirmación.</p>
-      <p class="ab2-ev">Miércoles 19 de Agosto · 4:15 p.m. · Auditorio EMMAT</p>
-    </div>
+          <span class="ab2-sec">Datos personales</span>
+          <div class="ab2-g3">
+            <div class="ab2-fg">
+              <label>Tipo ID <span class="ab2-req">*</span></label>
+              <select name="tipo_identificacion" required>
+                <option value="">Selecciona...</option>
+                <option>CÉDULA</option>
+                <option>CÉDULA DE EXTRANJERÍA</option>
+                <option>PASAPORTE</option>
+              </select>
+            </div>
+            <div class="ab2-fg">
+              <label>Nº Identificación <span class="ab2-req">*</span></label>
+              <input type="text" name="numero_identificacion" required placeholder="Ej: 1234567890" />
+            </div>
+            <div class="ab2-fg">
+              <label>Género <span class="ab2-req">*</span></label>
+              <select name="genero" required>
+                <option value="">Selecciona...</option>
+                <option>MASCULINO</option>
+                <option>FEMENINO</option>
+                <option>OTRO</option>
+                <option>NO SUMINISTRA</option>
+              </select>
+            </div>
+          </div>
 
-    <!-- FORM CARD -->
-    <div class="ab2-card" id="ab2Card">
-      <form id="ab2Form" autocomplete="off">
+          <div class="ab2-g2">
+            <div class="ab2-fg">
+              <label>Nombre <span class="ab2-req">*</span></label>
+              <input type="text" name="nombre" required placeholder="Tu nombre" />
+            </div>
+            <div class="ab2-fg">
+              <label>Apellido <span class="ab2-req">*</span></label>
+              <input type="text" name="apellidos" required placeholder="Tus apellidos" />
+            </div>
+          </div>
 
-        <span class="ab2-sec">DATOS PERSONALES</span>
-        <div class="ab2-g3">
-          <div class="ab2-fg">
-            <label>Tipo de Identificación <span class="ab2-req">*</span></label>
-            <select name="tipo_identificacion" required>
+          <div class="ab2-g2">
+            <div class="ab2-fg">
+              <label>Departamento <span class="ab2-req">*</span></label>
+              <select name="departamento" required>
+                <option value="">Selecciona...</option>
+                <option>Amazonas</option><option>Antioquia</option><option>Arauca</option>
+                <option>Atlántico</option><option>Bolívar</option><option>Boyacá</option>
+                <option>Bogotá D.C.</option><option>Caldas</option><option>Caquetá</option>
+                <option>Casanare</option><option>Cauca</option><option>Cesar</option>
+                <option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option>
+                <option>Guainía</option><option>Guaviare</option><option>Huila</option>
+                <option>La Guajira</option><option>Magdalena</option><option>Meta</option>
+                <option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
+                <option>Quindío</option><option>Risaralda</option>
+                <option>San Andrés, Providencia y Santa Catalina</option>
+                <option>Santander</option><option>Sucre</option><option>Tolima</option>
+                <option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
+                <option>Internacional</option>
+              </select>
+            </div>
+            <div class="ab2-fg">
+              <label>Ciudad <span class="ab2-req">*</span></label>
+              <input type="text" name="ciudad" required placeholder="Ej: Bogotá" />
+            </div>
+          </div>
+
+          <div class="ab2-g2">
+            <div class="ab2-fg">
+              <label>Teléfono Celular <span class="ab2-req">*</span></label>
+              <input type="tel" name="telefono" required placeholder="3001234567" maxlength="10" />
+            </div>
+            <div class="ab2-fg">
+              <label>Correo Electrónico <span class="ab2-req">*</span></label>
+              <input type="email" name="email" required placeholder="tu@correo.com" />
+            </div>
+          </div>
+
+          <div class="ab2-fg" style="margin-bottom:0;">
+            <label>Profesión u Oficio <span class="ab2-req">*</span></label>
+            <select name="profesion" required>
               <option value="">Selecciona...</option>
-              <option>CÉDULA</option>
-              <option>CÉDULA DE EXTRANJERÍA</option>
-              <option>PASAPORTE</option>
+              <option>ABOGADO(A)</option><option>ADMINISTRADOR</option><option>AGENTE TURÍSTICO</option>
+              <option>ANALISTA CARRERAS AFINES</option><option>ARQUITECTO(A)</option><option>ARTISTA</option>
+              <option>ASESOR(A)</option><option>ASISTENTE</option><option>BARISTA</option>
+              <option>BARTENDER</option><option>CAJERO(A)</option><option>CEO</option>
+              <option>CHEF</option><option>COCINERO(A)</option><option>CONSULTOR(A)</option>
+              <option>CONTADOR(A)</option><option>COORDINADOR(A)</option><option>DIRECTOR(A)</option>
+              <option>DISEÑADOR(A)</option><option>DJ</option><option>DOCENTE CARRERAS AFINES</option>
+              <option>EMPRESARIO(A)</option><option>ENTIDAD-GOBIERNO</option>
+              <option>ESTUDIANTE CARRERAS AFINES</option><option>GERENTE</option>
+              <option>GERENTE DE MARCA</option><option>GREMIO</option><option>INGENIERO(A)</option>
+              <option>INGENIERO(A) DE SONIDO</option><option>JEFE DE COMPRAS</option>
+              <option>MANAGER</option><option>MARKETING</option><option>MESERO(A)</option>
+              <option>MÚSICO</option><option>OPERADOR(A) LOGÍSTICO</option>
+              <option>ORGANIZADOR(A) DE EVENTOS</option><option>PERIODISTA</option>
+              <option>PRODUCTOR(A)</option><option>PROPIETARIO(A)</option><option>PROVEEDOR(A)</option>
+              <option>RECURSOS HUMANOS</option><option>RELACIONES PÚBLICAS</option>
+              <option>REPRESENTANTE LEGAL</option><option>TÉCNICO CARRERAS AFINES</option>
+              <option>TRADUCTOR</option><option>OTRO</option><option>NO SUMINISTRA</option>
             </select>
           </div>
-          <div class="ab2-fg">
-            <label>Nº de Identificación <span class="ab2-req">*</span></label>
-            <input type="text" name="numero_identificacion" required placeholder="Ej: 1234567890" />
-          </div>
-          <div class="ab2-fg">
-            <label>Género <span class="ab2-req">*</span></label>
-            <select name="genero" required>
-              <option value="">Selecciona...</option>
-              <option>MASCULINO</option>
-              <option>FEMENINO</option>
-              <option>OTRO</option>
-              <option>NO SUMINISTRA</option>
-            </select>
-          </div>
-        </div>
 
-        <div class="ab2-g2">
-          <div class="ab2-fg">
-            <label>Nombre <span class="ab2-req">*</span></label>
-            <input type="text" name="nombre" required placeholder="Tu nombre" />
-          </div>
-          <div class="ab2-fg">
-            <label>Apellido <span class="ab2-req">*</span></label>
-            <input type="text" name="apellidos" required placeholder="Tus apellidos" />
-          </div>
-        </div>
+          <span class="ab2-sec">Empresa / Establecimiento <span style="font-weight:400;color:#374151;font-size:10px;">(OPCIONAL)</span></span>
 
-        <div class="ab2-g2">
-          <div class="ab2-fg">
-            <label>Departamento <span class="ab2-req">*</span></label>
-            <select name="departamento" required>
-              <option value="">Selecciona...</option>
-              <option>Amazonas</option><option>Antioquia</option><option>Arauca</option>
-              <option>Atlántico</option><option>Bolívar</option><option>Boyacá</option>
-              <option>Bogotá D.C.</option><option>Caldas</option><option>Caquetá</option>
-              <option>Casanare</option><option>Cauca</option><option>Cesar</option>
-              <option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option>
-              <option>Guainía</option><option>Guaviare</option><option>Huila</option>
-              <option>La Guajira</option><option>Magdalena</option><option>Meta</option>
-              <option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
-              <option>Quindío</option><option>Risaralda</option>
-              <option>San Andrés, Providencia y Santa Catalina</option>
-              <option>Santander</option><option>Sucre</option><option>Tolima</option>
-              <option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
-              <option>Internacional</option>
-            </select>
+          <div class="ab2-g2">
+            <div class="ab2-fg">
+              <label>Nombre o Razón Social</label>
+              <input type="text" name="empresa_nombre" placeholder="Nombre de la empresa" />
+            </div>
+            <div class="ab2-fg">
+              <label>NIT</label>
+              <input type="text" name="empresa_nit" placeholder="NIT empresa" />
+            </div>
           </div>
-          <div class="ab2-fg">
-            <label>Ciudad <span class="ab2-req">*</span></label>
-            <input type="text" name="ciudad" required placeholder="Ej: Bogotá" />
+          <div class="ab2-g2">
+            <div class="ab2-fg">
+              <label>Dirección</label>
+              <input type="text" name="empresa_direccion" placeholder="Dirección empresa" />
+            </div>
+            <div class="ab2-fg">
+              <label>Teléfono Empresa</label>
+              <input type="tel" name="empresa_telefono" placeholder="Teléfono empresa" />
+            </div>
           </div>
-        </div>
-        <div class="ab2-g2">
-          <div class="ab2-fg">
-            <label>Teléfono Celular <span class="ab2-req">*</span></label>
-            <input type="tel" name="telefono" required placeholder="3001234567" maxlength="10" />
+          <div class="ab2-g3">
+            <div class="ab2-fg">
+              <label>Representante Legal</label>
+              <input type="text" name="empresa_representante" placeholder="Nombre representante" />
+            </div>
+            <div class="ab2-fg">
+              <label>Cédula Representante</label>
+              <input type="text" name="empresa_cedula_rep" placeholder="Cédula" />
+            </div>
+            <div class="ab2-fg">
+              <label>Correo Empresa</label>
+              <input type="email" name="empresa_email" placeholder="correo@empresa.com" />
+            </div>
           </div>
-          <div class="ab2-fg">
-            <label>Correo Electrónico <span class="ab2-req">*</span></label>
-            <input type="email" name="email" required placeholder="tu@correo.com" />
-          </div>
-        </div>
 
-        <div class="ab2-fg" style="margin-bottom:0;">
-          <label>Profesión u Oficio <span class="ab2-req">*</span></label>
-          <select name="profesion" required>
-            <option value="">Selecciona...</option>
-            <option>ABOGADO(A)</option><option>ADMINISTRADOR</option><option>AGENTE TURÍSTICO</option>
-            <option>ANALISTA CARRERAS AFINES</option><option>ARQUITECTO(A)</option><option>ARTISTA</option>
-            <option>ASESOR(A)</option><option>ASISTENTE</option><option>BARISTA</option>
-            <option>BARTENDER</option><option>CAJERO(A)</option><option>CEO</option>
-            <option>CHEF</option><option>COCINERO(A)</option><option>CONSULTOR(A)</option>
-            <option>CONTADOR(A)</option><option>COORDINADOR(A)</option><option>DIRECTOR(A)</option>
-            <option>DISEÑADOR(A)</option><option>DJ</option><option>DOCENTE CARRERAS AFINES</option>
-            <option>EMPRESARIO(A)</option><option>ENTIDAD-GOBIERNO</option>
-            <option>ESTUDIANTE CARRERAS AFINES</option><option>GERENTE</option>
-            <option>GERENTE DE MARCA</option><option>GREMIO</option><option>INGENIERO(A)</option>
-            <option>INGENIERO(A) DE SONIDO</option><option>JEFE DE COMPRAS</option>
-            <option>MANAGER</option><option>MARKETING</option><option>MESERO(A)</option>
-            <option>MÚSICO</option><option>OPERADOR(A) LOGÍSTICO</option>
-            <option>ORGANIZADOR(A) DE EVENTOS</option><option>PERIODISTA</option>
-            <option>PRODUCTOR(A)</option><option>PROPIETARIO(A)</option><option>PROVEEDOR(A)</option>
-            <option>RECURSOS HUMANOS</option><option>RELACIONES PÚBLICAS</option>
-            <option>REPRESENTANTE LEGAL</option><option>TÉCNICO CARRERAS AFINES</option>
-            <option>TRADUCTOR</option><option>OTRO</option><option>NO SUMINISTRA</option>
-          </select>
-        </div>
+          <div class="ab2-err" id="ab2Err"></div>
 
-        <span class="ab2-sec" style="margin-top:32px;">DATOS DE LA EMPRESA PROPIA O ESTABLECIMIENTO DONDE TRABAJA <span style="font-weight:400;color:#b0b0b0;">(OPCIONAL)</span></span>
-
-        <div class="ab2-g2">
-          <div class="ab2-fg">
-            <label>Nombre o Razón Social</label>
-            <input type="text" name="empresa_nombre" placeholder="Nombre de la empresa" />
-          </div>
-          <div class="ab2-fg">
-            <label>Nº de Identificación (NIT)</label>
-            <input type="text" name="empresa_nit" placeholder="NIT empresa" />
-          </div>
-        </div>
-        <div class="ab2-g2">
-          <div class="ab2-fg">
-            <label>Dirección</label>
-            <input type="text" name="empresa_direccion" placeholder="Dirección empresa" />
-          </div>
-          <div class="ab2-fg">
-            <label>Teléfono de Contacto</label>
-            <input type="tel" name="empresa_telefono" placeholder="Teléfono empresa" />
-          </div>
-        </div>
-        <div class="ab2-g3">
-          <div class="ab2-fg">
-            <label>Representante Legal <span style="font-weight:400;color:#b0b0b0;font-size:12px;">(Opcional)</span></label>
-            <input type="text" name="empresa_representante" placeholder="Nombre del representante" />
-          </div>
-          <div class="ab2-fg">
-            <label>Cédula Representante Legal <span style="font-weight:400;color:#b0b0b0;font-size:12px;">(Opcional)</span></label>
-            <input type="text" name="empresa_cedula_rep" placeholder="Cédula" />
-          </div>
-          <div class="ab2-fg">
-            <label>Correo Electrónico Empresa <span style="font-weight:400;color:#b0b0b0;font-size:12px;">(Opcional)</span></label>
-            <input type="email" name="empresa_email" placeholder="correo@empresa.com" />
-          </div>
-        </div>
-
-        <div class="ab2-err" id="ab2Err"></div>
-
-        <button type="submit" class="ab2-submit" id="ab2Submit">
-          Confirmar inscripción gratuita →
-        </button>
-        <p class="ab2-legal">Al inscribirte autorizas el uso de tus datos para gestionar tu participación en el evento.</p>
-      </form>
+          <button type="submit" class="ab2-submit" id="ab2Submit">
+            Confirmar inscripción sin costo →
+          </button>
+          <p class="ab2-legal">Al inscribirte autorizas el uso de tus datos para gestionar tu participación en el evento.</p>
+        </form>
+      </div>
     </div>
+  </div><!-- /.ab2-main -->
+
+  <!-- MÓDULOS GRID COMPLETO -->
+  <div class="ab2-modgrid">
+    <img src="https://asobares.org/wp-content/uploads/2026/08/Modulo-1.jpg" alt="Módulo 1 — José Camacho" />
+    <img src="https://asobares.org/wp-content/uploads/2026/08/Modulo-2.jpg" alt="Módulo 2 — Kelly Mello" />
+    <img src="https://asobares.org/wp-content/uploads/2026/08/Modulo-3.jpg" alt="Módulo 3 — Bray Castillo y Joan Barbosa" />
+    <img src="https://asobares.org/wp-content/uploads/2026/08/Modulo-4.jpg" alt="Showcase — Marianna Claros" />
+  </div>
+
+  <!-- CIERRE -->
+  <div class="ab2-cierre">
+    <img src="https://asobares.org/wp-content/uploads/2026/08/Pieza-Final-1.jpg" alt="Área En Vivo Lab Bootcamp 2 — Cierre" />
   </div>
 
   <!-- SPONSORS -->
   <div class="ab2-sponsors">
     <div class="ab2-sp-inner">
-      <span class="ab2-sp-lbl">ORGANIZA Y APOYA</span>
+      <span class="ab2-sp-lbl">Organiza y apoya</span>
       <div class="ab2-logos">
         <img src="https://asobares.org/wp-content/uploads/2026/01/Nuevo-logo-Asobares-Color-scaled.png" alt="Asobares" />
         <img src="https://asobares.org/wp-content/uploads/2025/03/Cluster_DJ_Positivo_Color_Luz.png" alt="Cluster DJ" />
         <img src="https://asobares.org/wp-content/uploads/2026/08/Logo_CCB_big.svg" alt="Cámara de Comercio de Bogotá" />
-        <img src="https://asobares.org/wp-content/uploads/2026/08/cluster-musica-bogota.png" alt="Cluster Música Bogotá" style="height:76px;" />
+        <img src="https://asobares.org/wp-content/uploads/2026/08/cluster-musica-bogota.png" alt="Cluster Música Bogotá" style="height:64px;" />
         <img src="https://asobares.org/wp-content/uploads/2026/08/Bogota_marca_ciudad.svg.webp" alt="Bogotá" />
       </div>
     </div>
@@ -366,27 +353,22 @@
 <script>
 (function() {
   function initAevBoot2() {
-    if (typeof window.supabase === 'undefined') {
-      setTimeout(initAevBoot2, 100);
-      return;
-    }
+    if (typeof window.supabase === 'undefined') { setTimeout(initAevBoot2, 100); return; }
     const db = window.supabase.createClient(
       'https://pbqmkodwmntujezbokgo.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34'
     );
-
-    const form      = document.getElementById('ab2Form');
-    const card      = document.getElementById('ab2Card');
-    const success   = document.getElementById('ab2Success');
+    const form = document.getElementById('ab2Form');
+    const card = document.getElementById('ab2Card');
+    const success = document.getElementById('ab2Success');
     const submitBtn = document.getElementById('ab2Submit');
-    const errBox    = document.getElementById('ab2Err');
+    const errBox = document.getElementById('ab2Err');
 
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
       errBox.style.display = 'none';
-
       var fd = new FormData(form);
-      var d  = Object.fromEntries(fd.entries());
+      var d = Object.fromEntries(fd.entries());
 
       if (!/^\d{10}$/.test(d.telefono)) {
         errBox.textContent = 'El teléfono debe ser un número celular colombiano de 10 dígitos (ej: 3001234567).';
@@ -398,23 +380,23 @@
       submitBtn.textContent = 'Enviando...';
 
       var payload = {
-        tipo_identificacion:    d.tipo_identificacion,
-        numero_identificacion:  d.numero_identificacion,
-        nombre:                 d.nombre.trim(),
-        apellidos:              d.apellidos.trim(),
-        genero:                 d.genero,
-        departamento:           d.departamento,
-        ciudad:                 d.ciudad,
-        profesion:              d.profesion,
-        telefono:               d.telefono,
-        email:                  d.email.trim().toLowerCase(),
-        empresa_nombre:         d.empresa_nombre        || null,
-        empresa_nit:            d.empresa_nit           || null,
-        empresa_direccion:      d.empresa_direccion     || null,
-        empresa_telefono:       d.empresa_telefono      || null,
-        empresa_representante:  d.empresa_representante || null,
-        empresa_cedula_rep:     d.empresa_cedula_rep    || null,
-        empresa_email:          d.empresa_email         || null,
+        tipo_identificacion:   d.tipo_identificacion,
+        numero_identificacion: d.numero_identificacion,
+        nombre:                d.nombre.trim(),
+        apellidos:             d.apellidos.trim(),
+        genero:                d.genero,
+        departamento:          d.departamento,
+        ciudad:                d.ciudad,
+        profesion:             d.profesion,
+        telefono:              d.telefono,
+        email:                 d.email.trim().toLowerCase(),
+        empresa_nombre:        d.empresa_nombre        || null,
+        empresa_nit:           d.empresa_nit           || null,
+        empresa_direccion:     d.empresa_direccion     || null,
+        empresa_telefono:      d.empresa_telefono      || null,
+        empresa_representante: d.empresa_representante || null,
+        empresa_cedula_rep:    d.empresa_cedula_rep    || null,
+        empresa_email:         d.empresa_email         || null,
         estado: 'inscrito'
       };
 
@@ -424,13 +406,13 @@
         errBox.textContent = 'Ocurrió un error al enviar tu registro. Por favor intenta de nuevo.';
         errBox.style.display = 'block';
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Confirmar inscripción gratuita →';
+        submitBtn.textContent = 'Confirmar inscripción sin costo →';
         return;
       }
 
-      card.style.display    = 'none';
+      card.style.display = 'none';
       success.style.display = 'block';
-      window.scrollTo({ top: document.getElementById('aev-boot2-wrap').offsetTop, behavior: 'smooth' });
+      document.getElementById('ab2FormSection').scrollIntoView({ behavior: 'smooth' });
     });
   }
   initAevBoot2();

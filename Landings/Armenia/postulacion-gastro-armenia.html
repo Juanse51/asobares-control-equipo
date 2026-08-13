@@ -1,0 +1,218 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<style>
+#arm-post-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+#arm-post-wrap { font-family: 'Segoe UI', Arial, sans-serif; color: #1a2e1a; width: 100%; }
+
+#arm-post-wrap .ap-banner { width: 100%; line-height: 0; }
+#arm-post-wrap .ap-banner img { width: 100%; display: block; }
+
+#arm-post-wrap .ap-form-wrap { max-width: 900px; margin: 0 auto; padding: 48px 24px 56px; }
+#arm-post-wrap .ap-form-title { text-align: center; margin-bottom: 36px; }
+#arm-post-wrap .ap-form-title h2 { font-size: clamp(22px, 3vw, 30px); font-weight: 800; color: #1a2e1a; margin-bottom: 8px; line-height: 1.3; }
+#arm-post-wrap .ap-form-title p { color: #64748b; font-size: 16px; }
+
+#arm-post-wrap .ap-card { background: white; border-radius: 20px; padding: 48px 52px; box-shadow: 0 2px 24px rgba(0,0,0,0.07); }
+
+#arm-post-wrap .ap-sec { font-size: 11px; font-weight: 700; color: #4a7c59; letter-spacing: 2px; margin-bottom: 20px; margin-top: 36px; padding-bottom: 10px; border-bottom: 2px solid #e8f5e9; display: block; text-transform: uppercase; }
+#arm-post-wrap .ap-sec:first-child { margin-top: 0; }
+
+#arm-post-wrap .ap-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+#arm-post-wrap .ap-fg { margin-bottom: 20px; }
+#arm-post-wrap .ap-fg label { display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+#arm-post-wrap .ap-fg input,
+#arm-post-wrap .ap-fg select { width: 100%; padding: 13px 15px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-family: inherit; background: white; color: #1a2e1a; transition: border-color 0.15s; -webkit-appearance: auto; appearance: auto; }
+#arm-post-wrap .ap-fg input:focus,
+#arm-post-wrap .ap-fg select:focus { outline: none; border-color: #2db84b; }
+#arm-post-wrap .ap-req { color: #2db84b; }
+
+#arm-post-wrap .ap-acepta-box { background: #f0f9f4; border: 2px solid #c8e6c9; border-radius: 12px; padding: 22px 26px; margin-bottom: 4px; }
+#arm-post-wrap .ap-acepta-box p { font-size: 14px; color: #374151; line-height: 1.75; margin-bottom: 16px; }
+#arm-post-wrap .ap-acepta-box a { color: #2db84b; font-weight: 600; }
+#arm-post-wrap .ap-radio-row { display: flex; gap: 28px; flex-wrap: wrap; }
+#arm-post-wrap .ap-radio-row label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; color: #374151; font-weight: 600; }
+#arm-post-wrap .ap-radio-row input[type="radio"] { width: 18px; height: 18px; accent-color: #2db84b; }
+
+#arm-post-wrap .ap-submit { width: 100%; padding: 18px; border: none; border-radius: 12px; background: linear-gradient(135deg, #2db84b, #1e7c34); color: white; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 32px; font-family: inherit; transition: opacity 0.2s; letter-spacing: 0.3px; }
+#arm-post-wrap .ap-submit:hover { opacity: 0.9; }
+#arm-post-wrap .ap-submit:disabled { opacity: 0.6; cursor: default; }
+#arm-post-wrap .ap-err { display: none; background: #fee2e2; color: #c41e16; padding: 14px 18px; border-radius: 10px; font-size: 14px; margin-top: 16px; }
+#arm-post-wrap .ap-legal { text-align: center; font-size: 13px; color: #94a3b8; margin-top: 14px; }
+
+#arm-post-wrap .ap-success { display: none; text-align: center; padding: 64px 20px; }
+#arm-post-wrap .ap-check-icon { width: 88px; height: 88px; background: linear-gradient(135deg, #2db84b, #1e7c34); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 44px; color: white; margin: 0 auto 24px; }
+#arm-post-wrap .ap-success h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; color: #1a2e1a; }
+#arm-post-wrap .ap-success p { font-size: 15px; color: #475569; line-height: 1.6; margin-bottom: 6px; }
+
+@media (max-width: 768px) {
+  #arm-post-wrap .ap-g2 { grid-template-columns: 1fr; }
+  #arm-post-wrap .ap-card { padding: 24px 20px; }
+}
+</style>
+
+<div id="arm-post-wrap">
+
+  <div class="ap-banner">
+    <img src="https://asobares.org/wp-content/uploads/2026/08/Banner-forms-1-scaled.jpg" alt="Inscripción Asistencia Técnica — Establecimientos de Gastroentretenimiento Armenia" />
+  </div>
+
+  <div class="ap-form-wrap">
+    <div class="ap-form-title">
+      <h2>Inscripción Asistencia Técnica de Establecimientos de Gastroentretenimiento — Armenia</h2>
+      <p>La información suministrada es de carácter confidencial y su uso exclusivo para Alcaldía de Armenia, Bureau Convención Quindío y Asobares Colombia.</p>
+    </div>
+
+    <div class="ap-success" id="ap-success">
+      <div class="ap-check-icon">✓</div>
+      <h2>¡Inscripción exitosa!</h2>
+      <p>Hemos recibido la información de tu establecimiento correctamente.</p>
+      <p>El equipo de Asobares se pondrá en contacto contigo pronto.</p>
+    </div>
+
+    <div class="ap-card" id="ap-card">
+
+      <!-- AUTORIZACIÓN -->
+      <span class="ap-sec">Autorización de Uso de Datos</span>
+      <div class="ap-acepta-box">
+        <p>AUTORIZACIÓN DE USO DE DATOS: Por medio de la presente acepto el uso de datos contemplados en el formulario por parte de Asobares, conforme a la política de la asociación, la cual puede ser consultada en el siguiente enlace: <a href="https://asobares.org/politica-de-datos/" target="_blank">https://asobares.org/politica-de-datos/</a> <span class="ap-req">*</span></p>
+        <div class="ap-radio-row">
+          <label><input type="radio" name="acepta_datos" value="si" required> Acepta</label>
+        </div>
+      </div>
+
+      <!-- DATOS DEL ESTABLECIMIENTO -->
+      <span class="ap-sec">Datos del Establecimiento</span>
+      <p style="font-size:14px;color:#64748b;margin-bottom:20px;">Datos relacionados con el establecimiento de comercio.</p>
+
+      <div class="ap-fg">
+        <label>Nombre Establecimiento <span class="ap-req">*</span></label>
+        <input type="text" name="nombre_establecimiento" required placeholder="Nombre del establecimiento" />
+      </div>
+
+      <div class="ap-g2">
+        <div class="ap-fg">
+          <label>Teléfono Establecimiento <span class="ap-req">*</span></label>
+          <input type="tel" name="telefono_establecimiento" required placeholder="Ej: 3001234567" />
+        </div>
+        <div class="ap-fg">
+          <label>Correo Electrónico del Establecimiento <span class="ap-req">*</span></label>
+          <input type="email" name="correo_establecimiento" required placeholder="correo@establecimiento.com" />
+        </div>
+      </div>
+
+      <div class="ap-fg">
+        <label>Dirección del Establecimiento <span class="ap-req">*</span></label>
+        <input type="text" name="direccion_establecimiento" required placeholder="Dirección completa" />
+      </div>
+
+      <div class="ap-g2">
+        <div class="ap-fg">
+          <label>Ciudad</label>
+          <input type="text" name="ciudad" placeholder="Ej: Armenia" />
+        </div>
+        <div class="ap-fg">
+          <label>Barrio</label>
+          <input type="text" name="barrio" placeholder="Barrio del establecimiento" />
+        </div>
+      </div>
+
+      <!-- INFORMACIÓN DE CONTACTO -->
+      <span class="ap-sec">Información de Contacto del Establecimiento</span>
+      <p style="font-size:14px;color:#64748b;margin-bottom:20px;">A continuación diligenciar la información para el envío del informe de visita general de su establecimiento.</p>
+
+      <div class="ap-fg">
+        <label>Nombre Persona de Contacto del Establecimiento <span class="ap-req">*</span></label>
+        <input type="text" name="nombre_contacto" required placeholder="Nombre completo del contacto" />
+      </div>
+
+      <div class="ap-g2">
+        <div class="ap-fg">
+          <label>Correo Electrónico <span class="ap-req">*</span></label>
+          <input type="email" name="correo_contacto" required placeholder="correo@contacto.com" />
+        </div>
+        <div class="ap-fg">
+          <label>Teléfono <span class="ap-req">*</span></label>
+          <input type="tel" name="telefono_contacto" required placeholder="Ej: 3001234567" />
+        </div>
+      </div>
+
+      <div id="ap-err" class="ap-err"></div>
+
+      <button type="button" class="ap-submit" id="ap-submit" onclick="window.apEnviar()">
+        Enviar inscripción →
+      </button>
+      <p class="ap-legal">Solo 30 establecimientos seleccionados — Alcaldía de Armenia · Asobares · Quindío Convention Bureau</p>
+    </div>
+  </div>
+</div>
+
+<script>
+window.apEnviar = async function() {
+  var err = document.getElementById('ap-err');
+  var btn = document.getElementById('ap-submit');
+  err.style.display = 'none';
+
+  var acepta = document.querySelector('input[name="acepta_datos"]:checked');
+  if (!acepta || acepta.value !== 'si') {
+    err.textContent = 'Debes aceptar la autorización de uso de datos para continuar.';
+    err.style.display = 'block';
+    return;
+  }
+
+  function v(name) {
+    var el = document.querySelector('[name="' + name + '"]');
+    return el ? el.value.trim() : '';
+  }
+
+  var nombre_establecimiento = v('nombre_establecimiento');
+  var telefono_establecimiento = v('telefono_establecimiento');
+  var correo_establecimiento = v('correo_establecimiento');
+  var direccion_establecimiento = v('direccion_establecimiento');
+  var nombre_contacto = v('nombre_contacto');
+  var correo_contacto = v('correo_contacto');
+  var telefono_contacto = v('telefono_contacto');
+
+  if (!nombre_establecimiento || !telefono_establecimiento || !correo_establecimiento || !direccion_establecimiento || !nombre_contacto || !correo_contacto || !telefono_contacto) {
+    err.textContent = 'Por favor completa todos los campos obligatorios (marcados con *).';
+    err.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  var db = window.supabase.createClient(
+    'https://pbqmkodwmntujezbokgo.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34'
+  );
+
+  var payload = {
+    acepta_datos:             'si',
+    nombre_establecimiento:   nombre_establecimiento,
+    telefono_establecimiento: telefono_establecimiento,
+    correo_establecimiento:   correo_establecimiento.toLowerCase(),
+    direccion_establecimiento: direccion_establecimiento,
+    ciudad:                   v('ciudad') || null,
+    barrio:                   v('barrio') || null,
+    nombre_contacto:          nombre_contacto,
+    correo_contacto:          correo_contacto.toLowerCase(),
+    telefono_contacto:        telefono_contacto,
+    estado:                   'postulado'
+  };
+
+  var result = await db.from('postulaciones_armenia_gastro').insert(payload);
+
+  if (result.error) {
+    err.textContent = 'Ocurrió un error al enviar tu inscripción. Por favor intenta de nuevo.';
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Enviar inscripción →';
+    return;
+  }
+
+  document.getElementById('ap-card').style.display = 'none';
+  document.getElementById('ap-success').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+</script>

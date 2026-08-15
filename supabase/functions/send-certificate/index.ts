@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
   try {
-    const { email, nombre, loteNombre, pdfBase64, fileName } = await req.json();
+    const { email, nombre, loteNombre, pdfBase64, fileName, tipo } = await req.json();
 
     if (!email) return new Response(JSON.stringify({ error: 'Email requerido' }), { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } });
 
@@ -19,11 +19,24 @@ serve(async (req) => {
 
     const pdfBytes = Uint8Array.from(atob(pdfBase64), (c) => c.charCodeAt(0));
 
-    const body = new FormData();
-    body.append('from', FROM);
-    body.append('to', email);
-    body.append('subject', `Certificado de Participación — ${loteNombre}`);
-    body.append('html', `
+    const esCarta = tipo === 'carta';
+    const subject = esCarta ? `Bienvenido/a al ${loteNombre}` : `Certificado de Participación — ${loteNombre}`;
+    const htmlBody = esCarta ? `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px;">
+        <img src="https://gestion.asobares.org/asobares_original.png" alt="Asobares" style="height: 48px; margin-bottom: 24px;" />
+        <h2 style="color: #1a1a2e; margin-bottom: 8px;">¡Bienvenido/a al ${loteNombre}!</h2>
+        <p style="color: #475569; font-size: 16px;">Estimado/a <strong>${nombre}</strong>,</p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6;">
+          Es un placer darte la bienvenida. Adjunto encontrarás tu carta de bienvenida con toda la información relevante sobre tu vinculación al programa.
+        </p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6;">Gracias por hacer parte de esta iniciativa. Estamos muy contentos de contar contigo.</p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+        <p style="color: #94a3b8; font-size: 13px;">
+          <strong>Asociación de Bares y Restaurantes de Colombia — ASOBARES</strong><br>
+          webasobares@gmail.com
+        </p>
+      </div>
+    ` : `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px;">
         <img src="https://gestion.asobares.org/asobares_original.png" alt="Asobares" style="height: 48px; margin-bottom: 24px;" />
         <h2 style="color: #1a1a2e; margin-bottom: 8px;">Certificado de Participación</h2>
@@ -39,7 +52,13 @@ serve(async (req) => {
           webasobares@gmail.com
         </p>
       </div>
-    `);
+    `;
+
+    const body = new FormData();
+    body.append('from', FROM);
+    body.append('to', email);
+    body.append('subject', subject);
+    body.append('html', htmlBody);
     body.append(
       'attachment',
       new Blob([pdfBytes], { type: 'application/pdf' }),

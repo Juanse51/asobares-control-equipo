@@ -1865,8 +1865,9 @@
           const nombreCompleto = [persona.nombre, persona.apellidos].filter(Boolean).join(' ');
           const fileName = `Certificado_${nombreCompleto.replace(/\s+/g, '_')}.pdf`;
           showNotif('Enviando correo...');
+          const tipo = plantilla.imagen_path && plantilla.imagen_path.toLowerCase().endsWith('.pdf') ? 'carta' : 'certificado';
           const { data, error } = await supabase.functions.invoke('send-certificate', {
-            body: { email: persona.email, nombre: nombreCompleto, loteNombre: lote.nombre, pdfBase64: base64, fileName },
+            body: { email: persona.email, nombre: nombreCompleto, loteNombre: lote.nombre, pdfBase64: base64, fileName, tipo },
           });
           if (error || data?.error) throw new Error(error?.message || data?.error);
           await supabase.from('cert_personas').update({ estado: 'enviado' }).eq('id', persona.id);
@@ -1916,8 +1917,9 @@
             const base64 = doc.output('datauristring').split(',')[1];
             const nombreCompleto = [p.nombre, p.apellidos].filter(Boolean).join(' ');
             const fileName = `Certificado_${nombreCompleto.replace(/\s+/g, '_')}.pdf`;
+            const tipo = plantilla.imagen_path && plantilla.imagen_path.toLowerCase().endsWith('.pdf') ? 'carta' : 'certificado';
             const { data, error } = await supabase.functions.invoke('send-certificate', {
-              body: { email: p.email, nombre: nombreCompleto, loteNombre: lote.nombre, pdfBase64: base64, fileName },
+              body: { email: p.email, nombre: nombreCompleto, loteNombre: lote.nombre, pdfBase64: base64, fileName, tipo },
             });
             if (error || data?.error) throw new Error(error?.message || data?.error);
             await supabase.from('cert_personas').update({ estado: 'enviado' }).eq('id', p.id);

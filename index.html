@@ -798,6 +798,7 @@
       const [certLoteActivo, setCertLoteActivo] = useState(null);
       const [certGenerando, setCertGenerando] = useState(false);
       const [certProgreso, setCertProgreso] = useState({ done: 0, total: 0 });
+      const [certImportando, setCertImportando] = useState(false);
       const [certShowPlantillaModal, setCertShowPlantillaModal] = useState(false);
       const [certShowLoteModal, setCertShowLoteModal] = useState(false);
       const [certShowPersonaModal, setCertShowPersonaModal] = useState(false);
@@ -1574,6 +1575,34 @@
           showNotif(`${count} participante${count !== 1 ? 's' : ''} cargado${count !== 1 ? 's' : ''}`);
         };
         reader.readAsText(file, 'UTF-8');
+      };
+      const importarDesdeCRM = async (loteId, source) => {
+        if (!source || certImportando) return;
+        setCertImportando(true);
+        const cfgMap = {
+          'aev-lab':       { table: 'artistas_area_en_vivo',              mapN: r=>r.nombre||'',   mapA: r=>r.apellidos||'',  mapE: r=>r.email||'',             mapD: r=>r.numero_documento||'',      mapEmp: r=>r.nombre_artistico||'' },
+          'aev-bootcamp2': { table: 'inscripciones_aev_bootcamp2',        mapN: r=>r.nombre||'',   mapA: r=>r.apellidos||'',  mapE: r=>r.email||'',             mapD: r=>r.numero_identificacion||'', mapEmp: r=>r.empresa_nombre||'' },
+          'armenia-cap':   { table: 'inscripciones_armenia_capacitacion', mapN: r=>r.nombre||'',   mapA: r=>r.apellidos||'',  mapE: r=>r.correo||r.email||'',   mapD: r=>r.numero_identificacion||'', mapEmp: r=>'' },
+          'armenia-asist': { table: 'inscripciones_armenia_asistencia',   mapN: r=>r.nombre||'',   mapA: r=>r.apellido||'',   mapE: r=>r.correo||r.email||'',   mapD: r=>r.numero_identificacion||'', mapEmp: r=>'' },
+        };
+        const cfg = cfgMap[source];
+        if (!cfg) { setCertImportando(false); return; }
+        try {
+          const [{ data: origen }, { data: existentes }] = await Promise.all([
+            supabase.from(cfg.table).select('*').eq('estado', 'asistio'),
+            supabase.from('cert_personas').select('email').eq('lote_id', loteId),
+          ]);
+          const used = new Set((existentes || []).map(p => (p.email || '').toLowerCase()));
+          const rows = (origen || [])
+            .filter(r => { const e = (cfg.mapE(r) || '').toLowerCase(); return e && !used.has(e); })
+            .map(r => ({ lote_id: loteId, nombre: cfg.mapN(r), apellidos: cfg.mapA(r), email: (cfg.mapE(r)).toLowerCase(), documento: cfg.mapD(r), empresa: cfg.mapEmp(r), estado: 'pendiente' }));
+          if (!rows.length) { showNotif('No hay personas nuevas para importar — todos ya están en el lote o nadie marcado como "Asistió"'); setCertImportando(false); return; }
+          const { error } = await supabase.from('cert_personas').insert(rows);
+          if (error) throw error;
+          await loadCertPersonas(loteId);
+          showNotif(`✓ ${rows.length} persona${rows.length !== 1 ? 's' : ''} importada${rows.length !== 1 ? 's' : ''} desde el CRM`);
+        } catch (err) { showNotif('Error al importar: ' + err.message); }
+        setCertImportando(false);
       };
       const generarPDF = async (persona, lote, plantilla, camposOverride = null) => {
         if (!window.jspdf) throw new Error('jsPDF no disponible — recarga la página');
@@ -2570,6 +2599,18 @@
                         📤 Cargar CSV
                         <input type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) { parseCsvPersonas(e.target.files[0], certLoteActivo.id); e.target.value = ''; } }} />
                       </label>
+                      <select
+                        value=""
+                        disabled={certImportando}
+                        onChange={e => { importarDesdeCRM(certLoteActivo.id, e.target.value); e.target.value = ''; }}
+                        style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #7c3aed', background: certImportando ? '#f5f3ff' : '#faf5ff', color: '#7c3aed', fontWeight: 600, fontSize: 13, cursor: certImportando ? 'default' : 'pointer' }}
+                      >
+                        <option value="">{certImportando ? '⏳ Importando...' : '🔗 Importar desde CRM'}</option>
+                        <option value="aev-lab">AeV Lab — Capacitación Octava (asistió)</option>
+                        <option value="aev-bootcamp2">AeV — Bootcamp 2 (asistió)</option>
+                        <option value="armenia-cap">Armenia — Inscripción Capacitación (asistió)</option>
+                        <option value="armenia-asist">Armenia — Registro Asistencia (asistió)</option>
+                      </select>
                       {certPersonas.length > 0 && !certGenerando && (
                         <button onClick={() => plantilla && setCertPreviewData({ persona: certPersonas[0], lote: certLoteActivo, plantilla, batchPersonas: certPersonas })} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>⚡ Generar todos ({certPersonas.length})</button>
                       )}

@@ -15,7 +15,7 @@ serve(async (req) => {
 
     const MAILGUN_API_KEY = Deno.env.get('MAILGUN_API_KEY')!;
     const MAILGUN_DOMAIN = 'mg.asobares.org';
-    const FROM = 'ASOBARES <ceo@vamosarayar.com>';
+    const FROM = 'ASOBARES <asobares@asobares.org>';
 
     const pdfBytes = Uint8Array.from(atob(pdfBase64), (c) => c.charCodeAt(0));
 

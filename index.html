@@ -832,6 +832,8 @@
       const [certLoteActivo, setCertLoteActivo] = useState(null);
       const [certGenerando, setCertGenerando] = useState(false);
       const [certProgreso, setCertProgreso] = useState({ done: 0, total: 0 });
+      const [certEnviando, setCertEnviando] = useState(false);
+      const [certProgresoEnvio, setCertProgresoEnvio] = useState({ done: 0, total: 0 });
       const [certImportando, setCertImportando] = useState(false);
       const [certEditLote, setCertEditLote] = useState(null);
       const [certShowPlantillaModal, setCertShowPlantillaModal] = useState(false);
@@ -1704,7 +1706,11 @@
           await supabase.from('cert_personas').update({ estado: 'enviado' }).eq('id', persona.id);
           await loadCertPersonas(lote.id);
           showNotif(`✓ Certificado enviado a ${persona.email}`);
-        } catch (e) { showNotif('Error al enviar: ' + e.message); }
+        } catch (e) {
+          await supabase.from('cert_personas').update({ estado: 'error' }).eq('id', persona.id);
+          await loadCertPersonas(lote.id);
+          showNotif('Error al enviar: ' + e.message);
+        }
       };
       const descargarPDFGenerado = (persona) => {
         if (!persona.cert_path) return;
@@ -1729,6 +1735,36 @@
         await loadCertPersonas(lote.id);
         setCertGenerando(false);
         showNotif('¡Certificados generados!');
+      };
+      const enviarTodos = async (personas, lote, plantilla, camposOverride = null) => {
+        if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
+        const pendientes = personas.filter(p => p.email && p.estado !== 'enviado');
+        if (!pendientes.length) return showNotif('Todos los certificados ya fueron enviados ✓');
+        setCertEnviando(true);
+        setCertProgresoEnvio({ done: 0, total: pendientes.length });
+        let enviados = 0, errores = 0;
+        for (let i = 0; i < pendientes.length; i++) {
+          const p = pendientes[i];
+          try {
+            const doc = await generarPDF(p, lote, plantilla, camposOverride);
+            const base64 = doc.output('datauristring').split(',')[1];
+            const nombreCompleto = [p.nombre, p.apellidos].filter(Boolean).join(' ');
+            const fileName = `Certificado_${nombreCompleto.replace(/\s+/g, '_')}.pdf`;
+            const { data, error } = await supabase.functions.invoke('send-certificate', {
+              body: { email: p.email, nombre: nombreCompleto, loteNombre: lote.nombre, pdfBase64: base64, fileName },
+            });
+            if (error || data?.error) throw new Error(error?.message || data?.error);
+            await supabase.from('cert_personas').update({ estado: 'enviado' }).eq('id', p.id);
+            enviados++;
+          } catch {
+            await supabase.from('cert_personas').update({ estado: 'error' }).eq('id', p.id);
+            errores++;
+          }
+          setCertProgresoEnvio(prev => ({ ...prev, done: i + 1 }));
+        }
+        await loadCertPersonas(lote.id);
+        setCertEnviando(false);
+        showNotif(`✓ ${enviados} enviado${enviados !== 1 ? 's' : ''}${errores ? ` · ⚠️ ${errores} con error` : ''}`);
       };
       const handleUpdateStatus = async (id, status) => { await supabase.from('tareas').update({ estado: status }).eq('id', id); await loadData(); showNotif(`Movida a "${statusLabels[status].label}"`); };
       const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -2659,9 +2695,12 @@
                         <option value="armenia-cap">Armenia — Inscripción Capacitación (asistió)</option>
                         <option value="armenia-asist">Armenia — Registro Asistencia (asistió)</option>
                       </select>
-                      {certPersonas.length > 0 && !certGenerando && (
+                      {certPersonas.length > 0 && !certGenerando && !certEnviando && (
                         <button onClick={() => plantilla && setCertPreviewData({ persona: certPersonas[0], lote: certLoteActivo, plantilla, batchPersonas: certPersonas })} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>⚡ Generar todos ({certPersonas.length})</button>
                       )}
+                      {(() => { const sinEnviar = certPersonas.filter(p => p.email && p.estado !== 'enviado'); return sinEnviar.length > 0 && !certGenerando && !certEnviando ? (
+                        <button onClick={() => { if (plantilla) enviarTodos(certPersonas, certLoteActivo, plantilla); }} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #059669, #065f46)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>✉️ Enviar a todos ({sinEnviar.length})</button>
+                      ) : null; })()}
                     </div>
 
                     {certGenerando && (
@@ -2672,6 +2711,17 @@
                         </div>
                         <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${certProgreso.total > 0 ? (certProgreso.done / certProgreso.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #7c3aed, #5b21b6)', borderRadius: 4, transition: 'width 0.4s ease' }} />
+                        </div>
+                      </div>
+                    )}
+                    {certEnviando && (
+                      <div style={{ background: 'white', borderRadius: 12, padding: '16px 20px', marginBottom: 16 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>Enviando certificados por correo...</span>
+                          <span style={{ fontSize: 13, color: '#059669', fontWeight: 700 }}>{certProgresoEnvio.done} / {certProgresoEnvio.total}</span>
+                        </div>
+                        <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${certProgresoEnvio.total > 0 ? (certProgresoEnvio.done / certProgresoEnvio.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #059669, #065f46)', borderRadius: 4, transition: 'width 0.4s ease' }} />
                         </div>
                       </div>
                     )}

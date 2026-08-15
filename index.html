@@ -1580,7 +1580,7 @@
         if (!source || certImportando) return;
         setCertImportando(true);
         const cfgMap = {
-          'aev-lab':       { table: 'artistas_area_en_vivo',              mapN: r=>r.nombre||'',   mapA: r=>r.apellidos||'',  mapE: r=>r.email||'',             mapD: r=>r.numero_documento||'',      mapEmp: r=>r.nombre_artistico||'' },
+          'aev-lab':       { table: 'inscripciones_aev_lab',               mapN: r=>r.nombre||'',   mapA: r=>r.apellidos||'',  mapE: r=>r.email||'',             mapD: r=>r.numero_identificacion||'', mapEmp: r=>r.empresa_nombre||'' },
           'aev-bootcamp2': { table: 'inscripciones_aev_bootcamp2',        mapN: r=>r.nombre||'',   mapA: r=>r.apellidos||'',  mapE: r=>r.email||'',             mapD: r=>r.numero_identificacion||'', mapEmp: r=>r.empresa_nombre||'' },
           'armenia-cap':   { table: 'inscripciones_armenia_capacitacion', mapN: r=>r.nombre||'',   mapA: r=>r.apellidos||'',  mapE: r=>r.correo||r.email||'',   mapD: r=>r.numero_identificacion||'', mapEmp: r=>'' },
           'armenia-asist': { table: 'inscripciones_armenia_asistencia',   mapN: r=>r.nombre||'',   mapA: r=>r.apellido||'',   mapE: r=>r.correo||r.email||'',   mapD: r=>r.numero_identificacion||'', mapEmp: r=>'' },

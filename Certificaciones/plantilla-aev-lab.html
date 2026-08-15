@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plantilla Certificado — Área en Vivo Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,opsz,wght@0,6..18,400;0,6..18,500;1,6..18,400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #111;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 20px 60px;
+  gap: 20px;
+  font-family: 'Cinzel', serif;
+}
+
+/* Instrucciones — se ocultan al imprimir */
+.instrucciones {
+  background: #222;
+  color: #ccc;
+  padding: 16px 24px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  max-width: 1100px;
+  width: 100%;
+  line-height: 1.8;
+  border-left: 3px solid #cc4444;
+}
+.instrucciones strong { color: white; }
+.instrucciones code {
+  background: #333;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #f4c842;
+  font-family: monospace;
+}
+
+/* ────────────────────────────────────────
+   CERTIFICADO
+──────────────────────────────────────── */
+.cert-wrapper {
+  transform-origin: top center;
+}
+
+.cert {
+  width: 1754px;
+  height: 1240px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 60%),
+    linear-gradient(160deg, #6b1111 0%, #3d0404 40%, #4a0707 70%, #5a0c0c 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 62px 100px 48px;
+  overflow: hidden;
+}
+
+/* Ruido / textura sutil */
+.cert::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Marco doble */
+.frame-outer {
+  position: absolute;
+  inset: 18px;
+  border: 2.5px solid rgba(255,255,255,0.72);
+  z-index: 1;
+  pointer-events: none;
+}
+.frame-inner {
+  position: absolute;
+  inset: 30px;
+  border: 1px solid rgba(255,255,255,0.32);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Ornamentos de esquina */
+.corner {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  z-index: 2;
+  pointer-events: none;
+}
+.corner svg { width: 100%; height: 100%; }
+.corner.tl { top: 12px; left: 12px; }
+.corner.tr { top: 12px; right: 12px; transform: scaleX(-1); }
+.corner.bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+.corner.br { bottom: 12px; right: 12px; transform: scale(-1,-1); }
+
+/* Todos los hijos directos van por encima del pseudo-element */
+.cert > * { position: relative; z-index: 1; }
+
+/* ── HEADER ── */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+
+.logos-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+}
+
+.aev-logo {
+  height: 80px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.95;
+}
+
+.logo-sep {
+  width: 1px;
+  height: 54px;
+  background: rgba(255,255,255,0.35);
+  flex-shrink: 0;
+}
+
+.org-logo {
+  height: 44px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.88;
+}
+
+/* ── BODY ── */
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  justify-content: center;
+  width: 100%;
+}
+
+.hace-entrega {
+  color: rgba(255,255,255,0.8);
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: 22px;
+  letter-spacing: 4px;
+  text-align: center;
+}
+
+.titulo-cert {
+  color: white;
+  font-family: 'UnifrakturMaguntia', cursive;
+  font-size: 92px;
+  line-height: 1;
+  text-shadow: 2px 4px 16px rgba(0,0,0,0.55);
+  text-align: center;
+  margin-top: -4px;
+}
+
+.nombre-line {
+  width: 700px;
+  border-bottom: 1.5px solid rgba(255,255,255,0.82);
+  height: 44px;
+}
+
+.participacion-label {
+  color: rgba(255,255,255,0.78);
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: -4px;
+}
+
+.evento-line {
+  width: 820px;
+  border-bottom: 1.5px solid rgba(255,255,255,0.6);
+  height: 38px;
+  margin-top: -4px;
+}
+
+.fecha-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  color: rgba(255,255,255,0.8);
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+  margin-top: -4px;
+}
+.fecha-row + .fecha-row { margin-top: -10px; }
+
+.blank {
+  display: inline-block;
+  border-bottom: 1px solid rgba(255,255,255,0.65);
+  min-width: 0;
+  margin-bottom: 1px;
+}
+.bl-day   { width: 54px; }
+.bl-month { width: 130px; }
+.bl-year  { width: 64px; }
+.bl-hours { width: 50px; }
+
+/* ── FIRMAS ── */
+.firmas {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  width: 100%;
+  margin-top: auto;
+  padding-bottom: 2px;
+}
+
+.firma {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 340px;
+}
+
+.firma-img-area {
+  width: 180px;
+  height: 72px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+.firma-img-area img {
+  max-width: 100%;
+  max-height: 72px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+/* Placeholder de firma cuando no hay imagen */
+.firma-placeholder {
+  width: 160px;
+  height: 60px;
+  border: 1px dashed rgba(255,255,255,0.25);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+.firma-placeholder span {
+  color: rgba(255,255,255,0.25);
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.firma-line {
+  width: 260px;
+  border-bottom: 1.5px solid rgba(255,255,255,0.72);
+  margin-bottom: 10px;
+}
+
+.firma-nombre {
+  color: #f8cccc;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.firma-cargo {
+  color: rgba(255,255,255,0.65);
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.55;
+  margin-top: 5px;
+  max-width: 320px;
+}
+
+/* ── CON APOYO ── */
+.con-apoyo {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 20px;
+}
+
+.apoyo-label {
+  color: rgba(255,255,255,0.5);
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.apoyo-sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(255,255,255,0.25);
+}
+
+.apoyo-img {
+  height: 22px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.65;
+}
+
+.apoyo-text {
+  color: rgba(255,255,255,0.65);
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.apoyo-text sup {
+  font-size: 8px;
+  letter-spacing: 0;
+  font-weight: 400;
+  vertical-align: super;
+  margin-left: 1px;
+  text-transform: lowercase;
+}
+
+/* ────────────────────────────────────────
+   PRINT
+──────────────────────────────────────── */
+@media print {
+  @page { size: 297mm 210mm; margin: 0; }
+  body { background: none; padding: 0; }
+  .instrucciones { display: none !important; }
+  .cert-wrapper { transform: none !important; margin: 0 !important; }
+  .cert { width: 100vw; height: 100vh; page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Instrucciones ── -->
+<div class="instrucciones">
+  <strong>Plantilla Certificado — Área en Vivo Lab</strong>&nbsp;&nbsp;·&nbsp;&nbsp;
+  Para obtener la imagen: <strong>Ctrl+P → Guardar como PDF</strong> (A4 horizontal, sin márgenes, sin cabeceras/pies). Convierte a JPG/PNG y súbela como plantilla en el CRM.<br>
+  <strong>Variables CRM:</strong>
+  <code>nombre_completo</code> → línea del nombre &nbsp;|&nbsp;
+  <code>nombre_lote</code> → línea del evento &nbsp;|&nbsp;
+  <code>dia</code> <code>mes</code> <code>anio</code> → espacios de fecha &nbsp;|&nbsp;
+  <code>horas</code> → espacio de horas<br>
+  <strong>Para agregar firmas:</strong> reemplaza los bloques <em>firma-placeholder</em> por <code>&lt;img src="ruta-firma.png"&gt;</code> dentro de <code>.firma-img-area</code>.
+</div>
+
+<div class="cert-wrapper" id="cert-wrapper">
+<div class="cert" id="cert">
+
+  <!-- Marco doble -->
+  <div class="frame-outer"></div>
+  <div class="frame-inner"></div>
+
+  <!-- Ornamentos de esquina -->
+  <div class="corner tl">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 6 L6 28 M6 6 L28 6" stroke="white" stroke-width="2.5" stroke-linecap="square"/>
+      <path d="M6 6 L30 30" stroke="white" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+      <circle cx="6" cy="6" r="3.5" fill="white"/>
+      <circle cx="30" cy="30" r="2.5" fill="white" opacity="0.45"/>
+      <path d="M17 6 L17 17 L6 17" stroke="white" stroke-width="1" stroke-linecap="square" opacity="0.4"/>
+    </svg>
+  </div>
+  <div class="corner tr">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 6 L6 28 M6 6 L28 6" stroke="white" stroke-width="2.5" stroke-linecap="square"/>
+      <path d="M6 6 L30 30" stroke="white" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+      <circle cx="6" cy="6" r="3.5" fill="white"/>
+      <circle cx="30" cy="30" r="2.5" fill="white" opacity="0.45"/>
+      <path d="M17 6 L17 17 L6 17" stroke="white" stroke-width="1" stroke-linecap="square" opacity="0.4"/>
+    </svg>
+  </div>
+  <div class="corner bl">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 6 L6 28 M6 6 L28 6" stroke="white" stroke-width="2.5" stroke-linecap="square"/>
+      <path d="M6 6 L30 30" stroke="white" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+      <circle cx="6" cy="6" r="3.5" fill="white"/>
+      <circle cx="30" cy="30" r="2.5" fill="white" opacity="0.45"/>
+      <path d="M17 6 L17 17 L6 17" stroke="white" stroke-width="1" stroke-linecap="square" opacity="0.4"/>
+    </svg>
+  </div>
+  <div class="corner br">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 6 L6 28 M6 6 L28 6" stroke="white" stroke-width="2.5" stroke-linecap="square"/>
+      <path d="M6 6 L30 30" stroke="white" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+      <circle cx="6" cy="6" r="3.5" fill="white"/>
+      <circle cx="30" cy="30" r="2.5" fill="white" opacity="0.45"/>
+      <path d="M17 6 L17 17 L6 17" stroke="white" stroke-width="1" stroke-linecap="square" opacity="0.4"/>
+    </svg>
+  </div>
+
+  <!-- ── HEADER: logos ── -->
+  <div class="header">
+    <div class="logos-row">
+      <!-- Logo Área en Vivo Lab -->
+      <img
+        src="https://asobares.org/wp-content/uploads/2025/07/Logo-Area-en-vivo-LAB.png"
+        alt="Área en Vivo Lab"
+        class="aev-logo"
+      />
+
+      <div class="logo-sep"></div>
+
+      <!-- Logo Asobares (blanco) -->
+      <img
+        src="https://asobares.org/wp-content/uploads/2026/05/Nuevo-logo-Asobares-Blanco-scaled.png"
+        alt="ASOBARES Colombia"
+        class="org-logo"
+      />
+
+      <div class="logo-sep"></div>
+
+      <!-- Logo Cámara de Comercio de Bogotá (blanco) -->
+      <img
+        src="https://asobares.org/wp-content/uploads/2026/05/CCB_Logosimbolo_Version_Principal_Blanco.png"
+        alt="Cámara de Comercio de Bogotá"
+        class="org-logo"
+      />
+    </div>
+  </div>
+
+  <!-- ── BODY: contenido del certificado ── -->
+  <div class="body">
+    <p class="hace-entrega">Hace entrega de</p>
+
+    <h1 class="titulo-cert">Certificado de Asistencia a</h1>
+
+    <!-- Línea del nombre (el CRM superpone nombre_completo aquí) -->
+    <div class="nombre-line"></div>
+
+    <p class="participacion-label">Por la participación en</p>
+
+    <!-- Línea del evento (el CRM superpone nombre_lote aquí) -->
+    <div class="evento-line"></div>
+
+    <!-- Fecha (el CRM superpone dia, mes, anio en los blancos) -->
+    <div class="fecha-row">
+      <span>Realizado el</span>
+      <span class="blank bl-day"></span>
+      <span>del mes de</span>
+      <span class="blank bl-month"></span>
+      <span>de</span>
+      <span class="blank bl-year"></span>
+      <span>en Bogotá</span>
+    </div>
+
+    <!-- Horas (el CRM superpone horas en el blanco) -->
+    <div class="fecha-row">
+      <span>con intensidad de</span>
+      <span class="blank bl-hours"></span>
+      <span>Horas</span>
+    </div>
+  </div>
+
+  <!-- ── FIRMAS ── -->
+  <div class="firmas">
+
+    <div class="firma">
+      <div class="firma-img-area">
+        <!-- REEMPLAZAR: <img src="ruta-o-data-uri-firma-ospina.png" alt="Firma Camilo Ospina"> -->
+        <div class="firma-placeholder"><span>FIRMA</span></div>
+      </div>
+      <div class="firma-line"></div>
+      <p class="firma-nombre">Camilo Ospina Guzmán</p>
+      <p class="firma-cargo">Presidente Asobares Colombia</p>
+    </div>
+
+    <div class="firma">
+      <div class="firma-img-area">
+        <!-- REEMPLAZAR: <img src="ruta-o-data-uri-firma-fonseca.png" alt="Firma Camilo Fonseca"> -->
+        <div class="firma-placeholder"><span>FIRMA</span></div>
+      </div>
+      <div class="firma-line"></div>
+      <p class="firma-nombre">Camilo Fonseca</p>
+      <p class="firma-cargo">Director del Macrosector de Industrias Creativas<br>y Culturales de la Cámara de Comercio de Bogotá</p>
+    </div>
+
+  </div>
+
+  <!-- ── CON APOYO DE ── -->
+  <div class="con-apoyo">
+    <span class="apoyo-label">Con apoyo de:</span>
+    <div class="apoyo-sep"></div>
+    <span class="apoyo-text">Mad Skills<sup>academy</sup></span>
+    <div class="apoyo-sep"></div>
+    <span class="apoyo-text">audionics</span>
+    <div class="apoyo-sep"></div>
+    <span class="apoyo-text">Octava</span>
+  </div>
+
+</div><!-- /cert -->
+</div><!-- /cert-wrapper -->
+
+<script>
+(function () {
+  var wrapper = document.getElementById('cert-wrapper');
+  var CERT_W = 1754;
+
+  function scale() {
+    var avail = window.innerWidth - 80;
+    var s = Math.min(1, avail / CERT_W);
+    wrapper.style.transform = 'scale(' + s + ')';
+    // Compensar el espacio que el transform deja vacío
+    wrapper.style.marginBottom = '-' + Math.round(1240 * (1 - s)) + 'px';
+  }
+
+  // Esperar fuentes antes de escalar para evitar salto
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(scale);
+  } else {
+    scale();
+  }
+  window.addEventListener('resize', scale);
+})();
+</script>
+
+</body>
+</html>

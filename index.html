@@ -398,7 +398,10 @@
                             <div style={{ width: 7, height: 7, borderRadius: '50%', background: selKey === c.key ? '#a78bfa' : hasVal ? 'rgba(124,58,237,0.6)' : '#334155', flexShrink: 0 }} />
                             <span style={{ fontSize: 12, fontWeight: 600, color: hasVal ? '#e2e8f0' : '#475569' }}>{fieldLabels[c.key] || c.key}</span>
                           </div>
-                          <span style={{ fontSize: 10, color: '#475569', fontFamily: 'monospace' }}>{c.x},{c.y}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <span style={{ fontSize: 10, color: '#475569', fontFamily: 'monospace' }}>{c.x},{c.y}</span>
+                            <button onClick={e => { e.stopPropagation(); setCampos(prev => prev.filter(f => f.key !== c.key)); if (selKey === c.key) setSelKey(null); }} style={{ width: 18, height: 18, borderRadius: 4, border: 'none', background: 'rgba(239,68,68,0.18)', color: '#f87171', fontSize: 13, lineHeight: 1, cursor: 'pointer', flexShrink: 0, padding: 0 }} title="Eliminar campo">×</button>
+                          </div>
                         </div>
                         {selKey === c.key && (
                           <div style={{ padding: '0 14px 11px', display: 'flex', flexDirection: 'column', gap: 8 }} onClick={e => e.stopPropagation()}>
@@ -434,6 +437,7 @@
                       </div>
                     );
                   })}
+                  {(() => { const used = campos.map(c => c.key); const avail = Object.keys(fieldLabels).filter(k => !used.includes(k)); if (!avail.length) return null; return (<div style={{ padding: '10px 14px', borderTop: '1px solid rgba(255,255,255,0.07)' }}><p style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>+ Agregar campo</p><select defaultValue="" onChange={e => { const k = e.target.value; if (!k) return; setCampos(prev => [...prev, { key: k, x: 50, y: 50, fontSize: 12, fontStyle: 'normal', align: 'center', color: '#000000' }]); e.target.value = ''; }} style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(0,0,0,0.4)', color: 'white', fontSize: 12, cursor: 'pointer' }}><option value="">Seleccionar...</option>{avail.map(k => <option key={k} value={k}>{fieldLabels[k]}</option>)}</select></div>); })()}
                 </div>
               </div>
             </div>
@@ -561,7 +565,10 @@
                           <div style={{ width: 8, height: 8, borderRadius: '50%', background: selKey === c.key ? '#7c3aed' : '#cbd5e1', flexShrink: 0 }} />
                           <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>{fieldLabels[c.key] || c.key}</span>
                         </div>
-                        <span style={{ fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' }}>x:{c.x} y:{c.y}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' }}>x:{c.x} y:{c.y}</span>
+                          <button onClick={e => { e.stopPropagation(); onCamposChange(campos.filter(f => f.key !== c.key)); if (selKey === c.key) setSelKey(null); }} style={{ width: 20, height: 20, borderRadius: 4, border: 'none', background: '#fee2e2', color: '#ef4444', fontSize: 13, lineHeight: 1, cursor: 'pointer', flexShrink: 0, padding: 0 }} title="Eliminar campo">×</button>
+                        </div>
                       </div>
                       {selKey === c.key && (
                         <div style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }} onClick={e => e.stopPropagation()}>
@@ -611,6 +618,7 @@
                       )}
                     </div>
                   ))}
+                  {(() => { const used = campos.map(c => c.key); const avail = Object.keys(fieldLabels).filter(k => !used.includes(k)); if (!avail.length) return null; return (<div style={{ padding: '12px 16px', borderTop: '2px solid #f1f5f9' }}><p style={{ fontSize: 10, fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>+ Agregar campo</p><select defaultValue="" onChange={e => { const k = e.target.value; if (!k) return; onCamposChange([...campos, { key: k, x: 50, y: 50, fontSize: 12, fontStyle: 'normal', align: 'left', color: '#1a1a2e' }]); e.target.value = ''; }} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '2px solid #e5e7eb', fontSize: 13, background: 'white', cursor: 'pointer' }}><option value="">Seleccionar campo...</option>{avail.map(k => <option key={k} value={k}>{fieldLabels[k]}</option>)}</select></div>); })()}
                 </div>
               </div>
             </div>

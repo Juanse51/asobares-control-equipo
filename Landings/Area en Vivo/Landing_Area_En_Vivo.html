@@ -1,0 +1,3346 @@
+<!-- ============================================
+     ÁREA EN VIVO LAB 2026 — Landing embebible
+     Pegar este bloque completo en un widget HTML
+     de Elementor (o Custom HTML block de Gutenberg).
+     Recomendación: usar plantilla "Elementor Canvas"
+     para evitar header/footer del tema.
+     ============================================ -->
+     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        /* ---------- TOKENS · IDENTIDAD VISUAL ÁREA EN VIVO LAB ---------- */
+        .aevl-root {
+        
+            /* Paleta cromática oficial */
+            --black:#111111;
+            --black-deep:#0a0a0a;
+            --rojo:#E11D48;
+            --rojo-dark:#be1640;
+            --morado:#7C3AED;
+            --morado-dark:#6428c4;
+            --marfil:#F8F6F2;
+            --marfil-2:#ECE8E0;
+            --amarillo:#FACC15;
+            --gradiente-neon:linear-gradient(135deg, #E11D48 0%, #7C3AED 100%);
+            --line:rgba(248,246,242,0.1);
+            --line-strong:rgba(248,246,242,0.22);
+            /* Sistema tipográfico */
+            --display:'Bebas Neue', 'Arial Narrow', sans-serif;
+            --serif:'Space Grotesk', 'Helvetica Neue', sans-serif;
+            --body:'Plus Jakarta Sans', system-ui, sans-serif;
+            --mono:'JetBrains Mono', monospace;
+          
+        }
+        .aevl-root * {
+        box-sizing:border-box;margin:0;padding:0;
+        }
+        .aevl-root {
+        scroll-behavior:smooth;
+        }
+        .aevl-root {
+        
+            background:var(--black);
+            color:var(--marfil);
+            font-family:var(--body);
+            font-size:16px;
+            line-height:1.5;
+            overflow-x:hidden;
+            -webkit-font-smoothing:antialiased;
+            /* Salir del padding del wrapper de Elementor / tema WP */
+            width:100vw;
+            position:relative;
+            left:50%;
+            right:50%;
+            margin-left:-50vw;
+            margin-right:-50vw;
+          
+        }
+        .aevl-root::before {
+        
+            content:"";
+            position:fixed;inset:0;
+            pointer-events:none;
+            z-index:1000;
+            opacity:.03;
+            mix-blend-mode:screen;
+            background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+          
+        }
+        .aevl-root section, .aevl-root [id] {
+        scroll-margin-top:90px;
+        }
+        .aevl-root a {
+        color:inherit;text-decoration:none;
+        }
+        .aevl-root em, .aevl-root strong, .aevl-root b, .aevl-root i {
+        font-style:normal !important;background:none !important;background-color:transparent !important;background-image:none !important;
+        }
+        .aevl-root svg, .aevl-root .icon {
+        background:none !important;background-color:transparent !important;background-image:none !important;border:none !important;border-radius:0 !important;box-shadow:none !important;
+        }
+        .aevl-root svg path, .aevl-root svg circle, .aevl-root svg rect, .aevl-root svg line, .aevl-root svg polyline, .aevl-root svg polygon {
+        fill:none !important;stroke:currentColor !important;
+        }
+        .aevl-root button {
+        font:inherit;cursor:pointer;border:none;background:none;color:inherit;
+        }
+        .aevl-root ul {
+        list-style:none;
+        }
+        .aevl-root img {
+        max-width:100%;display:block;
+        }
+        .aevl-root .container {
+        max-width:1320px;margin:0 auto;padding:0 32px;
+        }
+        @media (max-width:680px) {
+        .aevl-root .container {
+        padding:0 20px;
+        }
+        }
+        /* ---------- ICONS ---------- */
+        .aevl-root .icon {
+        
+            width:24px;height:24px;
+            stroke:currentColor;fill:none;
+            stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+            display:inline-block;vertical-align:middle;flex-shrink:0;
+          
+        }
+        .aevl-root .icon *,
+        .aevl-root .icon path,
+        .aevl-root .icon circle,
+        .aevl-root .icon rect,
+        .aevl-root .icon line,
+        .aevl-root .icon polyline,
+        .aevl-root .icon polygon {
+        fill:none;stroke:currentColor;
+        }
+        .aevl-root .icon-lg {
+        width:40px;height:40px;stroke-width:1.8;
+        }
+        .aevl-root .icon-xl {
+        width:54px;height:54px;stroke-width:1.6;
+        }
+        /* ---------- TOP BAR ---------- */
+        .aevl-root .topbar {
+        
+            position:sticky;top:0;z-index:100;
+            background:rgba(17,17,17,.78);
+            backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+            border-bottom:1px solid rgba(248,246,242,.08);
+          
+        }
+        .aevl-root .topbar::after {
+        
+            content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;
+            background:var(--gradiente-neon);opacity:.55;
+          
+        }
+        .aevl-root .topbar-inner {
+        display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px 32px;gap:24px;
+        }
+        .aevl-root .brand-logo-link {
+        justify-self:center;display:block;line-height:0;
+        }
+        .aevl-root .brand-logo {
+        height:110px;width:auto;display:block;transition:transform .25s ease;
+        }
+        .aevl-root .brand-logo-link:hover .brand-logo {
+        transform:scale(1.03);
+        }
+        .aevl-root .topbar nav {
+        display:flex;gap:28px;font-size:13px;color:rgba(248,246,242,.7);font-weight:500;justify-self:start;
+        }
+        .aevl-root .topbar-cta-wrap {
+        justify-self:end;
+        }
+        .aevl-root .topbar nav a {
+        position:relative;padding:6px 0;
+        }
+        .aevl-root .topbar nav a::after {
+        
+            content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+            background:var(--rojo);transform:scaleX(0);transform-origin:left;
+            transition:transform .25s ease;
+          
+        }
+        .aevl-root .topbar nav a:hover::after {
+        transform:scaleX(1);
+        }
+        .aevl-root .cta-mini {
+        
+            font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.14em;
+            background:var(--rojo);color:var(--marfil);padding:11px 18px;border-radius:999px;font-weight:600;
+            transition:transform .2s ease, background .2s;display:inline-flex;align-items:center;gap:8px;
+          
+        }
+        .aevl-root .cta-mini:hover {
+        transform:translateY(-1px);background:var(--rojo-dark);
+        }
+        @media (max-width:880px) {
+        .aevl-root .topbar nav,
+        .aevl-root .topbar-cta-wrap {
+        display:none;
+        }
+        .aevl-root .topbar-inner {
+        grid-template-columns:1fr;padding:12px 20px;
+        }
+        .aevl-root .brand-logo {
+        height:82px;
+        }
+        }
+        @media (max-width:780px) {
+        .aevl-root .brand-logo {
+        height:68px;
+        }
+        }
+        /* ---------- HERO ---------- */
+        .aevl-root .hero {
+        padding:140px 0 100px;position:relative;overflow:hidden;color:var(--marfil);
+        background-image:
+          linear-gradient(180deg, rgba(10,10,10,.82) 0%, rgba(10,10,10,.92) 60%, rgba(10,10,10,.96) 100%),
+          url('https://asobares.org/wp-content/uploads/2025/09/Taller-marca-personal-2.jpg');
+        background-size:cover;background-position:center;background-attachment:fixed;
+        }
+        @media (max-width:880px) {
+        .aevl-root .hero {
+        background-attachment:scroll;
+        }
+        }
+        .aevl-root .hero::before {
+        
+            content:"";position:absolute;top:20%;right:-200px;
+            width:600px;height:600px;
+            background:radial-gradient(circle, var(--amarillo) 0%, transparent 70%);
+            opacity:.32;pointer-events:none;z-index:0;mix-blend-mode:screen;
+          
+        }
+        .aevl-root .hero .container {
+        position:relative;z-index:1;
+        }
+        .aevl-root .hero-eyebrow {
+        
+            display:inline-flex;align-items:center;gap:12px;
+            font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.18em;
+            color:rgba(248,246,242,.85);margin-bottom:36px;
+            background:rgba(248,246,242,.08);padding:8px 16px;border-radius:999px;
+            border:1px solid rgba(248,246,242,.22);
+            backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+          
+        }
+        .aevl-root .hero-eyebrow .pill {
+        
+            background:var(--amarillo);color:var(--black);
+            padding:4px 10px;border-radius:999px;font-size:10px;font-weight:700;
+          
+        }
+        .aevl-root .hero h1 {
+        
+            font-family:var(--display);font-weight:400;
+            font-size:clamp(64px,8.4vw,150px);line-height:.92;letter-spacing:.005em;
+            color:var(--marfil);text-transform:uppercase;
+          
+        }
+        .aevl-root .hero h1 .line2 {
+        
+            display:block;font-family:var(--display);font-weight:400;font-style:normal;
+            letter-spacing:.005em;position:relative;
+          
+        }
+        .aevl-root .hero h1 .line2 .highlight {
+        display:inline-block;color:var(--amarillo);
+        }
+        .aevl-root .hero h1 .year {
+        
+            font-family:var(--mono);font-weight:500;font-size:.16em;vertical-align:super;
+            color:rgba(248,246,242,.55);margin-left:.2em;letter-spacing:0;
+          
+        }
+        .aevl-root .hero-bottom {
+        
+            display:grid;grid-template-columns:1.05fr 1fr;gap:64px;
+            align-items:start;margin-top:8px;
+          
+        }
+        .aevl-root .hero-left {
+        display:flex;flex-direction:column;gap:32px;
+        }
+        .aevl-root .hero-lede {
+        font-size:clamp(17px,1.4vw,20px);line-height:1.55;color:rgba(248,246,242,.88);max-width:520px;
+        }
+        .aevl-root .hero-tagline {
+        
+            font-family:var(--serif);font-weight:700;
+            font-size:clamp(15px,1.2vw,18px);
+            text-transform:uppercase;letter-spacing:.08em;
+            color:var(--rojo);margin:0;
+          
+        }
+        .aevl-root .hero-lede strong {
+        
+            font-weight:600;color:var(--amarillo);
+            border-bottom:2px solid var(--amarillo);padding-bottom:1px;
+          
+        }
+        .aevl-root .hero-video-wrap {
+        display:flex;flex-direction:column;gap:12px;
+        }
+        .aevl-root .hero-video-label {
+        
+            display:inline-flex;align-items:center;gap:8px;
+            font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--amarillo);
+          
+        }
+        .aevl-root .hero-video {
+        
+            position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;
+            border:2px solid var(--amarillo);
+          
+        }
+        .aevl-root .hero-video iframe {
+        position:absolute;inset:0;width:100%;height:100%;border:0;display:block;
+        }
+        .aevl-root .hero-credits {
+        
+            margin-top:24px;padding-top:22px;
+            border-top:1px solid rgba(248,246,242,.18);
+          
+        }
+        .aevl-root .hero-credits-label {
+        
+            display:block;font-family:var(--mono);font-size:10px;text-transform:uppercase;
+            letter-spacing:.18em;color:rgba(248,246,242,.6);margin-bottom:14px;
+          
+        }
+        .aevl-root .hero-credits-logos {
+        display:flex;align-items:center;gap:34px;flex-wrap:wrap;
+        }
+        .aevl-root .hero-credits-logos img {
+        height:44px;width:auto;object-fit:contain;display:block;
+        }
+        .aevl-root .hero-credits-logos a {
+        display:block;line-height:0;transition:opacity .2s ease;
+        }
+        .aevl-root .hero-credits-logos a:hover {
+        opacity:.75;
+        }
+        .aevl-root .hero-tagpills {
+        
+            display:flex;flex-wrap:wrap;gap:14px;margin-top:64px;padding-top:48px;
+            border-top:1px solid rgba(248,246,242,.12);
+          
+        }
+        .aevl-root .tagpill {
+        
+            padding:13px 26px;border-radius:999px;
+            font-family:var(--body);font-weight:600;font-size:13px;letter-spacing:.02em;
+            color:var(--marfil);
+          
+        }
+        .aevl-root .tagpill-rojo {background:var(--rojo);}
+        .aevl-root .tagpill-morado {background:var(--morado);}
+        .aevl-root .hero::after {
+        
+            content:"";position:absolute;left:0;right:0;bottom:0;height:4px;
+            background:var(--gradiente-neon);z-index:2;
+          
+        }
+        .aevl-root .ctas {
+        display:flex;flex-wrap:wrap;gap:14px;
+        }
+        .aevl-root .btn {
+        
+            display:inline-flex;align-items:center;gap:12px;
+            padding:18px 26px;border-radius:999px;
+            font-family:var(--body);font-weight:500;font-size:15px;letter-spacing:.01em;
+            transition:transform .2s ease, background .2s ease;
+          
+        }
+        .aevl-root .btn-primary {
+        background:var(--rojo);color:var(--marfil);
+        }
+        .aevl-root .btn-primary:hover {
+        transform:translateY(-2px);background:var(--rojo-dark);
+        }
+        .aevl-root .btn-primary .arrow-circle {
+        
+            width:30px;height:30px;border-radius:50%;
+            background:var(--marfil);color:var(--rojo);display:grid;place-items:center;
+          
+        }
+        .aevl-root .btn-secondary {
+        background:transparent;color:var(--marfil);border:2px solid rgba(248,246,242,.4);
+        }
+        .aevl-root .btn-secondary:hover {
+        background:var(--marfil);color:var(--black);border-color:var(--marfil);
+        }
+        @media (max-width:980px) {
+        .aevl-root .hero-bottom {
+        grid-template-columns:1fr;gap:40px;
+        }
+        .aevl-root .hero-left {
+        gap:32px;
+        }
+        }
+        @media (max-width:780px) {
+        .aevl-root .hero {
+        padding:110px 0 60px;
+        }
+        .aevl-root .hero-bottom {
+        grid-template-columns:1fr;gap:32px;
+        }
+        }
+        /* ---------- SECTION GENERIC ---------- */
+        .aevl-root section {
+        padding:120px 0;position:relative;
+        }
+        .aevl-root .section-photo {
+        
+            position:relative;margin-top:60px;
+            border:2px solid var(--black);border-radius:18px;overflow:hidden;
+            aspect-ratio:21/9;
+          
+        }
+        .aevl-root .section-photo img {
+        width:100%;height:100%;object-fit:cover;display:block;
+        }
+        .aevl-root .section-photo-cap {
+        
+            position:absolute;bottom:16px;left:16px;
+            font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;
+            background:var(--rojo);color:var(--marfil);padding:8px 14px;border-radius:999px;font-weight:600;
+          
+        }
+        @media (max-width:780px) {
+        .aevl-root .section-photo {
+        aspect-ratio:4/3;
+        }
+        }
+        .aevl-root .step-photo {
+        
+            margin-top:22px;border-radius:10px;overflow:hidden;
+            aspect-ratio:4/3;border:1px solid rgba(248,246,242,.2);
+          
+        }
+        .aevl-root .step-photo img {
+        
+            width:100%;height:100%;object-fit:cover;display:block;
+            transition:transform .5s cubic-bezier(.2,.7,.2,1);
+          
+        }
+        .aevl-root .step:hover .step-photo img {
+        transform:scale(1.06);
+        }
+        .aevl-root .section-label {
+        
+            font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.22em;
+            color:var(--amarillo);margin-bottom:24px;display:flex;align-items:center;gap:14px;font-weight:600;
+          
+        }
+        .aevl-root .section-label::before {
+        content:"";display:block;width:36px;height:2px;background:var(--rojo);
+        }
+        .aevl-root .section-title {
+        
+            font-family:var(--display);font-weight:400;
+            font-size:clamp(40px,6.2vw,84px);line-height:1;letter-spacing:.005em;
+            margin-bottom:32px;max-width:1000px;color:var(--marfil);text-transform:uppercase;
+          
+        }
+        .aevl-root .section-title em {
+        font-family:var(--display);font-style:normal;font-weight:400;color:var(--amarillo);
+        }
+        .aevl-root .invert {
+        background:#0d0d0d;color:var(--marfil);
+        }
+        .aevl-root .invert .section-label {
+        color:var(--amarillo);
+        }
+        .aevl-root .invert .section-label::before {
+        background:var(--morado);
+        }
+        .aevl-root .invert .section-title {
+        color:var(--marfil);
+        }
+        .aevl-root .invert .section-title em {
+        color:var(--amarillo);
+        }
+        /* ---------- WHAT IS / STATS ---------- */
+        .aevl-root .what-grid {
+        display:grid;grid-template-columns:1.1fr 1fr;gap:80px;align-items:start;
+        }
+        .aevl-root .what-text p {
+        color:rgba(248,246,242,.78);font-size:18px;line-height:1.65;margin-bottom:18px;
+        }
+        .aevl-root .stats {
+        display:grid;grid-template-columns:1fr 1fr;gap:14px;
+        }
+        .aevl-root .stat {
+        
+            background:#1a1a1a;border:1px solid rgba(248,246,242,.08);
+            padding:28px 24px;border-radius:12px;position:relative;overflow:hidden;
+            transition:transform .2s, border-color .2s;
+          
+        }
+        .aevl-root .stat::before {
+        
+            content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+            background:var(--rojo);
+          
+        }
+        .aevl-root .stat:nth-child(2)::before {background:var(--morado);}
+        .aevl-root .stat:nth-child(3)::before {background:var(--amarillo);}
+        .aevl-root .stat:nth-child(4)::before {background:var(--rojo);}
+        .aevl-root .stat:nth-child(5)::before {background:var(--morado);}
+        .aevl-root .stat:hover {
+        transform:translateY(-3px);border-color:rgba(248,246,242,.2);
+        }
+        .aevl-root .stat .num {
+        
+            font-family:var(--display);font-weight:400;
+            font-size:clamp(40px,5vw,60px);line-height:1;color:var(--marfil);
+            letter-spacing:.005em;margin-bottom:8px;
+          
+        }
+        .aevl-root .stat .lbl {
+        
+            font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:rgba(248,246,242,.6);
+          
+        }
+        .aevl-root .stat.feature {
+        
+            grid-column:1/-1;background:var(--gradiente-neon);border:none;color:var(--marfil);
+            padding:32px 28px;
+          
+        }
+        .aevl-root .stat.feature::before {
+        display:none;
+        }
+        .aevl-root .stat.feature .num,
+        .aevl-root .stat.feature .lbl,
+        .aevl-root .stat.feature .label {
+        color:var(--marfil);
+        }
+        @media (max-width:880px) {
+        .aevl-root .what-grid {
+        grid-template-columns:1fr;gap:48px;
+        }
+        }
+        /* ---------- STEPS ---------- */
+        .aevl-root .steps {
+        display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+        }
+        .aevl-root .step {
+        
+            background:rgba(248,246,242,.06);border:1px solid rgba(248,246,242,.18);
+            padding:32px 30px 40px;border-radius:14px;position:relative;
+            transition:background .25s ease, transform .25s ease;
+          
+        }
+        .aevl-root .step:hover {
+        background:rgba(250,204,21,.1);transform:translateY(-4px);
+        }
+        .aevl-root .step .num {
+        
+            font-family:var(--mono);font-size:13px;color:var(--amarillo);
+            margin-bottom:60px;display:flex;justify-content:space-between;align-items:center;
+          
+        }
+        .aevl-root .step .num .label-right {
+        
+            font-family:var(--serif);font-weight:500;font-size:22px;
+            color:rgba(248,246,242,.4);font-weight:500;
+          
+        }
+        .aevl-root .step .step-icon {
+        color:var(--amarillo);margin-bottom:24px;
+        }
+        .aevl-root .step h3 {
+        
+            font-family:var(--display);font-size:30px;font-weight:800;letter-spacing:-.02em;
+            margin-bottom:12px;color:var(--marfil);
+          
+        }
+        .aevl-root .step p {
+        color:rgba(248,246,242,.7);font-size:15px;line-height:1.55;
+        }
+        @media (max-width:880px) {
+        .aevl-root .steps {
+        grid-template-columns:1fr;
+        }
+        }
+        /* ---------- BENEFITS ---------- */
+        .aevl-root .benefits-head {
+        display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;margin-bottom:48px;
+        }
+        .aevl-root .benefits-head p {
+        color:rgba(248,246,242,.7);max-width:380px;text-align:right;font-size:15px;
+        }
+        @media (max-width:780px) {
+        .aevl-root .benefits-head {
+        grid-template-columns:1fr;
+        }
+        .aevl-root .benefits-head p {
+        text-align:left;
+        }
+        }
+        .aevl-root .cards {
+        display:grid;grid-template-columns:repeat(2,1fr);gap:18px;
+        }
+        .aevl-root .card {
+        
+            background:#1a1a1a;border:1px solid rgba(248,246,242,.08);
+            padding:42px 32px 32px;border-radius:14px;position:relative;overflow:hidden;
+            transition:transform .25s ease, border-color .25s ease;color:var(--marfil);
+          
+        }
+        .aevl-root .card::before {
+        
+            content:"";position:absolute;top:0;left:0;right:0;height:4px;
+            background:var(--rojo);
+          
+        }
+        .aevl-root .card:nth-child(2)::before {
+        background:var(--morado);
+        }
+        .aevl-root .card:nth-child(3)::before {
+        background:var(--rojo);
+        }
+        .aevl-root .card:nth-child(4)::before {
+        background:var(--morado);
+        }
+        .aevl-root .card:hover {
+        transform:translateY(-4px);border-color:rgba(248,246,242,.22);
+        }
+        .aevl-root .card.yellow,
+        .aevl-root .card.rojo,
+        .aevl-root .card.morado {
+        background:#1a1a1a;color:var(--marfil);
+        }
+        .aevl-root .card-head {
+        display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:20px;
+        }
+        .aevl-root .card-tag {
+        
+            font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.16em;
+            color:rgba(248,246,242,.55);margin-bottom:8px;font-weight:500;
+          
+        }
+        .aevl-root .card-icon-wrap {
+        
+            width:54px;height:54px;border-radius:50%;
+            background:rgba(248,246,242,.06);color:var(--amarillo);border:1px solid rgba(248,246,242,.12);
+            display:grid;place-items:center;flex-shrink:0;
+          
+        }
+        .aevl-root .card:nth-child(2) .card-icon-wrap {
+        color:var(--morado);
+        }
+        .aevl-root .card:nth-child(3) .card-icon-wrap {
+        color:var(--rojo);
+        }
+        .aevl-root .card:nth-child(4) .card-icon-wrap {
+        color:var(--morado);
+        }
+        .aevl-root .card h3 {
+        
+            font-family:var(--display);font-weight:400;font-size:34px;
+            letter-spacing:.01em;line-height:1;color:var(--marfil);text-transform:uppercase;
+          
+        }
+        .aevl-root .card h3 em {
+        font-family:var(--display);font-weight:400;font-style:normal;color:var(--rojo);
+        }
+        .aevl-root .card:nth-child(2) h3 em {
+        color:var(--morado);
+        }
+        .aevl-root .card:nth-child(4) h3 em {
+        color:var(--morado);
+        }
+        .aevl-root .card ul {
+        display:flex;flex-direction:column;gap:11px;margin-bottom:28px;
+        }
+        .aevl-root .card li {
+        display:flex;gap:12px;align-items:flex-start;font-size:14.5px;color:rgba(248,246,242,.82);line-height:1.5;
+        }
+        .aevl-root .card li .check-icon {
+        flex-shrink:0;margin-top:2px;color:var(--amarillo);
+        }
+        .aevl-root .card:nth-child(2) li .check-icon {
+        color:var(--morado);
+        }
+        .aevl-root .card:nth-child(3) li .check-icon {
+        color:var(--rojo);
+        }
+        .aevl-root .card:nth-child(4) li .check-icon {
+        color:var(--morado);
+        }
+        .aevl-root .card.rojo li, .aevl-root .card.morado li {
+        color:rgba(248,246,242,.82);
+        }
+        .aevl-root .card-cta {
+        
+            display:inline-flex;align-items:center;gap:10px;width:100%;
+            font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.14em;
+            color:var(--marfil);padding:16px 0 0;border-top:1px solid rgba(248,246,242,.14);
+            transition:gap .2s;font-weight:600;
+          
+        }
+        .aevl-root .card.rojo .card-cta, .aevl-root .card.morado .card-cta {
+        color:var(--marfil);border-top-color:rgba(248,246,242,.14);
+        }
+        .aevl-root .card-cta:hover {
+        gap:14px;
+        }
+        .aevl-root .card-cta .arrow-mini {
+        
+            margin-left:auto;width:32px;height:32px;border-radius:50%;
+            background:var(--rojo);color:var(--marfil);display:grid;place-items:center;
+            transition:transform .2s, background .2s;
+          
+        }
+        .aevl-root .card:nth-child(2) .card-cta .arrow-mini {
+        background:var(--morado);
+        }
+        .aevl-root .card:nth-child(3) .card-cta .arrow-mini {
+        background:var(--rojo);
+        }
+        .aevl-root .card:nth-child(4) .card-cta .arrow-mini {
+        background:var(--morado);
+        }
+        .aevl-root .card.rojo .card-cta .arrow-mini, .aevl-root .card.morado .card-cta .arrow-mini {
+        background:var(--marfil);color:var(--black);
+        }
+        .aevl-root .card-cta:hover .arrow-mini {
+        transform:translateX(3px);
+        }
+        @media (max-width:880px) {
+        .aevl-root .cards {
+        grid-template-columns:1fr;
+        }
+        }
+        /* ---------- OPPORTUNITIES ---------- */
+        .aevl-root .opp {
+        
+            background:var(--rojo);padding:120px 0;color:var(--marfil);
+            border-top:2px solid var(--black);border-bottom:2px solid var(--black);
+          
+        }
+        .aevl-root .opp .section-label {
+        color:var(--marfil);
+        }
+        .aevl-root .opp .section-label::before {
+        background:var(--marfil);
+        }
+        .aevl-root .opp .section-title,
+        .aevl-root .opp .section-title em {
+        color:var(--marfil);
+        }
+        .aevl-root .opp-grid {
+        display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-top:2px solid var(--marfil);margin-top:40px;
+        }
+        .aevl-root .opp-item {
+        
+            padding:32px 18px 28px;border-right:2px solid rgba(248,246,242,.35);
+            display:flex;flex-direction:column;justify-content:space-between;
+            min-height:210px;transition:background .25s ease;color:var(--marfil);
+          
+        }
+        .aevl-root .opp-item:last-child {
+        border-right:none;
+        }
+        .aevl-root .opp-item:hover {
+        background:rgba(248,246,242,.1);
+        }
+        .aevl-root .opp-num {
+        font-family:var(--mono);font-size:12px;margin-bottom:32px;font-weight:500;color:var(--amarillo);
+        }
+        .aevl-root .opp-icon {
+        margin-bottom:20px;color:var(--marfil);
+        }
+        .aevl-root .opp-text {
+        font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.01em;line-height:1.1;text-transform:uppercase;
+        }
+        @media (max-width:880px) {
+        .aevl-root .opp-grid {
+        grid-template-columns:repeat(2,1fr);border-top:none;
+        }
+        .aevl-root .opp-item {
+        border-right:2px solid rgba(248,246,242,.35);border-bottom:2px solid rgba(248,246,242,.35);min-height:170px;
+        }
+        }
+        /* ---------- TOPICS ---------- */
+        .aevl-root .topics {
+        
+            display:grid;grid-template-columns:repeat(5,1fr);
+            border:1px solid rgba(248,246,242,.1);margin-top:12px;
+            border-radius:14px;overflow:hidden;background:#1a1a1a;
+          
+        }
+        .aevl-root .topic {
+        
+            padding:32px 22px;border-right:1px solid rgba(248,246,242,.08);border-bottom:1px solid rgba(248,246,242,.08);
+            position:relative;transition:background .25s;
+          
+        }
+        .aevl-root .topic:hover {
+        background:rgba(225,29,72,.08);
+        }
+        .aevl-root .topic:nth-child(2n):hover {
+        background:rgba(124,58,237,.08);
+        }
+        .aevl-root .topic:nth-child(5n) {
+        border-right:none;
+        }
+        .aevl-root .topic:nth-last-child(-n+5) {
+        border-bottom:none;
+        }
+        .aevl-root .topic-icon {
+        color:var(--rojo);margin-bottom:18px;display:block;
+        }
+        .aevl-root .topic:nth-child(2n) .topic-icon {
+        color:var(--morado);
+        }
+        .aevl-root .topic:nth-child(3n) .topic-icon {
+        color:var(--amarillo);
+        }
+        .aevl-root .topic-name {
+        font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:.005em;line-height:1.1;color:var(--marfil);text-transform:uppercase;
+        }
+        .aevl-root .topic-num {
+        position:absolute;top:14px;right:16px;font-family:var(--mono);font-size:11px;color:rgba(248,246,242,.4);
+        }
+        @media (max-width:880px) {
+        .aevl-root .topics {
+        grid-template-columns:repeat(2,1fr);
+        }
+        .aevl-root .topic {
+        border-right:1px solid rgba(248,246,242,.08);border-bottom:1px solid rgba(248,246,242,.08);
+        }
+        .aevl-root .topic:nth-child(5n) {
+        border-right:1px solid rgba(248,246,242,.08);
+        }
+        .aevl-root .topic:nth-child(2n) {
+        border-right:none;
+        }
+        .aevl-root .topic:nth-last-child(-n+5) {
+        border-bottom:1px solid rgba(248,246,242,.08);
+        }
+        .aevl-root .topic:nth-last-child(-n+2) {
+        border-bottom:none;
+        }
+        }
+        /* ---------- SHOWCASES ---------- */
+        .aevl-root .showcases {
+        background:#0d0d0d;color:var(--marfil);position:relative;overflow:hidden;
+        }
+        .aevl-root .showcases::before {
+        
+            content:"";position:absolute;bottom:-150px;left:-100px;
+            width:500px;height:500px;
+            background:radial-gradient(circle, var(--rojo) 0%, transparent 70%);
+            opacity:.14;pointer-events:none;
+          
+        }
+        .aevl-root .showcases::after {
+        
+            content:"";position:absolute;top:-150px;right:-100px;
+            width:500px;height:500px;
+            background:radial-gradient(circle, var(--morado) 0%, transparent 70%);
+            opacity:.14;pointer-events:none;
+          
+        }
+        .aevl-root .showcases .container {
+        position:relative;z-index:1;
+        }
+        .aevl-root .showcase-grid {
+        display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;
+        }
+        .aevl-root .showcase-text p {
+        font-size:19px;color:rgba(248,246,242,.78);line-height:1.6;margin-bottom:24px;
+        }
+        .aevl-root .showcase-text strong {
+        color:var(--amarillo);font-weight:500;
+        }
+        .aevl-root .showcase-list {
+        display:flex;flex-direction:column;border-top:1px solid rgba(248,246,242,.18);
+        }
+        .aevl-root .showcase-list li {
+        
+            padding:22px 0;border-bottom:1px solid rgba(248,246,242,.18);
+            display:flex;align-items:center;justify-content:space-between;gap:16px;
+            font-family:var(--display);font-weight:400;font-size:28px;letter-spacing:.005em;text-transform:uppercase;
+            transition:padding .2s, color .2s;
+          
+        }
+        .aevl-root .showcase-list li:hover {
+        padding-left:14px;color:var(--amarillo);
+        }
+        .aevl-root .showcase-list li .meta {
+        
+            font-family:var(--mono);font-size:11px;font-weight:400;
+            color:rgba(248,246,242,.5);text-transform:uppercase;letter-spacing:.14em;flex-shrink:0;
+          
+        }
+        @media (max-width:880px) {
+        .aevl-root .showcase-grid {
+        grid-template-columns:1fr;gap:40px;
+        }
+        }
+        /* ---------- ACTIVITIES GALLERY ---------- */
+        .aevl-root .activities {
+        background:#0d0d0d;
+        }
+        .aevl-root .activities-head {
+        display:grid;grid-template-columns:1.4fr 1fr;gap:60px;align-items:end;margin-bottom:60px;
+        }
+        .aevl-root .activities h2 {
+        
+            font-family:var(--display);font-weight:400;
+            font-size:clamp(40px,5vw,72px);line-height:1;letter-spacing:.005em;color:var(--marfil);text-transform:uppercase;
+          
+        }
+        .aevl-root .activities h2 em {
+        font-family:var(--display);font-weight:400;font-style:normal;color:var(--amarillo);
+        }
+        .aevl-root .activities-intro {
+        
+            font-size:16px;line-height:1.55;color:rgba(248,246,242,.75);
+            padding-bottom:14px;border-bottom:1px solid rgba(248,246,242,.18);
+          
+        }
+        .aevl-root .activities-grid {
+        display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+        }
+        .aevl-root .activity-card {
+        
+            display:flex;flex-direction:column;
+            background:#1a1a1a;border:1px solid rgba(248,246,242,.08);border-radius:12px;
+            overflow:hidden;text-decoration:none;color:var(--marfil);position:relative;
+            transition:transform .25s ease, border-color .25s ease;
+          
+        }
+        .aevl-root .activity-card::before {
+        
+            content:"";position:absolute;top:0;left:0;right:0;height:3px;z-index:2;
+            background:var(--rojo);
+          
+        }
+        .aevl-root .activity-card:nth-child(2n)::before {background:var(--morado);}
+        .aevl-root .activity-card:nth-child(3n)::before {background:var(--amarillo);}
+        .aevl-root .activity-card:hover {
+        transform:translateY(-4px);border-color:rgba(248,246,242,.2);
+        }
+        .aevl-root .activity-img {
+        
+            position:relative;aspect-ratio:4/3;overflow:hidden;
+            background:#0a0a0a;border-bottom:1px solid rgba(248,246,242,.08);
+          
+        }
+        .aevl-root .activity-img img {
+        
+            width:100%;height:100%;object-fit:cover;display:block;
+            transition:transform .6s cubic-bezier(.2,.7,.2,1);
+          
+        }
+        .aevl-root .activity-card:hover .activity-img img {
+        transform:scale(1.06);
+        }
+        .aevl-root .activity-tag {
+        
+            position:absolute;top:14px;left:14px;
+            font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.14em;
+            background:var(--rojo);color:var(--marfil);
+            padding:6px 12px;border-radius:999px;font-weight:600;
+          
+        }
+        .aevl-root .activity-body {
+        padding:22px 22px 24px;display:flex;flex-direction:column;gap:14px;flex:1;
+        }
+        .aevl-root .activity-title {
+        
+            font-family:var(--display);font-weight:400;
+            font-size:24px;line-height:1.05;letter-spacing:.01em;color:var(--marfil);text-transform:uppercase;
+          
+        }
+        .aevl-root .activity-foot {
+        
+            display:flex;align-items:center;justify-content:space-between;
+            margin-top:auto;padding-top:14px;border-top:1px solid rgba(248,246,242,.1);
+            font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;
+            color:rgba(248,246,242,.55);font-weight:500;
+          
+        }
+        .aevl-root .activity-foot .arrow-pill {
+        
+            width:34px;height:34px;border-radius:50%;
+            background:var(--rojo);color:var(--marfil);display:grid;place-items:center;
+            transition:background .25s ease;
+          
+        }
+        .aevl-root .activity-card:nth-child(2n) .activity-foot .arrow-pill {background:var(--morado);}
+        .aevl-root .activity-card:nth-child(3n) .activity-foot .arrow-pill {background:var(--amarillo);color:var(--black);}
+        .aevl-root .activity-card:hover .activity-foot .arrow-pill {
+        background:var(--marfil);color:var(--black);
+        }
+        @media (max-width:980px) {
+        .aevl-root .activities-grid {
+        grid-template-columns:repeat(2,1fr);gap:24px;
+        }
+        .aevl-root .activities-head {
+        grid-template-columns:1fr;gap:24px;
+        }
+        }
+        @media (max-width:620px) {
+        .aevl-root .activities-grid {
+        grid-template-columns:1fr;
+        }
+        }
+        /* ---------- GALLERY MOSAIC ---------- */
+        .aevl-root .gallery {
+        background:var(--black);
+        }
+        .aevl-root .gallery .section-label {
+        color:rgba(248,246,242,.7);
+        }
+        .aevl-root .gallery .section-label::before {
+        background:var(--amarillo);
+        }
+        .aevl-root .gallery .section-title {
+        color:var(--marfil);
+        }
+        .aevl-root .gallery .section-title em {
+        color:var(--amarillo);
+        }
+        .aevl-root .gallery-intro {
+        color:rgba(248,246,242,.7);max-width:560px;margin-bottom:48px;font-size:16px;line-height:1.55;
+        }
+        .aevl-root .gallery-grid {
+        
+            display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:190px;gap:12px;
+          
+        }
+        .aevl-root .gallery-item {
+        
+            position:relative;overflow:hidden;border-radius:10px;cursor:pointer;
+            background:var(--black-deep);border:1px solid rgba(248,246,242,.12);
+          
+        }
+        .aevl-root .gallery-item.tall {
+        grid-row:span 2;
+        }
+        .aevl-root .gallery-item.wide {
+        grid-column:span 2;
+        }
+        .aevl-root .gallery-item img {
+        
+            width:100%;height:100%;object-fit:cover;display:block;
+            transition:transform .6s cubic-bezier(.2,.7,.2,1);
+          
+        }
+        .aevl-root .gallery-item:hover img {
+        transform:scale(1.07);
+        }
+        .aevl-root .gallery-item::after {
+        
+            content:"";position:absolute;inset:0;
+            background:linear-gradient(180deg, transparent 60%, rgba(10,10,10,.5));
+            opacity:0;transition:opacity .3s;
+          
+        }
+        .aevl-root .gallery-item:hover::after {
+        opacity:1;
+        }
+        .aevl-root .gallery-more {
+        
+            margin-top:32px;font-family:var(--mono);font-size:12px;
+            text-transform:uppercase;letter-spacing:.12em;color:rgba(248,246,242,.55);
+          
+        }
+        @media (max-width:880px) {
+        .aevl-root .gallery-grid {
+        grid-template-columns:repeat(3,1fr);grid-auto-rows:150px;
+        }
+        }
+        @media (max-width:620px) {
+        .aevl-root .gallery-grid {
+        grid-template-columns:repeat(2,1fr);grid-auto-rows:130px;gap:8px;
+        }
+        .aevl-root .gallery-item.wide {
+        grid-column:span 2;
+        }
+        }
+        /* ---------- LIGHTBOX ---------- */
+        .aevl-root .lightbox {
+        
+            position:fixed;inset:0;z-index:99999;
+            background:rgba(20,28,38,.96);
+            display:none;align-items:center;justify-content:center;
+            -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+          
+        }
+        .aevl-root .lightbox.open {
+        display:flex;
+        }
+        .aevl-root .lightbox-img {
+        
+            max-width:90vw;max-height:84vh;border-radius:8px;
+            box-shadow:0 20px 60px rgba(0,0,0,.5);object-fit:contain;
+          
+        }
+        .aevl-root .lb-btn {
+        
+            position:absolute;background:rgba(248,246,242,.1);border:1px solid rgba(248,246,242,.25);
+            color:var(--marfil);width:52px;height:52px;border-radius:50%;
+            display:grid;place-items:center;cursor:pointer;
+            transition:background .2s ease;font-size:0;
+          
+        }
+        .aevl-root .lb-btn:hover {
+        background:var(--amarillo);color:var(--black);border-color:var(--amarillo);
+        }
+        .aevl-root .lb-btn svg {
+        width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+        }
+        .aevl-root .lb-close {
+        top:24px;right:24px;
+        }
+        .aevl-root .lb-prev {
+        left:24px;top:50%;transform:translateY(-50%);
+        }
+        .aevl-root .lb-next {
+        right:24px;top:50%;transform:translateY(-50%);
+        }
+        .aevl-root .lb-counter {
+        
+            position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+            font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:rgba(248,246,242,.7);
+          
+        }
+        @media (max-width:620px) {
+        .aevl-root .lb-btn {
+        width:42px;height:42px;
+        }
+        .aevl-root .lb-close {
+        top:14px;right:14px;
+        }
+        .aevl-root .lb-prev {
+        left:10px;
+        }
+        .aevl-root .lb-next {
+        right:10px;
+        }
+        }
+        /* ---------- IMPACT ---------- */
+        .aevl-root .impact-stats {
+        
+            display:grid;grid-template-columns:repeat(5,1fr);gap:0;
+            border:1px solid rgba(248,246,242,.1);border-radius:14px;overflow:hidden;background:#1a1a1a;
+          
+        }
+        .aevl-root .istat {
+        padding:44px 22px;border-right:1px solid rgba(248,246,242,.08);transition:background .2s;position:relative;
+        }
+        .aevl-root .istat::before {
+        content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--rojo);
+        }
+        .aevl-root .istat:nth-child(2)::before {background:var(--morado);}
+        .aevl-root .istat:nth-child(3)::before {background:var(--amarillo);}
+        .aevl-root .istat:nth-child(4)::before {background:var(--rojo);}
+        .aevl-root .istat:nth-child(5)::before {background:var(--morado);}
+        .aevl-root .istat:hover {
+        background:rgba(248,246,242,.04);
+        }
+        .aevl-root .istat:last-child {
+        border-right:none;
+        }
+        .aevl-root .istat .lbl {
+        
+            font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.14em;
+            color:rgba(248,246,242,.55);margin-bottom:14px;
+          
+        }
+        .aevl-root .istat .num {
+        
+            font-family:var(--display);font-weight:400;
+            font-size:clamp(48px,5vw,72px);line-height:1;color:var(--marfil);letter-spacing:.005em;
+          
+        }
+        .aevl-root .istat .num em {
+        font-family:var(--display);font-weight:400;font-style:normal;color:inherit;
+        }
+        @media (max-width:880px) {
+        .aevl-root .impact-stats {
+        grid-template-columns:1fr 1fr;
+        }
+        .aevl-root .istat {
+        border-right:1px solid rgba(248,246,242,.08);border-bottom:1px solid rgba(248,246,242,.08);
+        }
+        .aevl-root .istat:nth-child(2n) {
+        border-right:none;
+        }
+        .aevl-root .istat:last-child {
+        grid-column:1/-1;border-bottom:none;
+        }
+        }
+        /* ---------- PARTNERS ---------- */
+        .aevl-root .partners-strip {
+        
+            display:grid;grid-template-columns:repeat(5,1fr);gap:0;
+            border:1px solid rgba(248,246,242,.1);border-radius:14px;overflow:hidden;background:#1a1a1a;margin-top:40px;
+          
+        }
+        .aevl-root .partner {
+        
+            padding:48px 18px;border-right:1px solid rgba(248,246,242,.08);
+            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+            text-align:center;transition:background .2s;min-height:160px;
+          
+        }
+        .aevl-root .partner:last-child {
+        border-right:none;
+        }
+        .aevl-root .partner:hover {
+        background:rgba(248,246,242,.04);
+        }
+        .aevl-root .partner-icon {
+        color:var(--amarillo);
+        }
+        .aevl-root .partner:nth-child(2n) .partner-icon {color:var(--morado);}
+        .aevl-root .partner:nth-child(3n) .partner-icon {color:var(--rojo);}
+        .aevl-root .partner-name {
+        font-family:var(--display);font-weight:400;font-size:15px;letter-spacing:.02em;text-transform:uppercase;color:var(--marfil);line-height:1.05;
+        }
+        .aevl-root .partner-logo-card {
+        text-decoration:none;
+        }
+        .aevl-root .partner-logo {
+        max-width:82%;max-height:62px;width:auto;height:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:.9;
+        }
+        @media (max-width:780px) {
+        .aevl-root .partners-strip {
+        grid-template-columns:repeat(2,1fr);
+        }
+        .aevl-root .partner {
+        border-right:1px solid rgba(248,246,242,.08);border-bottom:1px solid rgba(248,246,242,.08);
+        }
+        .aevl-root .partner:nth-child(2n) {
+        border-right:none;
+        }
+        .aevl-root .partner:last-child {
+        grid-column:1/-1;border-bottom:none;
+        }
+        }
+        /* ---------- FORM ---------- */
+        .aevl-root .form-sec {
+        
+            background:#0d0d0d;position:relative;
+          
+        }
+        .aevl-root .form-sec::before {
+        
+            content:"";position:absolute;left:0;right:0;top:0;height:2px;
+            background:var(--gradiente-neon);opacity:.6;
+          
+        }
+        .aevl-root .form-sec::after {
+        
+            content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+            background:var(--gradiente-neon);opacity:.6;
+          
+        }
+        .aevl-root .form-tabs {
+        display:flex;flex-wrap:wrap;gap:10px;margin-bottom:48px;
+        }
+        .aevl-root .tab {
+        
+            padding:14px 22px;font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.14em;
+            color:rgba(248,246,242,.75);border:1px solid rgba(248,246,242,.18);border-radius:999px;background:transparent;
+            transition:background .2s, color .2s, border-color .2s;display:inline-flex;align-items:center;gap:10px;font-weight:600;
+          
+        }
+        .aevl-root .tab .icon {
+        width:18px;height:18px;
+        }
+        .aevl-root .tab.active {
+        background:var(--rojo);color:var(--marfil);border-color:var(--rojo);
+        }
+        .aevl-root .tab:hover:not(.active) {
+        background:rgba(248,246,242,.06);border-color:rgba(248,246,242,.3);color:var(--marfil);
+        }
+        .aevl-root .form-grid {
+        display:grid;grid-template-columns:1fr;gap:48px;align-items:start;max-width:1100px;margin:0 auto;
+        }
+        .aevl-root .form-meta h3 {
+        
+            font-family:var(--display);font-weight:400;font-size:clamp(48px,5.5vw,84px);line-height:1;letter-spacing:.005em;
+            margin-bottom:16px;color:var(--marfil);text-transform:uppercase;
+          
+        }
+        .aevl-root .form-meta {
+        max-width:800px;
+        }
+        .aevl-root .form-meta h3 em {
+        font-family:var(--display);font-weight:400;font-style:normal;color:var(--rojo);
+        }
+        .aevl-root .form-meta p {
+        color:rgba(248,246,242,.75);font-size:16px;line-height:1.6;
+        }
+        .aevl-root .form-meta .deadline {
+        
+            margin-top:32px;padding:18px 22px;background:#1a1a1a;
+            border:1px solid rgba(248,246,242,.1);border-radius:12px;position:relative;overflow:hidden;
+            display:flex;align-items:center;gap:14px;
+            font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:rgba(248,246,242,.85);
+          
+        }
+        .aevl-root .form-meta .deadline::before {
+        content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amarillo);
+        }
+        .aevl-root .form-meta .deadline strong {
+        color:var(--amarillo);font-weight:600;
+        }
+        .aevl-root .form-fields {
+        
+            display:flex;flex-direction:column;gap:18px;
+            background:#1a1a1a;padding:36px;
+            border:1px solid rgba(248,246,242,.1);border-radius:14px;
+          
+        }
+        .aevl-root .field {
+        display:flex;flex-direction:column;gap:8px;
+        }
+        .aevl-root .field label {
+        
+            font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:rgba(248,246,242,.65);font-weight:500;
+          
+        }
+        .aevl-root .field input, .aevl-root .field select, .aevl-root .field textarea {
+        
+            background:transparent;border:none;border-bottom:1.5px solid rgba(248,246,242,.2);
+            padding:12px 0;color:var(--marfil);font-family:var(--body);font-size:16px;transition:border-color .2s;
+          
+        }
+        .aevl-root .field select option {
+        background:var(--black);color:var(--marfil);
+        }
+        .aevl-root .field input:focus, .aevl-root .field select:focus, .aevl-root .field textarea:focus {
+        
+            outline:none;border-bottom-color:var(--rojo);
+          
+        }
+        .aevl-root .field textarea {
+        min-height:90px;resize:vertical;
+        }
+        .aevl-root .field input::placeholder, .aevl-root .field textarea::placeholder {
+        color:rgba(248,246,242,.4);
+        }
+        .aevl-root .form-row {
+        display:grid;grid-template-columns:1fr 1fr;gap:18px;
+        }
+        .aevl-root .form-section-label {
+        
+            font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.22em;
+            color:var(--amarillo);font-weight:600;
+            padding-bottom:10px;border-bottom:1px solid rgba(248,246,242,.12);
+            margin-top:6px;
+          
+        }
+        .aevl-root .field-help {
+        font-family:var(--mono);font-size:11px;color:rgba(248,246,242,.5);margin-top:4px;
+        }
+        .aevl-root .multi-select {
+        
+            background:rgba(248,246,242,.04) !important;
+            border:1px solid rgba(248,246,242,.15) !important;border-bottom:1px solid rgba(248,246,242,.15) !important;
+            border-radius:8px !important;padding:8px !important;
+            color:var(--marfil);font-family:var(--body);font-size:14px;
+            min-height:auto;
+          
+        }
+        .aevl-root .multi-select option {
+        
+            background:transparent;color:var(--marfil);
+            padding:8px 10px;border-radius:4px;margin-bottom:2px;
+            font-size:13px;line-height:1.35;
+          
+        }
+        .aevl-root .multi-select option:checked {
+        background:var(--rojo) linear-gradient(0deg, var(--rojo) 0%, var(--rojo) 100%) !important;color:var(--marfil) !important;
+        }
+        .aevl-root .field-checks {
+        display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;
+        }
+        .aevl-root .check-pill {
+        
+            padding:8px 14px;border:1px solid rgba(248,246,242,.2);
+            border-radius:999px;font-size:12px;cursor:pointer;
+            font-family:var(--body);font-weight:500;color:var(--marfil);
+            transition:background .18s, border-color .18s;user-select:none;
+          
+        }
+        .aevl-root .check-pill input {
+        position:absolute;opacity:0;pointer-events:none;
+        }
+        .aevl-root .check-pill:hover {
+        border-color:rgba(248,246,242,.4);
+        }
+        .aevl-root .check-pill:has(input:checked) {
+        background:var(--rojo);border-color:var(--rojo);color:var(--marfil);
+        }
+        .aevl-root .check-pill:has(input[type="radio"]:checked) {
+        background:var(--amarillo);border-color:var(--amarillo);color:var(--black);
+        }
+        .aevl-root .field-file {
+        
+            display:flex;align-items:center;gap:12px;padding:14px;
+            border:1px dashed rgba(248,246,242,.2);border-radius:8px;
+            font-family:var(--mono);font-size:12px;color:rgba(248,246,242,.7);
+            transition:border-color .2s;cursor:pointer;
+          
+        }
+        .aevl-root .field-file:hover {
+        border-color:var(--amarillo);
+        }
+        .aevl-root .field-file input[type="file"] {
+        flex:1;border:none;color:var(--marfil);background:transparent;font-family:var(--mono);font-size:12px;
+        }
+        .aevl-root .field-file input[type="file"]::file-selector-button {
+        
+            background:var(--amarillo);color:var(--black);border:none;
+            padding:6px 12px;border-radius:6px;font-family:var(--mono);font-size:11px;
+            text-transform:uppercase;letter-spacing:.1em;cursor:pointer;font-weight:600;
+          
+        }
+        .aevl-root .form-fields .form-section-label:first-child {
+        margin-top:0;
+        }
+        .aevl-root .submit {
+        
+            margin-top:10px;background:var(--rojo);color:var(--marfil);
+            padding:18px 28px;border-radius:999px;font-weight:600;font-size:15px;
+            display:inline-flex;align-items:center;gap:12px;
+            transition:transform .2s, background .2s;align-self:flex-start;
+          
+        }
+        .aevl-root .submit:hover {
+        transform:translateY(-2px);background:var(--rojo-dark);
+        }
+        .aevl-root .submit .arrow-circle {
+        
+            width:26px;height:26px;border-radius:50%;
+            background:var(--marfil);color:var(--rojo);display:grid;place-items:center;
+          
+        }
+        @media (max-width:880px) {
+        .aevl-root .form-grid {
+        grid-template-columns:1fr;gap:40px;
+        }
+        .aevl-root .form-row {
+        grid-template-columns:1fr;
+        }
+        .aevl-root .form-fields {
+        padding:24px;
+        }
+        }
+        /* ---------- QUOTE ---------- */
+        .aevl-root .quote {
+        padding:140px 0;text-align:center;background:#0d0d0d;color:var(--marfil);position:relative;overflow:hidden;
+        }
+        .aevl-root .quote::before {
+        
+            content:"";position:absolute;top:-150px;left:30%;transform:translateX(-50%);
+            width:600px;height:600px;
+            background:radial-gradient(circle, var(--rojo) 0%, transparent 70%);
+            opacity:.16;pointer-events:none;
+          
+        }
+        .aevl-root .quote::after {
+        
+            content:"";position:absolute;bottom:-150px;right:30%;transform:translateX(50%);
+            width:600px;height:600px;
+            background:radial-gradient(circle, var(--morado) 0%, transparent 70%);
+            opacity:.16;pointer-events:none;
+          
+        }
+        .aevl-root .quote .container {
+        position:relative;z-index:1;
+        }
+        .aevl-root .quote blockquote {
+        
+            font-family:var(--display);font-weight:400;
+            font-size:clamp(40px,5.6vw,84px);line-height:1;letter-spacing:.005em;text-transform:uppercase;
+            max-width:1100px;margin:0 auto 40px;
+          
+        }
+        .aevl-root .quote blockquote span {
+        
+            color:var(--amarillo);background:transparent;padding:0;
+            font-style:normal;font-family:var(--display);font-weight:400;
+          
+        }
+        .aevl-root .quote-foot {
+        
+            font-family:var(--mono);font-size:13px;text-transform:uppercase;letter-spacing:.16em;
+            color:rgba(248,246,242,.6);max-width:680px;margin:0 auto;line-height:1.7;
+          
+        }
+        /* ---------- FOOTER ---------- */
+        .aevl-root footer {
+        padding:70px 0 36px;background:var(--black-deep);color:var(--marfil);
+        }
+        .aevl-root .footer-grid {
+        display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px;
+        }
+        .aevl-root .footer-logo {
+        height:130px;width:auto;display:block;
+        }
+        .aevl-root .footer-credits {
+        margin-top:30px;
+        }
+        .aevl-root .footer-credits-label {
+        
+            display:block;font-family:var(--mono);font-size:10px;text-transform:uppercase;
+            letter-spacing:.16em;color:rgba(248,246,242,.4);margin-bottom:16px;
+          
+        }
+        .aevl-root .footer-credits-logos {
+        display:flex;align-items:center;gap:28px;flex-wrap:wrap;
+        }
+        .aevl-root .footer-credits-logos img {
+        height:40px;width:auto;object-fit:contain;
+        }
+        .aevl-root .footer-credits-logos a {
+        display:block;line-height:0;transition:opacity .2s ease;
+        }
+        .aevl-root .footer-credits-logos a:hover {
+        opacity:.7;
+        }
+        .aevl-root .footer-col h4 {
+        
+            font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.16em;
+            color:var(--amarillo);margin-bottom:18px;
+          
+        }
+        .aevl-root .footer-col a {
+        display:block;font-size:14px;color:rgba(248,246,242,.6);padding:5px 0;transition:color .2s;
+        }
+        .aevl-root .footer-col a:hover {
+        color:var(--amarillo);
+        }
+        .aevl-root .footer-bot {
+        
+            border-top:1px solid rgba(248,246,242,.18);padding-top:24px;
+            display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px;
+            font-family:var(--mono);font-size:11px;color:rgba(248,246,242,.5);
+            text-transform:uppercase;letter-spacing:.14em;
+          
+        }
+        @media (max-width:780px) {
+        .aevl-root .footer-grid {
+        grid-template-columns:1fr 1fr;gap:32px;
+        }
+        .aevl-root .footer-grid > div:first-child {
+        grid-column:1/-1;
+        }
+        }
+        /* ---------- REVEAL ---------- */
+        .aevl-root .reveal {
+        opacity:1;transform:none;
+        }
+        .aevl-root .reveal.in {
+        opacity:1;transform:none;
+        }
+        /* ---------- BOOTCAMPS / CAPACITACIONES ---------- */
+        .aevl-root .bootcamps-sec {
+          background: #0d0d0d;
+          padding: 100px 0;
+          border-bottom: 2px solid var(--rojo);
+        }
+        .aevl-root .bc-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 28px;
+          margin-top: 48px;
+        }
+        /* tarjeta base */
+        .aevl-root .bc-card {
+          background: #1a1a1a;
+          border: 1px solid rgba(248,246,242,.1);
+          border-radius: 16px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          transition: transform .25s ease, border-color .25s ease;
+        }
+        .aevl-root .bc-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(248,246,242,.25);
+        }
+        /* imagen */
+        .aevl-root .bc-img-wrap {
+          position: relative;
+          aspect-ratio: 3/4;
+          overflow: hidden;
+          cursor: pointer;
+        }
+        .aevl-root .bc-img-wrap img {
+          width: 100%; height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform .6s cubic-bezier(.2,.7,.2,1);
+        }
+        .aevl-root .bc-card:hover .bc-img-wrap img {
+          transform: scale(1.04);
+        }
+        .aevl-root .bc-badge {
+          position: absolute; top: 16px; left: 16px;
+          font-family: var(--mono); font-size: 10px;
+          text-transform: uppercase; letter-spacing: .14em;
+          background: rgba(17,17,17,.75);
+          color: rgba(248,246,242,.7);
+          padding: 6px 12px; border-radius: 999px;
+          border: 1px solid rgba(248,246,242,.2);
+          backdrop-filter: blur(8px);
+        }
+        /* tarjeta activa — fondo degradado como placeholder */
+        .aevl-root .bc-active-img {
+          background: linear-gradient(160deg, #1a0a2e 0%, #1a0505 100%);
+          display: flex; align-items: flex-end; cursor: default;
+        }
+        .aevl-root .bc-active-overlay {
+          padding: 28px; width: 100%;
+        }
+        .aevl-root .bc-badge-live {
+          background: var(--rojo);
+          color: var(--marfil);
+          border-color: var(--rojo);
+          position: static;
+          display: inline-block;
+          margin-bottom: 16px;
+        }
+        .aevl-root .bc-active-label {
+          font-family: var(--display);
+          font-size: clamp(28px, 3.5vw, 48px);
+          line-height: 1.05;
+          color: var(--marfil);
+          text-transform: uppercase;
+          letter-spacing: .01em;
+        }
+        /* cuerpo */
+        .aevl-root .bc-body {
+          padding: 28px 28px 32px;
+          display: flex; flex-direction: column; gap: 14px; flex: 1;
+        }
+        .aevl-root .bc-meta {
+          font-family: var(--mono); font-size: 11px;
+          text-transform: uppercase; letter-spacing: .16em;
+          color: var(--rojo); font-weight: 600;
+        }
+        .aevl-root .bc-title {
+          font-family: var(--display); font-weight: 400;
+          font-size: clamp(28px, 2.8vw, 40px);
+          line-height: 1; text-transform: uppercase;
+          letter-spacing: .01em; color: var(--marfil);
+        }
+        .aevl-root .bc-excerpt {
+          font-size: 14px; color: rgba(248,246,242,.7);
+          line-height: 1.6; margin-bottom: 4px;
+        }
+        /* botones */
+        .aevl-root .bc-btn {
+          display: inline-flex; align-items: center; gap: 12px;
+          font-family: var(--mono); font-size: 12px;
+          text-transform: uppercase; letter-spacing: .14em;
+          color: var(--marfil); font-weight: 600;
+          padding: 15px 0;
+          border-top: 1px solid rgba(248,246,242,.12);
+          margin-top: auto; transition: gap .2s;
+          background: none; border-left: none; border-right: none; border-bottom: none;
+          cursor: pointer;
+        }
+        .aevl-root .bc-btn:hover { gap: 16px; }
+        .aevl-root a.bc-btn { text-decoration: none; }
+        .aevl-root .bc-btn-live { color: var(--amarillo); }
+        .aevl-root .bc-arrow {
+          margin-left: auto; width: 34px; height: 34px;
+          border-radius: 50%; background: var(--rojo);
+          color: var(--marfil); display: grid; place-items: center;
+          transition: transform .2s;
+        }
+        .aevl-root .bc-btn-live .bc-arrow { background: var(--amarillo); color: var(--black); }
+        .aevl-root .bc-btn:hover .bc-arrow { transform: translateX(3px); }
+
+        /* ---------- MODAL BOOTCAMP ---------- */
+        .aevl-root .bc-modal {
+          position: fixed; inset: 0; z-index: 199999;
+          background: rgba(10,10,10,.92);
+          backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+          display: none; align-items: flex-start; justify-content: center;
+          overflow-y: auto; padding: 40px 20px;
+        }
+        .aevl-root .bc-modal.open { display: flex; }
+        .aevl-root .bc-modal-inner {
+          background: #1a1a1a;
+          border: 1px solid rgba(248,246,242,.12);
+          border-radius: 20px; width: 100%; max-width: 1080px;
+          position: relative; overflow: hidden;
+          display: grid; grid-template-columns: 1fr 1fr;
+          margin: auto;
+        }
+        .aevl-root .bc-modal-close {
+          position: absolute; top: 18px; right: 18px; z-index: 10;
+          width: 44px; height: 44px; border-radius: 50%;
+          background: rgba(248,246,242,.1); color: var(--marfil);
+          display: grid; place-items: center;
+          transition: background .2s; cursor: pointer;
+          border: 1px solid rgba(248,246,242,.2);
+        }
+        .aevl-root .bc-modal-close:hover { background: var(--rojo); border-color: var(--rojo); }
+        /* galería en modal */
+        .aevl-root .bc-modal-gallery {
+          display: flex; flex-direction: column;
+          background: #111; border-right: 1px solid rgba(248,246,242,.08);
+        }
+        .aevl-root .bc-gallery-main {
+          position: relative; aspect-ratio: 4/5; overflow: hidden; flex-shrink: 0;
+        }
+        .aevl-root .bc-gallery-big {
+          width: 100%; height: 100%; object-fit: cover; display: block;
+          transition: opacity .2s;
+        }
+        .aevl-root .bc-nav {
+          position: absolute; top: 50%; transform: translateY(-50%);
+          width: 40px; height: 40px; border-radius: 50%;
+          background: rgba(17,17,17,.7); color: var(--marfil);
+          display: grid; place-items: center;
+          border: 1px solid rgba(248,246,242,.2);
+          transition: background .2s; cursor: pointer;
+        }
+        .aevl-root .bc-nav:hover { background: var(--rojo); border-color: var(--rojo); }
+        .aevl-root .bc-nav-prev { left: 12px; }
+        .aevl-root .bc-nav-next { right: 12px; }
+        .aevl-root .bc-gallery-counter {
+          position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+          font-family: var(--mono); font-size: 11px; letter-spacing: .12em;
+          color: rgba(248,246,242,.7);
+          background: rgba(17,17,17,.6); padding: 4px 12px; border-radius: 999px;
+        }
+        .aevl-root .bc-thumbs {
+          display: flex; gap: 6px; padding: 10px;
+          overflow-x: auto; flex-shrink: 0;
+          scrollbar-width: thin; scrollbar-color: var(--rojo) #111;
+        }
+        .aevl-root .bc-thumb {
+          width: 54px; height: 54px; object-fit: cover;
+          border-radius: 6px; cursor: pointer; flex-shrink: 0;
+          border: 2px solid transparent;
+          transition: border-color .15s, opacity .15s; opacity: .65;
+        }
+        .aevl-root .bc-thumb:hover { opacity: .9; }
+        .aevl-root .bc-thumb.active { border-color: var(--rojo); opacity: 1; }
+        /* copy del modal */
+        .aevl-root .bc-modal-copy {
+          padding: 44px 40px 48px; overflow-y: auto; max-height: 90vh;
+        }
+        .aevl-root .bc-modal-title {
+          font-family: var(--display); font-weight: 400;
+          font-size: clamp(28px, 3vw, 44px); line-height: 1.05;
+          text-transform: uppercase; letter-spacing: .01em;
+          color: var(--marfil); margin: 12px 0 24px;
+        }
+        .aevl-root .bc-modal-text p {
+          font-size: 14.5px; color: rgba(248,246,242,.78);
+          line-height: 1.7; margin-bottom: 18px;
+        }
+        .aevl-root .bc-modal-text strong { color: var(--amarillo); font-weight: 600; }
+        /* responsive */
+        @media (max-width: 880px) {
+          .aevl-root .bc-grid { grid-template-columns: 1fr; }
+          .aevl-root .bc-modal-inner { grid-template-columns: 1fr; }
+          .aevl-root .bc-modal-copy { padding: 28px 24px 36px; max-height: none; }
+          .aevl-root .bc-gallery-main { aspect-ratio: 4/3; }
+        }
+
+        .aevl-root ::selection {
+        background:var(--rojo);color:var(--marfil);
+        }
+        </style>
+        
+        <div class="aevl-root">
+        <!-- ========== ICON SPRITE ========== -->
+        <svg width="0" height="0" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;position:absolute" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <defs>
+            <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+            <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></symbol>
+            <symbol id="i-headphones" viewBox="0 0 24 24">
+              <path d="M3 14v-2a9 9 0 0 1 18 0v2"/>
+              <path d="M3 14v4a2 2 0 0 0 2 2h2v-8H5a2 2 0 0 0-2 2z"/>
+              <path d="M21 14v4a2 2 0 0 1-2 2h-2v-8h2a2 2 0 0 1 2 2z"/>
+            </symbol>
+            <symbol id="i-cocktail" viewBox="0 0 24 24">
+              <path d="M4 4h16l-8 9z"/>
+              <path d="M12 13v7"/>
+              <path d="M8 20h8"/>
+              <circle cx="16" cy="6" r="1"/>
+            </symbol>
+            <symbol id="i-mixer" viewBox="0 0 24 24">
+              <path d="M6 3v6M6 13v8"/>
+              <path d="M12 3v3M12 10v11"/>
+              <path d="M18 3v11M18 18v3"/>
+              <circle cx="6" cy="11" r="2"/>
+              <circle cx="12" cy="8" r="2"/>
+              <circle cx="18" cy="16" r="2"/>
+            </symbol>
+            <symbol id="i-city" viewBox="0 0 24 24">
+              <path d="M3 21V9l5-3v15"/>
+              <path d="M8 21V3l8 4v14"/>
+              <path d="M16 21v-9l5 2v7"/>
+              <path d="M3 21h18"/>
+            </symbol>
+            <symbol id="i-cap" viewBox="0 0 24 24">
+              <path d="M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/>
+              <path d="M22 10v6"/>
+            </symbol>
+            <symbol id="i-flask" viewBox="0 0 24 24">
+              <path d="M9 3h6"/>
+              <path d="M10 3v6L4 19a2 2 0 0 0 1.7 3h12.6A2 2 0 0 0 20 19l-6-10V3"/>
+              <path d="M7 14h10"/>
+            </symbol>
+            <symbol id="i-mic" viewBox="0 0 24 24">
+              <rect x="9" y="3" width="6" height="11" rx="3"/>
+              <path d="M5 11a7 7 0 0 0 14 0"/>
+              <path d="M12 18v3"/>
+              <path d="M8 21h8"/>
+            </symbol>
+            <symbol id="i-note" viewBox="0 0 24 24">
+              <path d="M9 18V5l12-2v13"/>
+              <circle cx="6" cy="18" r="3"/>
+              <circle cx="18" cy="16" r="3"/>
+            </symbol>
+            <symbol id="i-speaker" viewBox="0 0 24 24">
+              <path d="M11 5L6 9H2v6h4l5 4z"/>
+              <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
+              <path d="M19 5a9 9 0 0 1 0 14"/>
+            </symbol>
+            <symbol id="i-calendar" viewBox="0 0 24 24">
+              <rect x="3" y="5" width="18" height="16" rx="2"/>
+              <path d="M3 10h18M8 3v4M16 3v4"/>
+              <path d="M8 14h2M14 14h2M8 17h2"/>
+            </symbol>
+            <symbol id="i-megaphone" viewBox="0 0 24 24">
+              <path d="M3 11l15-7v16L3 13z"/>
+              <path d="M7 13v5a2 2 0 0 0 4 0v-3"/>
+              <path d="M18 8a4 4 0 0 1 0 8"/>
+            </symbol>
+            <symbol id="i-cpu" viewBox="0 0 24 24">
+              <rect x="5" y="5" width="14" height="14" rx="2"/>
+              <rect x="9" y="9" width="6" height="6" rx="1"/>
+              <path d="M9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4"/>
+            </symbol>
+            <symbol id="i-scale" viewBox="0 0 24 24">
+              <path d="M12 3v18"/>
+              <path d="M6 21h12"/>
+              <path d="M6 6h12"/>
+              <path d="M6 6L3 14a3 3 0 0 0 6 0z"/>
+              <path d="M18 6l-3 8a3 3 0 0 0 6 0z"/>
+            </symbol>
+            <symbol id="i-heart" viewBox="0 0 24 24">
+              <path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/>
+              <path d="M8 11l2 2 4-4"/>
+            </symbol>
+            <symbol id="i-camera" viewBox="0 0 24 24">
+              <path d="M3 8a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </symbol>
+            <symbol id="i-ticket" viewBox="0 0 24 24">
+              <path d="M3 8v3a2 2 0 0 1 0 4v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 1 0-4V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/>
+              <path d="M10 7v2M10 12v2M10 17v0"/>
+            </symbol>
+            <symbol id="i-globe" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M3 12h18"/>
+              <path d="M12 3a14 14 0 0 1 0 18"/>
+              <path d="M12 3a14 14 0 0 0 0 18"/>
+            </symbol>
+            <symbol id="i-stage" viewBox="0 0 24 24">
+              <path d="M3 17h18"/>
+              <path d="M5 17v-3a7 7 0 0 1 14 0v3"/>
+              <path d="M12 5v-2"/>
+              <path d="M10 3h4"/>
+              <path d="M7 21l2-4M17 21l-2-4"/>
+            </symbol>
+            <symbol id="i-link" viewBox="0 0 24 24">
+              <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 1 0-5.66-5.66l-1.5 1.5"/>
+              <path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 1 0 5.66 5.66l1.5-1.5"/>
+            </symbol>
+            <symbol id="i-eye" viewBox="0 0 24 24">
+              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </symbol>
+            <symbol id="i-star" viewBox="0 0 24 24">
+              <path d="M12 3l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/>
+            </symbol>
+            <symbol id="i-network" viewBox="0 0 24 24">
+              <circle cx="12" cy="5" r="2"/>
+              <circle cx="5" cy="19" r="2"/>
+              <circle cx="19" cy="19" r="2"/>
+              <path d="M12 7v4M12 11l-5 6M12 11l5 6"/>
+            </symbol>
+            <symbol id="i-building-flag" viewBox="0 0 24 24">
+              <path d="M4 21V5l8-2 8 2v16"/>
+              <path d="M4 21h16"/>
+              <path d="M9 21v-6h6v6"/>
+              <path d="M9 8h6M9 11h6"/>
+            </symbol>
+            <symbol id="i-handshake" viewBox="0 0 24 24">
+              <path d="M3 11l4-4 5 1 4 4 5-1"/>
+              <path d="M3 11v4l5 5 4-2"/>
+              <path d="M21 11v4l-5 5-4-2"/>
+            </symbol>
+            <symbol id="i-music" viewBox="0 0 24 24">
+              <circle cx="6" cy="18" r="3"/>
+              <circle cx="18" cy="16" r="3"/>
+              <path d="M9 18V6l12-3v13"/>
+            </symbol>
+            <symbol id="i-clock" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 7v5l3 3"/>
+            </symbol>
+          </defs>
+        </svg>
+        
+        <!-- ========== TOP BAR ========== -->
+        <header class="topbar">
+          <div class="topbar-inner">
+            <nav>
+              <a href="#programa">Programa</a>
+              <a href="#beneficios">Beneficios</a>
+              <a href="#formacion">Formación</a>
+              <a href="#showcases">Showcases</a>
+              <a href="#galeria">Galería</a>
+              <a href="#aliados">Aliados</a>
+            </nav>
+            <a href="#" class="brand-logo-link" aria-label="Área en Vivo Lab — inicio">
+              <img src="https://asobares.org/wp-content/uploads/2025/07/Logo-Area-en-vivo-LAB.png" alt="Área en Vivo Lab" class="brand-logo">
+            </a>
+            <div class="topbar-cta-wrap">
+              <a href="#postulate" class="cta-mini">
+                Postúlate
+                <svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg>
+              </a>
+            </div>
+          </div>
+        </header>
+        
+        <!-- ========== HERO ========== -->
+        <section class="hero">
+          <div class="container">
+            <div class="hero-eyebrow reveal">
+              <span class="pill">EN VIVO</span>
+              Convocatoria abierta · Bogotá Región · 2026
+            </div>
+        
+            <div class="hero-bottom reveal">
+              <div class="hero-left">
+                <h1>
+                  Área en Vivo<br/>
+                  <span class="line2"><span class="highlight">Lab</span><span class="year">'26</span></span>
+                </h1>
+                <p class="hero-tagline">Donde las ideas cobran escenario.</p>
+                <p class="hero-lede">
+                  Formación, circulación y conexiones reales para la <strong>música en vivo y electrónica</strong> en Bogotá. Un programa que conecta talento, venues y oportunidades dentro del ecosistema musical de la ciudad.
+                </p>
+                <div class="ctas">
+                  <a href="#postulate" class="btn btn-primary">
+                    Inscríbete como artista
+                    <span class="arrow-circle"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg></span>
+                  </a>
+                  <a href="#venue-form" class="btn btn-secondary">Quiero ser venue aliado</a>
+                </div>
+              </div>
+              <div class="hero-video-wrap">
+                <span class="hero-video-label"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:13px;height:13px;"><use href="#i-arrow"/></svg> Conoce el programa</span>
+                <div class="hero-video">
+                  <iframe src="https://www.youtube-nocookie.com/embed/I6wNfWlmViA" title="Área en Vivo Lab — video del programa" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                </div>
+                <div class="hero-credits">
+                  <span class="hero-credits-label">Un proyecto de</span>
+                  <div class="hero-credits-logos">
+                    <a href="https://asobares.org" target="_blank" rel="noopener" aria-label="ASOBARES Colombia">
+                      <img src="https://asobares.org/wp-content/uploads/2026/05/Nuevo-logo-Asobares-Blanco-scaled.png" alt="ASOBARES Colombia" loading="lazy">
+                    </a>
+                    <img src="https://asobares.org/wp-content/uploads/2026/05/CCB_Logosimbolo_Version_Principal_Blanco.png" alt="Cámara de Comercio de Bogotá" loading="lazy">
+                  </div>
+                </div>
+              </div>
+            </div>
+        
+            <div class="hero-tagpills reveal">
+              <span class="tagpill tagpill-rojo">Música en Vivo</span>
+              <span class="tagpill tagpill-morado">DJs &amp; Bandas</span>
+              <span class="tagpill tagpill-rojo">Economía Creativa</span>
+              <span class="tagpill tagpill-morado">Innovación Cultural</span>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== BOOTCAMPS / CAPACITACIONES ========== -->
+        <section id="bootcamps" class="bootcamps-sec">
+          <div class="container">
+            <div class="section-label reveal">
+              <svg class="icon" aria-hidden="true"><use href="#i-cap"/></svg>
+              Capacitaciones
+            </div>
+            <h2 class="section-title reveal">Bootcamps <em>realizados</em></h2>
+
+            <div class="bc-grid reveal">
+
+              <!-- ── TARJETA 1: pasada ── -->
+              <article class="bc-card bc-past" data-modal="modal-bootcamp1">
+                <div class="bc-img-wrap">
+                  <img src="https://asobares.org/wp-content/uploads/2026/08/Pieza-inicial-2-scaled.jpg"
+                       alt="Bootcamp 1 — Octava Club" loading="lazy" />
+                  <span class="bc-badge">Realizado</span>
+                </div>
+                <div class="bc-body">
+                  <p class="bc-meta">Área En Vivo Lab · Bootcamp 1</p>
+                  <h3 class="bc-title">Una noche adentro de<br/>Octava Club</h3>
+                  <p class="bc-excerpt">En el primer Bootcamp de Área en Vivo, los asistentes tuvieron la oportunidad de conocer de mano de los expertos cómo funciona a fondo Octava Club, uno de los clubes ícono de la música electrónica en Colombia…</p>
+                  <button class="bc-btn" aria-label="Ver galería y más información">
+                    Ver galería
+                    <span class="bc-arrow">
+                      <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+                    </span>
+                  </button>
+                </div>
+              </article>
+
+              <!-- ── TARJETA 2: Bootcamp 2 ── -->
+              <article class="bc-card">
+                <a href="https://asobares.org/emmat/" target="_blank" rel="noopener" class="bc-img-wrap" style="display:block;text-decoration:none;">
+                  <img src="https://asobares.org/wp-content/uploads/2026/08/Pieza-inicial.jpg"
+                       alt="Bootcamp 2 — Music Business e Industria Musical" loading="lazy" />
+                  <span class="bc-badge bc-badge-live">Inscripción sin costo</span>
+                </a>
+                <div class="bc-body">
+                  <p class="bc-meta">Área En Vivo Lab · Bootcamp 2</p>
+                  <h3 class="bc-title">Music Business<br/>e Industria Musical</h3>
+                  <p class="bc-excerpt">José Camacho, Kelly Mello, Bray Castillo &amp; Joan Barbosa y showcase en vivo de Marianna Claros. Una jornada de formación intensiva sobre industria musical en el Auditorio EMMAT.</p>
+                  <a class="bc-btn bc-btn-live" href="https://asobares.org/emmat/" target="_blank" rel="noopener">
+                    Inscríbete sin costo
+                    <span class="bc-arrow">
+                      <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+                    </span>
+                  </a>
+                </div>
+              </article>
+
+            </div><!-- /.bc-grid -->
+          </div>
+        </section>
+
+        <!-- ── MODAL: Bootcamp 1 ── -->
+        <div class="bc-modal" id="modal-bootcamp1" role="dialog" aria-modal="true" aria-label="Bootcamp 1 — Octava Club">
+          <div class="bc-modal-inner">
+            <button class="bc-modal-close" aria-label="Cerrar">
+              <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+
+            <!-- galería -->
+            <div class="bc-modal-gallery">
+              <div class="bc-gallery-main">
+                <img class="bc-gallery-big" src="https://asobares.org/wp-content/uploads/2026/08/10685106-A68F-46EF-A4DD-15A54B34F217-1-e1786677704281.jpg" alt="Bootcamp 1 foto 1" />
+                <button class="bc-nav bc-nav-prev" aria-label="Anterior">
+                  <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <button class="bc-nav bc-nav-next" aria-label="Siguiente">
+                  <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <span class="bc-gallery-counter">1 / 9</span>
+              </div>
+              <div class="bc-thumbs">
+                <img src="https://asobares.org/wp-content/uploads/2026/08/10685106-A68F-46EF-A4DD-15A54B34F217-1-e1786677704281.jpg" alt="" data-idx="0" class="bc-thumb active" />
+                <img src="https://asobares.org/wp-content/uploads/2026/08/IMG_6343.jpg" alt="" data-idx="1" class="bc-thumb" />
+                <img src="https://asobares.org/wp-content/uploads/2026/08/IMG_6359.jpg" alt="" data-idx="2" class="bc-thumb" />
+                <img src="https://asobares.org/wp-content/uploads/2026/08/IMG_6368.jpg" alt="" data-idx="3" class="bc-thumb" />
+                <img src="https://asobares.org/wp-content/uploads/2026/08/IMG_6372.jpg" alt="" data-idx="4" class="bc-thumb" />
+                <img src="https://asobares.org/wp-content/uploads/2026/08/IMG_6373.jpg" alt="" data-idx="5" class="bc-thumb" />
+                <img src="https://asobares.org/wp-content/uploads/2026/08/IMG_6378.jpg" alt="" data-idx="6" class="bc-thumb" />
+                <img src="https://asobares.org/wp-content/uploads/2026/08/IMG_6383.jpg" alt="" data-idx="7" class="bc-thumb" />
+                <img src="https://asobares.org/wp-content/uploads/2026/08/IMG_6389.jpg" alt="" data-idx="8" class="bc-thumb" />
+              </div>
+            </div>
+
+            <!-- copy completo -->
+            <div class="bc-modal-copy">
+              <p class="bc-meta">Área En Vivo Lab · Bootcamp 1</p>
+              <h2 class="bc-modal-title">Una noche adentro de Octava Club</h2>
+              <div class="bc-modal-text">
+                <p>En el primer Bootcamp de Área en Vivo, los asistentes tuvieron la oportunidad de conocer de mano de los expertos en cada área, cómo funciona a fondo Octava Club, uno de los clubes ícono de la música electrónica en Colombia.</p>
+                <p>Empezamos con <strong>Ignacio Ángel, CEO de Audionics Pro</strong>, la marca colombiana encargada del sistema de sonido del club. Además de conocer sobre las referencias de los equipos que componen el sistema, los asistentes tuvieron la oportunidad de subir al DJ booth y vivir lo que siente un artista al momento de presentarse.</p>
+                <p><strong>VJ Sánchez</strong>, el ícono de la creación de contenido de video en Colombia, que ha participado en festivales internacionales y crea los visuales del club y de eventos tan importantes como Monumentum, enseñó a los asistentes de forma práctica cómo crear imágenes a partir de la mezcla de diferentes inteligencias artificiales y software de video que están haciendo la diferencia en todo el mundo.</p>
+                <p>Para cerrar, <strong>Destro</strong>, referente nacional en la escena Techno, socio/DJ residente de Octava y director de la escuela de DJs Mad Skills Academy, presentó un taller en el que los asistentes pudieron conocer más sobre todo el proceso de booking, circulación y shows en clubes y festivales, no solo desde la perspectiva del artista sino del empresario.</p>
+                <p>Este primer bootcamp marcó una nueva forma de capacitar y formar artistas, ya que no fue solo un tema magistral sino que tuvieron la oportunidad de experimentar y poner en práctica conocimientos, siendo parte de Octava Club.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== WHAT IS / STATS ========== -->
+        <section id="programa">
+          <div class="container">
+            <div class="section-label reveal">01 — Sobre el programa</div>
+            <div class="what-grid">
+              <div class="what-text reveal">
+                <h2 class="section-title">
+                  Una plataforma para que la música en vivo de Bogotá <em>circule en serio.</em>
+                </h2>
+                <p>
+                  Área en Vivo Lab es formación aplicada, circulación artística y conexión sectorial. No es un curso. Es un puente entre el talento musical y los venues, programadores y marcas que mueven la noche de la ciudad.
+                </p>
+                <p>
+                  Durante 2025 el programa demostró que sí se puede activar un ecosistema.
+                </p>
+              </div>
+        
+              <div class="stats reveal">
+                <div class="stat"><div class="num">+8.200</div><div class="lbl">Registros 2025</div></div>
+                <div class="stat"><div class="num">+6.400</div><div class="lbl">Asistentes</div></div>
+                <div class="stat"><div class="num">65</div><div class="lbl">Artistas impactados</div></div>
+                <div class="stat"><div class="num">5</div><div class="lbl">Macroeventos de ciudad</div></div>
+              </div>
+            </div>
+        
+            <div class="section-photo reveal">
+              <img src="https://asobares.org/wp-content/uploads/2025/09/Taller-marca-personal-5.jpg" alt="Sesión de Área en Vivo Lab" loading="lazy">
+              <span class="section-photo-cap">Sesiones 2025 · Bogotá</span>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== HOW IT WORKS ========== -->
+        <section class="invert">
+          <div class="container">
+            <div class="section-label reveal">02 — Cómo funciona</div>
+            <h2 class="section-title reveal">
+              Tres movimientos. <em>Un ecosistema.</em>
+            </h2>
+        
+            <div class="steps reveal">
+              <div class="step">
+                <div class="num"><span>/ 01</span><span class="label-right">Aprender</span></div>
+                <div class="step-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-xl" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-cap"/></svg></div>
+                <h3>Aprender</h3>
+                <p>Formación especializada con expertos del sector. Música, sonido, producción, marketing, IA, normativa, salud mental y más.</p>
+                <div class="step-photo"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8287.jpg" alt="Formación" loading="lazy"></div>
+              </div>
+              <div class="step">
+                <div class="num"><span>/ 02</span><span class="label-right">Aplicar</span></div>
+                <div class="step-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-xl" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-flask"/></svg></div>
+                <h3>Aplicar</h3>
+                <p>Laboratorios de co-creación, networking sectorial y conexión real entre artistas, venues y programadores.</p>
+                <div class="step-photo"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8642.jpg" alt="Laboratorios" loading="lazy"></div>
+              </div>
+              <div class="step">
+                <div class="num"><span>/ 03</span><span class="label-right">Validar</span></div>
+                <div class="step-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-xl" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-mic"/></svg></div>
+                <h3>Validar</h3>
+                <p>Showcases en venues aliados, circulación dentro de la programación de ciudad y participación en macroeventos.</p>
+                <div class="step-photo"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_7905.jpg" alt="Showcases" loading="lazy"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== BENEFITS CARDS ========== -->
+        <section id="beneficios">
+          <div class="container">
+            <div class="section-label reveal">03 — Para quién es</div>
+            <div class="benefits-head reveal">
+              <h2 class="section-title">
+                Beneficios reales <em>según tu rol</em> en la industria.
+              </h2>
+              <p>Cuatro perfiles, cuatro caminos dentro del mismo ecosistema. Cada uno con beneficios y rutas de circulación diferentes.</p>
+            </div>
+        
+            <div class="cards">
+        
+              <article class="card rojo reveal">
+                <div class="card-head">
+                  <div>
+                    <div class="card-tag">Perfil 01</div>
+                    <h3>Artistas, <em>DJs</em> & bandas</h3>
+                  </div>
+                  <div class="card-icon-wrap"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-headphones"/></svg></div>
+                </div>
+                <ul>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Formación especializada gratuita</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Networking con venues y programadores</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Participación en showcases reales</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Posibilidad de circulación en la ciudad</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Mentorías y visibilidad</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Fortalecimiento de marca personal</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Herramientas de marketing e IA aplicada</li>
+                </ul>
+                <a href="#postulate" class="card-cta">
+                  Postularme como artista
+                  <span class="arrow-mini"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg></span>
+                </a>
+              </article>
+        
+              <article class="card reveal" id="venue">
+                <div class="card-head">
+                  <div>
+                    <div class="card-tag">Perfil 02</div>
+                    <h3>Venues, <em>bares</em> & gastrobares</h3>
+                  </div>
+                  <div class="card-icon-wrap"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-cocktail"/></svg></div>
+                </div>
+                <ul>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Acceso a nuevos talentos y propuestas</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Participación en circuitos de circulación</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Visibilidad dentro de la estrategia de ciudad</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Networking con industria musical y creativa</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Fortalecimiento de programación cultural</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Activaciones y showcases en su venue</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Participación en macroeventos de ciudad</li>
+                </ul>
+                <a href="#venue-form" class="card-cta">
+                  Quiero ser venue aliado
+                  <span class="arrow-mini"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg></span>
+                </a>
+              </article>
+        
+              <article class="card reveal">
+                <div class="card-head">
+                  <div>
+                    <div class="card-tag">Perfil 03</div>
+                    <h3>Productores, <em>managers</em> & programadores</h3>
+                  </div>
+                  <div class="card-icon-wrap"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-mixer"/></svg></div>
+                </div>
+                <ul>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Identificación de talento emergente</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Conexión con venues y artistas</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Espacios de networking sectorial</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Participación en laboratorios creativos</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Visibilidad dentro del ecosistema</li>
+                </ul>
+                <a href="#partner-form" class="card-cta">
+                  Unirme como industria
+                  <span class="arrow-mini"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg></span>
+                </a>
+              </article>
+        
+              <article class="card morado reveal">
+                <div class="card-head">
+                  <div>
+                    <div class="card-tag">Perfil 04</div>
+                    <h3>Marcas & <em>aliados</em></h3>
+                  </div>
+                  <div class="card-icon-wrap"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-city"/></svg></div>
+                </div>
+                <ul>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Presencia en un ecosistema cultural estratégico</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Activaciones de marca dentro de la noche bogotana</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Relacionamiento con industria creativa</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Conexión con audiencias jóvenes y urbanas</li>
+                  <li><svg class="icon check-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-check"/></svg>Participación en experiencias de ciudad</li>
+                </ul>
+                <a href="#partner-form" class="card-cta">
+                  Quiero ser marca aliada
+                  <span class="arrow-mini"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg></span>
+                </a>
+              </article>
+        
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== REAL OPPORTUNITIES ========== -->
+        <section class="opp">
+          <div class="container">
+            <div class="section-label reveal">04 — Lo que sí pasa</div>
+            <h2 class="section-title reveal">
+              Oportunidades reales, <em>no promesas.</em>
+            </h2>
+            <div class="opp-grid reveal">
+              <div class="opp-item">
+                <div>
+                  <div class="opp-num">/01</div>
+                  <div class="opp-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-stage"/></svg></div>
+                </div>
+                <div class="opp-text">Tocar en showcases con público real</div>
+              </div>
+              <div class="opp-item">
+                <div>
+                  <div class="opp-num">/02</div>
+                  <div class="opp-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-link"/></svg></div>
+                </div>
+                <div class="opp-text">Conectar directo con venues</div>
+              </div>
+              <div class="opp-item">
+                <div>
+                  <div class="opp-num">/03</div>
+                  <div class="opp-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-eye"/></svg></div>
+                </div>
+                <div class="opp-text">Ser visto por programadores activos</div>
+              </div>
+              <div class="opp-item">
+                <div>
+                  <div class="opp-num">/04</div>
+                  <div class="opp-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-star"/></svg></div>
+                </div>
+                <div class="opp-text">Participar en macroeventos de ciudad</div>
+              </div>
+              <div class="opp-item">
+                <div>
+                  <div class="opp-num">/05</div>
+                  <div class="opp-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-network"/></svg></div>
+                </div>
+                <div class="opp-text">Networking real con la industria</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== FORMATION TOPICS ========== -->
+        <section id="formacion">
+          <div class="container">
+            <div class="section-label reveal">05 — Temáticas de formación</div>
+            <h2 class="section-title reveal">
+              10 líneas para entender la industria <em>por dentro.</em>
+            </h2>
+        
+            <div class="topics reveal">
+              <div class="topic"><span class="topic-num">/01</span><span class="topic-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-note"/></svg></span><div class="topic-name">Música en vivo & DJ</div></div>
+              <div class="topic"><span class="topic-num">/02</span><span class="topic-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-speaker"/></svg></span><div class="topic-name">Sonido & operación técnica</div></div>
+              <div class="topic"><span class="topic-num">/03</span><span class="topic-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-calendar"/></svg></span><div class="topic-name">Producción de eventos</div></div>
+              <div class="topic"><span class="topic-num">/04</span><span class="topic-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-megaphone"/></svg></span><div class="topic-name">Marketing musical</div></div>
+              <div class="topic"><span class="topic-num">/05</span><span class="topic-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-cpu"/></svg></span><div class="topic-name">IA & creación de contenido</div></div>
+              <div class="topic"><span class="topic-num">/06</span><span class="topic-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-scale"/></svg></span><div class="topic-name">Normativa & derechos de autor</div></div>
+              <div class="topic"><span class="topic-num">/07</span><span class="topic-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-heart"/></svg></span><div class="topic-name">Salud mental & bienestar</div></div>
+              <div class="topic"><span class="topic-num">/08</span><span class="topic-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-camera"/></svg></span><div class="topic-name">Imagen & marca personal</div></div>
+              <div class="topic"><span class="topic-num">/09</span><span class="topic-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-ticket"/></svg></span><div class="topic-name">Booking & circulación</div></div>
+              <div class="topic"><span class="topic-num">/10</span><span class="topic-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;"><svg class="icon icon-lg" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-globe"/></svg></span><div class="topic-name">Industria & tendencias globales</div></div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== SHOWCASES ========== -->
+        <section class="showcases" id="showcases">
+          <div class="container">
+            <div class="section-label reveal">06 — Showcases & circulación</div>
+            <div class="showcase-grid">
+              <div class="showcase-text reveal">
+                <h2 class="section-title" style="margin-bottom:24px;">
+                  La música <em>se vive</em> donde pasa.
+                </h2>
+                <p>
+                  Los participantes acceden a <strong>espacios reales de visibilidad</strong> dentro de venues aliados, showcases, activaciones y macroeventos de la ciudad.
+                </p>
+                <p>
+                  El objetivo no es solo formar. Es <strong>conectar oportunidades reales</strong> dentro del ecosistema musical bogotano.
+                </p>
+              </div>
+        
+              <ul class="showcase-list reveal">
+                <li><span>Venues aliados</span><span class="meta">/ Programación regular</span></li>
+                <li><span>Showcases curados</span><span class="meta">/ Industria + público</span></li>
+                <li><span>Activaciones de marca</span><span class="meta">/ Experiencias</span></li>
+                <li><span>Macroeventos de ciudad</span><span class="meta">/ Agenda Bogotá</span></li>
+                <li><span>Circuitos de circulación</span><span class="meta">/ Multi-venue</span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== ACTIVITIES GALLERY ========== -->
+        <section class="activities">
+          <div class="container">
+            <div class="activities-head reveal">
+              <div>
+                <div class="section-label" style="margin-bottom:18px;">07 — El Lab en acción</div>
+                <h2>Talleres <em>que ya pasaron</em><br>en el Lab</h2>
+              </div>
+              <p class="activities-intro">
+                Antes del lanzamiento 2026, el programa ya está sucediendo. Estos son los talleres y sesiones que hemos realizado con artistas, venues y profesionales del sector. Cada uno deja aprendizaje, comunidad y nuevas conexiones.
+              </p>
+            </div>
+            <div class="activities-grid">
+              <a class="activity-card reveal" href="https://asobares.org/taller-de-ingles-de-servicio-especializado-en-mesa-y-bar/" target="_blank" rel="noopener">
+                <div class="activity-img">
+                  <span class="activity-tag">Taller</span>
+                  <img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8661.jpg" alt="Taller de inglés de servicio especializado en mesa y bar" loading="lazy">
+                </div>
+                <div class="activity-body">
+                  <h3 class="activity-title">Inglés de servicio especializado en mesa y bar</h3>
+                  <div class="activity-foot">
+                    <span>Ver actividad</span>
+                    <span class="arrow-pill"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg></span>
+                  </div>
+                </div>
+              </a>
+              <a class="activity-card reveal" href="https://asobares.org/taller-de-vinilos/" target="_blank" rel="noopener">
+                <div class="activity-img">
+                  <span class="activity-tag">Taller</span>
+                  <img src="https://asobares.org/wp-content/uploads/2025/09/IMG_7930.jpg" alt="Taller de Vinilos" loading="lazy">
+                </div>
+                <div class="activity-body">
+                  <h3 class="activity-title">Taller de Vinilos</h3>
+                  <div class="activity-foot">
+                    <span>Ver actividad</span>
+                    <span class="arrow-pill"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg></span>
+                  </div>
+                </div>
+              </a>
+              <a class="activity-card reveal" href="https://asobares.org/taller-de-marketing-digital-y-tecnologia-asociada-a-la-musica/" target="_blank" rel="noopener">
+                <div class="activity-img">
+                  <span class="activity-tag">Taller</span>
+                  <img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8812.jpg" alt="Taller de marketing digital y tecnología asociada a la música" loading="lazy">
+                </div>
+                <div class="activity-body">
+                  <h3 class="activity-title">Marketing digital y tecnología asociada a la música</h3>
+                  <div class="activity-foot">
+                    <span>Ver actividad</span>
+                    <span class="arrow-pill"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg></span>
+                  </div>
+                </div>
+              </a>
+              <a class="activity-card reveal" href="https://asobares.org/seguridad-y-manejo-de-aglomeraciones/" target="_blank" rel="noopener">
+                <div class="activity-img">
+                  <span class="activity-tag">Taller</span>
+                  <img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8313.jpg" alt="Seguridad y manejo de aglomeraciones" loading="lazy">
+                </div>
+                <div class="activity-body">
+                  <h3 class="activity-title">Seguridad y manejo de aglomeraciones</h3>
+                  <div class="activity-foot">
+                    <span>Ver actividad</span>
+                    <span class="arrow-pill"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg></span>
+                  </div>
+                </div>
+              </a>
+              <a class="activity-card reveal" href="https://asobares.org/taller-de-marca-personal/" target="_blank" rel="noopener">
+                <div class="activity-img">
+                  <span class="activity-tag">Taller</span>
+                  <img src="https://asobares.org/wp-content/uploads/2025/09/Taller-marca-personal-4.jpg" alt="Taller de marca personal" loading="lazy">
+                </div>
+                <div class="activity-body">
+                  <h3 class="activity-title">Taller de marca personal</h3>
+                  <div class="activity-foot">
+                    <span>Ver actividad</span>
+                    <span class="arrow-pill"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:14px;height:14px;"><use href="#i-arrow"/></svg></span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== GALLERY MOSAIC ========== -->
+        <section class="gallery" id="galeria">
+          <div class="container">
+            <div class="section-label reveal">08 — Galería</div>
+            <h2 class="section-title reveal">El Lab <em>en imágenes.</em></h2>
+            <p class="gallery-intro reveal">Talleres, laboratorios, encuentros y showcases. Así se ve el ecosistema de Área en Vivo cuando sucede. Haz clic en cualquier foto para ampliarla.</p>
+        
+            <div class="gallery-grid reveal">
+              <div class="gallery-item wide tall"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8651.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8711.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8704.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item tall"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8782.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_7923.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_7914.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item wide"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_7944.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_1581.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item tall"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_1609.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_1576.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_1566.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_1544.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item wide"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8352.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8341.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item tall"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8335.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8256.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8320.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/IMG_8385.jpg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item wide"><img src="https://asobares.org/wp-content/uploads/2025/09/Taller-marca-personal-1.jpg" alt="Taller de marca personal" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2025/09/Taller-marca-personal-5.jpg" alt="Taller de marca personal" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2026/05/1eae906d-10ce-45d5-abfa-fbb6c2df226c.jpeg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item tall"><img src="https://asobares.org/wp-content/uploads/2026/05/02d7efeb-8a12-42fe-8e23-1f6213d2bae6.jpeg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2026/05/3b9ca8b8-0d64-4803-9a2a-ef09498f2d26.jpeg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2026/05/6bea4412-b5df-4adb-b8f3-91fb89b9d161.jpeg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2026/05/27e0e9e2-0ffb-420e-9263-3e1363502d55.jpeg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item wide"><img src="https://asobares.org/wp-content/uploads/2026/05/571bd242-c4b5-4f23-86e0-6f55eee8c4c7.jpeg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2026/05/8d0001f8-b071-4c10-9929-9156de4c1f14.jpeg" alt="Área en Vivo Lab" loading="lazy"></div>
+              <div class="gallery-item"><img src="https://asobares.org/wp-content/uploads/2026/05/a5e846c0-943a-4efc-973a-ddb9e58795fe.jpeg" alt="Área en Vivo Lab" loading="lazy"></div>
+            </div>
+          </div>
+        
+          <!-- Lightbox -->
+          <div class="lightbox" id="aevl-lightbox" role="dialog" aria-modal="true" aria-label="Galería ampliada">
+            <button class="lb-btn lb-close" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+            <button class="lb-btn lb-prev" aria-label="Anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <img class="lightbox-img" src="" alt="Imagen ampliada">
+            <button class="lb-btn lb-next" aria-label="Siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><path d="M9 6l6 6-6 6"/></svg></button>
+            <div class="lb-counter"></div>
+          </div>
+        </section>
+        
+        <!-- ========== IMPACT 2026 ========== -->
+        <section>
+          <div class="container">
+            <div class="section-label reveal">09 — Impacto esperado 2026</div>
+            <h2 class="section-title reveal">
+              Lo que vamos a <em>mover</em> este año.
+            </h2>
+        
+            <div class="impact-stats reveal">
+              <div class="istat"><div class="lbl">Asistentes</div><div class="num">+700</div></div>
+              <div class="istat"><div class="lbl">Empresas impactadas</div><div class="num">+70</div></div>
+              <div class="istat"><div class="lbl">Jornadas formación</div><div class="num">8</div></div>
+              <div class="istat"><div class="lbl">Showcases en venues</div><div class="num">+12</div></div>
+              <div class="istat"><div class="lbl">Conexión artista→mercado</div><div class="num">1:1</div></div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== PARTNERS ========== -->
+        <section id="aliados">
+          <div class="container">
+            <div class="section-label reveal">10 — Quiénes lo hacen posible</div>
+            <h2 class="section-title reveal">
+              Una alianza <em>de ciudad.</em>
+            </h2>
+        
+            <div class="partners-strip reveal">
+              <a class="partner partner-logo-card" href="https://asobares.org" target="_blank" rel="noopener">
+                <img src="https://asobares.org/wp-content/uploads/2026/01/Nuevo-logo-Asobares-Color-scaled.png" alt="ASOBARES Colombia" class="partner-logo" loading="lazy">
+              </a>
+              <div class="partner partner-logo-card">
+                <img src="https://asobares.org/wp-content/uploads/2026/05/CCB_Logosimbolo_Version_Principal-1.png" alt="Cámara de Comercio de Bogotá" class="partner-logo" loading="lazy">
+              </div>
+              <div class="partner">
+                <svg class="icon icon-xl partner-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-music"/></svg>
+                <div class="partner-name">Clúster<br/>de Música</div>
+              </div>
+              <div class="partner">
+                <svg class="icon icon-xl partner-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-cocktail"/></svg>
+                <div class="partner-name">Venues<br/>aliados</div>
+              </div>
+              <div class="partner">
+                <svg class="icon icon-xl partner-icon" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-star"/></svg>
+                <div class="partner-name">Marcas<br/>partner</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== FORM ========== -->
+        <section class="form-sec" id="postulate">
+          <div class="container">
+            <div class="section-label reveal">11 — Postulación</div>
+            <h2 class="section-title reveal">
+              Aplica <em>al ecosistema.</em>
+            </h2>
+        
+            <!-- Datalists compartidos: departamentos y profesiones (campos largos del manual) -->
+            <datalist id="dl-departamentos">
+              <option value="Amazonas"><option value="Antioquia"><option value="Arauca"><option value="Atlántico"><option value="Bolívar"><option value="Boyacá"><option value="Bogotá D.C."><option value="Caldas"><option value="Caquetá"><option value="Casanare"><option value="Cauca"><option value="Cesar"><option value="Chocó"><option value="Córdoba"><option value="Cundinamarca"><option value="Guainía"><option value="Guaviare"><option value="Huila"><option value="La Guajira"><option value="Magdalena"><option value="Meta"><option value="Nariño"><option value="Norte de Santander"><option value="Putumayo"><option value="Quindío"><option value="Risaralda"><option value="San Andrés, Providencia y Santa Catalina"><option value="Santander"><option value="Sucre"><option value="Tolima"><option value="Valle del Cauca"><option value="Vaupés"><option value="Vichada"><option value="Internacional">
+            </datalist>
+            <datalist id="dl-profesiones">
+              <option value="Abogado(a)"><option value="Administrador"><option value="Agente turístico"><option value="Analista carreras afines"><option value="Arquitecto(a)"><option value="Artista"><option value="Asesor(a)"><option value="Asistente"><option value="Barista"><option value="Bartender"><option value="Cajero(a)"><option value="CEO"><option value="Chef"><option value="Cocinero(a)"><option value="Consultor(a)"><option value="Contador(a)"><option value="Coordinador(a)"><option value="Director(a)"><option value="Diseñador(a)"><option value="DJ"><option value="Docente carreras afines"><option value="Empresario(a)"><option value="Entidad-Gobierno"><option value="Estudiante carreras afines"><option value="Gerente"><option value="Gerente de marca"><option value="Gremio"><option value="Ingeniero(a)"><option value="Ingeniero(a) de sonido"><option value="Jefe de compras"><option value="Manager"><option value="Marketing"><option value="Mesero(a)"><option value="Músico"><option value="Operador(a) logístico"><option value="Organizador(a) de eventos"><option value="Periodista"><option value="Productor(a)"><option value="Propietario(a)"><option value="Proveedor(a)"><option value="Recursos humanos"><option value="Relaciones públicas"><option value="Representante legal"><option value="Técnico carreras afines"><option value="Traductor"><option value="Otro"><option value="No suministra">
+            </datalist>
+        
+            <div class="form-tabs reveal">
+              <button class="tab active" data-tab="artist">
+                <svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-headphones"/></svg>Artistas
+              </button>
+              <button class="tab" data-tab="venue">
+                <svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-cocktail"/></svg>Venues
+              </button>
+              <button class="tab" data-tab="partner">
+                <svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-city"/></svg>Aliados / Marcas
+              </button>
+            </div>
+        
+            <!-- ARTIST FORM (según Excel Formulario Inscripción Artistas) -->
+            <div class="form-grid form-panel" data-panel="artist">
+              <div class="form-meta reveal">
+                <h3>Inscríbete como <em>artista</em></h3>
+                <p>Para DJs, artistas y agrupaciones que quieren formarse, circular y conectar con la industria musical bogotana. Completa las cuatro secciones del formulario.</p>
+              </div>
+        
+              <form class="form-fields reveal" id="form-artista" enctype="multipart/form-data">
+        
+                <!-- ÍTEM A -->
+                <div class="form-section-label">Ítem A · Información del DJ, artista o agrupación</div>
+        
+                <div class="form-row">
+                  <div class="field"><label>Nombre *</label><input type="text" name="nombre" placeholder="Nombres" required></div>
+                  <div class="field"><label>Apellidos *</label><input type="text" name="apellidos" placeholder="Apellidos" required></div>
+                </div>
+        
+                <div class="field"><label>Nombre artístico / A.K.A. *</label><input type="text" name="nombre_artistico" placeholder="Nombre artístico" required></div>
+        
+                <div class="field">
+                  <label>Usted es: *</label>
+                  <select name="cargo" required>
+                    <option value="">Selecciona un cargo...</option>
+                    <option>DJ</option>
+                    <option>Músico</option>
+                    <option>Artista</option>
+                    <option>Productor(a)</option>
+                    <option>Manager</option>
+                    <option>Ingeniero(a) de sonido</option>
+                    <option>Empresario(a)</option>
+                    <option>Propietario(a)</option>
+                    <option>Gerente</option>
+                    <option>Administrador</option>
+                    <option>Gerente de marca</option>
+                    <option>Jefe de compras</option>
+                    <option>Contador(a)</option>
+                    <option>Relaciones públicas</option>
+                    <option>Recursos humanos</option>
+                    <option>Cajero(a)</option>
+                    <option>Bartender</option>
+                    <option>Mesero(a)</option>
+                    <option>Cocinero(a)</option>
+                    <option>Chef</option>
+                    <option>Barista</option>
+                    <option>Operador(a) logístico</option>
+                    <option>Organizador(a) de eventos</option>
+                    <option>Docente carreras afines</option>
+                    <option>Estudiante carreras afines</option>
+                    <option>Analista carreras afines</option>
+                    <option>Técnico carreras afines</option>
+                    <option>Ingeniero(a)</option>
+                    <option>Arquitecto(a)</option>
+                    <option>Diseñador(a)</option>
+                    <option>Consultor(a)</option>
+                    <option>Coordinador(a)</option>
+                    <option>Director(a)</option>
+                    <option>Asesor(a)</option>
+                    <option>Asistente</option>
+                    <option>Abogado(a)</option>
+                    <option>CEO</option>
+                    <option>Marketing</option>
+                    <option>Periodista</option>
+                    <option>Traductor</option>
+                    <option>Proveedor(a)</option>
+                    <option>Representante legal</option>
+                    <option>Agente turístico</option>
+                    <option>Gremio</option>
+                    <option>Entidad-Gobierno</option>
+                    <option>Otro</option>
+                    <option>No suministra</option>
+                  </select>
+                </div>
+        
+                <div class="form-row">
+                  <div class="field">
+                    <label>Género musical (si eres DJ)</label>
+                    <select name="generos_dj[]" multiple size="6" class="multi-select">
+                      <option>House (Acid, Bass, Garage, Minimal, Nu Disco, Deep, French, Future, Progressive)</option>
+                      <option>Breaks (Break Beat, Dub Step, Big Beat)</option>
+                      <option>Indietrónica (Electrónica Alt., Folktrónica, Indie Pop)</option>
+                      <option>Hip Hop / Scratch / Beatjuggling</option>
+                      <option>Experimental (Noise, Ambient, Chill Out)</option>
+                      <option>Crossover / Open Format (Pop, Salsa, Vallenato, Top 40)</option>
+                      <option>Hard (Hard Dance / Hard Techno)</option>
+                      <option>World Music / Urbano (Moombahton, Reggaeton, Trap, Reggae, Dub)</option>
+                      <option>Electro (New Wave, Industrial)</option>
+                      <option>Techno / Trance / EDM (Guaracha, Big Room)</option>
+                    </select>
+                    <div class="field-help">Ctrl/Cmd + clic para seleccionar varios.</div>
+                  </div>
+                  <div class="field">
+                    <label>Género musical (si eres artista o agrupación)</label>
+                    <select name="generos_artista[]" multiple size="6" class="multi-select">
+                      <option>Andina</option><option>Bachata</option><option>Baladas</option><option>Blues</option><option>Bolero</option><option>Bossa Nova</option><option>Clásica</option><option>Colombian Beats</option><option>Corrido</option><option>Country</option><option>Cumbia</option><option>Disco</option><option>Electrónica</option><option>Experimental</option><option>Folclor</option><option>Folk</option><option>Funk</option><option>Gospel</option><option>Hip Hop</option><option>Indie</option><option>Instrumental</option><option>Jazz</option><option>Latina</option><option>Merengue</option><option>Metal</option><option>Pop</option><option>Popular</option><option>Punk</option><option>Ranchera</option><option>Rap</option><option>Reggae</option><option>Reggaetón</option><option>Rock</option><option>Rhythm and Blues</option><option>Salsa</option><option>Samba</option><option>Ska</option><option>Son</option><option>Soul</option><option>Tango</option><option>Trova</option><option>Urbano</option><option>Vallenato</option><option>World Music</option><option>No aplica</option>
+                    </select>
+                    <div class="field-help">Ctrl/Cmd + clic para seleccionar varios.</div>
+                  </div>
+                </div>
+        
+                <div class="form-row">
+                  <div class="field">
+                    <label>Género *</label>
+                    <div class="field-checks">
+                      <label class="check-pill"><input type="radio" name="genero" value="Masculino" required>Masculino</label>
+                      <label class="check-pill"><input type="radio" name="genero" value="Femenino">Femenino</label>
+                      <label class="check-pill"><input type="radio" name="genero" value="Otro">Otro</label>
+                      <label class="check-pill"><input type="radio" name="genero" value="No suministra">No suministra</label>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Perfil del cargo *</label>
+                    <div class="field-checks">
+                      <label class="check-pill"><input type="radio" name="perfil_cargo" value="Operativo" required>Operativo</label>
+                      <label class="check-pill"><input type="radio" name="perfil_cargo" value="Administrativo">Administrativo</label>
+                      <label class="check-pill"><input type="radio" name="perfil_cargo" value="Otro">Otro</label>
+                    </div>
+                  </div>
+                </div>
+        
+                <div class="form-row">
+                  <div class="field">
+                    <label>Tipo de documento *</label>
+                    <select name="tipo_documento" required>
+                      <option value="">Selecciona...</option>
+                      <option>Cédula de Ciudadanía</option>
+                      <option>Cédula de Extranjería</option>
+                      <option>Pasaporte</option>
+                      <option>Otro</option>
+                    </select>
+                  </div>
+                  <div class="field"><label>Número de documento *</label><input type="text" name="numero_documento" inputmode="numeric" pattern="[0-9]+" placeholder="1234567890" required></div>
+                </div>
+        
+                <div class="form-row">
+                  <div class="field"><label>Teléfono celular *</label><input type="tel" name="telefono" pattern="[0-9]{10}" maxlength="10" placeholder="3001234567" title="10 dígitos" required></div>
+                  <div class="field"><label>Email *</label><input type="email" name="email" placeholder="tu@correo.com" required></div>
+                </div>
+        
+                <div class="field"><label>Dirección</label><input type="text" name="direccion" placeholder="Dirección de residencia"></div>
+        
+                <div class="field"><label>Ciudad / Departamento de residencia *</label><input type="text" name="ciudad_departamento" list="dl-departamentos" placeholder="Bogotá D.C., Antioquia..." required></div>
+        
+                <div class="field">
+                  <label>Breve reseña del DJ, artista o agrupación *</label>
+                  <textarea name="resena" maxlength="500" placeholder="Máximo 500 caracteres" required></textarea>
+                  <div class="field-help">Máx. 500 caracteres.</div>
+                </div>
+        
+                <div class="field"><label>¿Cuánto cuesta un show en vivo? (COP)</label><input type="text" name="precio_show" placeholder="Ej: $1.500.000"></div>
+        
+                <div class="field">
+                  <label>Imagen del artista / Foto *</label>
+                  <label class="field-file"><input type="file" name="foto" accept="image/*" required></label>
+                  <div class="field-help">Foto profesional de perfil o promocional.</div>
+                </div>
+        
+                <div class="field">
+                  <label>Press Kit / EPK *</label>
+                  <label class="field-file"><input type="file" name="epk" accept=".pdf,.zip,.doc,.docx"></label>
+                  <div class="field-help">O ingresa un link:</div>
+                  <input type="url" name="epk_link" placeholder="https://...">
+                </div>
+        
+                <!-- ÍTEM C -->
+                <div class="form-section-label">Ítem C · Redes sociales · Usuario y seguidores</div>
+        
+                <div class="form-row">
+                  <div class="field"><label>Facebook</label><input type="url" name="facebook" placeholder="Link"></div>
+                  <div class="field"><label>Twitter / X</label><input type="url" name="twitter" placeholder="Link"></div>
+                </div>
+                <div class="form-row">
+                  <div class="field"><label>Instagram</label><input type="url" name="instagram" placeholder="Link"></div>
+                  <div class="field"><label>YouTube</label><input type="url" name="youtube" placeholder="Link"></div>
+                </div>
+                <div class="form-row">
+                  <div class="field"><label>Vimeo</label><input type="url" name="vimeo" placeholder="Link"></div>
+                  <div class="field"><label>TikTok</label><input type="url" name="tiktok" placeholder="Link"></div>
+                </div>
+        
+                <!-- ÍTEM D -->
+                <div class="form-section-label">Ítem D · Insumos para la evaluación del proyecto</div>
+        
+                <div class="field">
+                  <label>¿Cuántos años de experiencia tienes en la música?</label>
+                  <div class="field-checks">
+                    <label class="check-pill"><input type="radio" name="experiencia_anios" value="0-3">De 0 a 3</label>
+                    <label class="check-pill"><input type="radio" name="experiencia_anios" value="4-8">De 4 a 8</label>
+                    <label class="check-pill"><input type="radio" name="experiencia_anios" value="8+">De 8 o más</label>
+                  </div>
+                </div>
+        
+                <div class="form-row">
+                  <div class="field">
+                    <label>¿Has participado en el BOMM?</label>
+                    <div class="field-checks">
+                      <label class="check-pill"><input type="radio" name="participo_bomm" value="Si">Sí</label>
+                      <label class="check-pill"><input type="radio" name="participo_bomm" value="No">No</label>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>¿Has participado en conciertos o eventos masivos?</label>
+                    <div class="field-checks">
+                      <label class="check-pill"><input type="radio" name="eventos_masivos" value="Si">Sí</label>
+                      <label class="check-pill"><input type="radio" name="eventos_masivos" value="No">No</label>
+                    </div>
+                  </div>
+                </div>
+        
+                <div class="field">
+                  <label>¿En cuántos eventos has participado?</label>
+                  <div class="field-checks">
+                    <label class="check-pill"><input type="radio" name="num_eventos" value="1-10">De 1 a 10</label>
+                    <label class="check-pill"><input type="radio" name="num_eventos" value="11-20">De 11 a 20</label>
+                    <label class="check-pill"><input type="radio" name="num_eventos" value="21+">De 21 o más</label>
+                  </div>
+                </div>
+        
+                <div class="field">
+                  <label>Link público de audio, canción o mix de tu proyecto</label>
+                  <input type="url" name="link_audio" placeholder="Spotify, SoundCloud, YouTube, MixCloud...">
+                  <div class="field-help">Muestra tu proyecto musical original o mixes.</div>
+                </div>
+        
+                <div class="field">
+                  <label>¿Trabajas actualmente en algún establecimiento de comercio? *</label>
+                  <div class="field-checks">
+                    <label class="check-pill"><input type="radio" name="trabaja_establecimiento" value="Si" required>Sí</label>
+                    <label class="check-pill"><input type="radio" name="trabaja_establecimiento" value="No">No</label>
+                  </div>
+                </div>
+        
+                <div class="form-row">
+                  <div class="field"><label>Nombre del establecimiento *</label><input type="text" name="nombre_establecimiento" placeholder="Nombre del bar / venue" required></div>
+                  <div class="field"><label>NIT del establecimiento *</label><input type="text" name="nit_establecimiento" inputmode="numeric" pattern="[0-9-]+" placeholder="900123456-7" required></div>
+                </div>
+        
+                <!-- ÍTEM E -->
+                <div class="form-section-label">Ítem E · Información adicional</div>
+        
+                <div class="field">
+                  <label>¿Cómo te enteraste de este evento?</label>
+                  <div class="field-checks">
+                    <label class="check-pill"><input type="checkbox" name="como_se_entero[]" value="Página web">Página web</label>
+                    <label class="check-pill"><input type="checkbox" name="como_se_entero[]" value="Email">Email</label>
+                    <label class="check-pill"><input type="checkbox" name="como_se_entero[]" value="Teléfono">Teléfono</label>
+                    <label class="check-pill"><input type="checkbox" name="como_se_entero[]" value="Colega">Colega</label>
+                    <label class="check-pill"><input type="checkbox" name="como_se_entero[]" value="Redes sociales">Redes sociales</label>
+                    <label class="check-pill"><input type="checkbox" name="como_se_entero[]" value="Otro">Otro</label>
+                  </div>
+                </div>
+        
+                <div class="form-row">
+                  <div class="field">
+                    <label>¿Participaste en ruedas de negocios BOMM?</label>
+                    <div class="field-checks">
+                      <label class="check-pill"><input type="radio" name="ruedas_negocio_bomm" value="Si">Sí</label>
+                      <label class="check-pill"><input type="radio" name="ruedas_negocio_bomm" value="No">No</label>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>¿Has participado en capacitaciones de Área en Vivo?</label>
+                    <div class="field-checks">
+                      <label class="check-pill"><input type="radio" name="capacitaciones_aev" value="Si">Sí</label>
+                      <label class="check-pill"><input type="radio" name="capacitaciones_aev" value="No">No</label>
+                    </div>
+                  </div>
+                </div>
+        
+                <div class="field">
+                  <label>Política de Protección de Datos Personales *</label>
+                  <div class="field-checks">
+                    <label class="check-pill"><input type="radio" name="acepta_datos" value="Si" required>He leído y acepto</label>
+                    <label class="check-pill"><input type="radio" name="acepta_datos" value="No">No acepto</label>
+                  </div>
+                </div>
+        
+                <button type="submit" class="submit">
+                  Enviar postulación
+                  <span class="arrow-circle"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:12px;height:12px;"><use href="#i-arrow"/></svg></span>
+                </button>
+              </form>
+            </div>
+        
+            <!-- VENUE FORM (datos personales del contacto + datos del venue) -->
+            <div class="form-grid form-panel" data-panel="venue" style="display:none;" id="venue-form">
+              <div class="form-meta">
+                <h3>Aplica como <em>venue</em></h3>
+                <p>Para bares, clubes, gastrobares y espacios que quieren programar talento curado, recibir showcases y entrar al circuito de ciudad.</p>
+                <div class="deadline">
+                  <svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-clock"/></svg>
+                  Recepción de venues · <strong>Permanente 2026</strong>
+                </div>
+              </div>
+              <form class="form-fields" onsubmit="event.preventDefault(); alert('Postulación enviada (demo). Conectar backend real.');">
+                <div class="form-section-label">Datos personales del contacto</div>
+                <div class="form-row">
+                  <div class="field">
+                    <label>Tipo de identificación</label>
+                    <select required>
+                      <option value="">Selecciona...</option>
+                      <option>Cédula</option>
+                      <option>Cédula de extranjería</option>
+                      <option>Pasaporte</option>
+                    </select>
+                  </div>
+                  <div class="field"><label>Nº de identificación</label><input type="text" inputmode="numeric" pattern="[0-9]+" required></div>
+                </div>
+                <div class="form-row">
+                  <div class="field"><label>Nombre</label><input type="text" required></div>
+                  <div class="field"><label>Apellido</label><input type="text" required></div>
+                </div>
+                <div class="form-row">
+                  <div class="field">
+                    <label>Género</label>
+                    <select required>
+                      <option value="">Selecciona...</option>
+                      <option>Masculino</option>
+                      <option>Femenino</option>
+                      <option>Otro</option>
+                      <option>No suministra</option>
+                    </select>
+                  </div>
+                  <div class="field"><label>Departamento</label><input type="text" list="dl-departamentos" required></div>
+                </div>
+                <div class="field"><label>Profesión u oficio</label><input type="text" list="dl-profesiones" required></div>
+                <div class="form-row">
+                  <div class="field"><label>Teléfono (celular)</label><input type="tel" pattern="[0-9]{10}" maxlength="10" title="Número celular de 10 dígitos" required></div>
+                  <div class="field"><label>Correo electrónico</label><input type="email" required></div>
+                </div>
+        
+                <div class="form-section-label">Datos del venue / empresa</div>
+                <div class="form-row">
+                  <div class="field"><label>Nombre o razón social</label><input type="text" required></div>
+                  <div class="field"><label>NIT</label><input type="text" required></div>
+                </div>
+                <div class="field"><label>Dirección</label><input type="text" placeholder="Ciudad, localidad, dirección" required></div>
+                <div class="form-row">
+                  <div class="field"><label>Teléfono de contacto</label><input type="tel" required></div>
+                  <div class="field"><label>Correo electrónico de la empresa</label><input type="email" required></div>
+                </div>
+                <div class="form-row">
+                  <div class="field"><label>Representante legal</label><input type="text" required></div>
+                  <div class="field"><label>Cédula representante legal</label><input type="text" inputmode="numeric" pattern="[0-9]+" required></div>
+                </div>
+                <button type="submit" class="submit">
+                  Enviar postulación
+                  <span class="arrow-circle"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:12px;height:12px;"><use href="#i-arrow"/></svg></span>
+                </button>
+              </form>
+            </div>
+        
+            <!-- PARTNER FORM (datos personales del contacto + datos de la marca) -->
+            <div class="form-grid form-panel" data-panel="partner" style="display:none;" id="partner-form">
+              <div class="form-meta">
+                <h3>Aplica como <em>aliado</em></h3>
+                <p>Para marcas, productoras, managers, programadores y aliados estratégicos que quieren conectarse al ecosistema.</p>
+                <div class="deadline">
+                  <svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;"><use href="#i-clock"/></svg>
+                  Alianzas · <strong>Apertura rolling</strong>
+                </div>
+              </div>
+              <form class="form-fields" onsubmit="event.preventDefault(); alert('Postulación enviada (demo). Conectar backend real.');">
+                <div class="form-section-label">Datos personales del contacto</div>
+                <div class="form-row">
+                  <div class="field">
+                    <label>Tipo de identificación</label>
+                    <select required>
+                      <option value="">Selecciona...</option>
+                      <option>Cédula</option>
+                      <option>Cédula de extranjería</option>
+                      <option>Pasaporte</option>
+                    </select>
+                  </div>
+                  <div class="field"><label>Nº de identificación</label><input type="text" inputmode="numeric" pattern="[0-9]+" required></div>
+                </div>
+                <div class="form-row">
+                  <div class="field"><label>Nombre</label><input type="text" required></div>
+                  <div class="field"><label>Apellido</label><input type="text" required></div>
+                </div>
+                <div class="form-row">
+                  <div class="field">
+                    <label>Género</label>
+                    <select required>
+                      <option value="">Selecciona...</option>
+                      <option>Masculino</option>
+                      <option>Femenino</option>
+                      <option>Otro</option>
+                      <option>No suministra</option>
+                    </select>
+                  </div>
+                  <div class="field"><label>Departamento</label><input type="text" list="dl-departamentos" required></div>
+                </div>
+                <div class="field"><label>Profesión u oficio</label><input type="text" list="dl-profesiones" required></div>
+                <div class="form-row">
+                  <div class="field"><label>Teléfono (celular)</label><input type="tel" pattern="[0-9]{10}" maxlength="10" title="Número celular de 10 dígitos" required></div>
+                  <div class="field"><label>Correo electrónico</label><input type="email" required></div>
+                </div>
+        
+                <div class="form-section-label">Datos de la marca / organización</div>
+                <div class="form-row">
+                  <div class="field"><label>Nombre o razón social</label><input type="text" required></div>
+                  <div class="field"><label>NIT</label><input type="text" required></div>
+                </div>
+                <div class="field"><label>Dirección</label><input type="text" required></div>
+                <div class="form-row">
+                  <div class="field"><label>Teléfono de contacto</label><input type="tel" required></div>
+                  <div class="field"><label>Correo electrónico de la organización</label><input type="email" required></div>
+                </div>
+                <div class="form-row">
+                  <div class="field"><label>Representante legal</label><input type="text" required></div>
+                  <div class="field"><label>Cédula representante legal</label><input type="text" inputmode="numeric" pattern="[0-9]+" required></div>
+                </div>
+                <button type="submit" class="submit">
+                  Enviar postulación
+                  <span class="arrow-circle"><svg class="icon" fill="none" stroke="currentColor" style="background:none!important;background-color:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:12px;height:12px;"><use href="#i-arrow"/></svg></span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== QUOTE FINAL ========== -->
+        <section class="quote">
+          <div class="container">
+            <blockquote class="reveal">
+              "La música no solo se aprende.<br/>
+              Se <span>vive</span>, se <span>conecta</span> y <span>circula</span>."
+            </blockquote>
+            <div class="quote-foot reveal">
+              Área en Vivo Lab 2026 — Fortalecer el talento, activar la ciudad y consolidar a Bogotá como referente de música en vivo y economía creativa en América Latina.
+            </div>
+          </div>
+        </section>
+        
+        <!-- ========== FOOTER ========== -->
+        <footer>
+          <div class="container">
+            <div class="footer-grid">
+              <div>
+                <img src="https://asobares.org/wp-content/uploads/2025/07/Logo-Area-en-vivo-LAB.png" alt="Área en Vivo Lab" class="footer-logo">
+                <div class="footer-credits">
+                  <span class="footer-credits-label">Programa por</span>
+                  <div class="footer-credits-logos">
+                    <a href="https://asobares.org" target="_blank" rel="noopener" aria-label="ASOBARES Colombia">
+                      <img src="https://asobares.org/wp-content/uploads/2026/05/Nuevo-logo-Asobares-Blanco-scaled.png" alt="ASOBARES Colombia" loading="lazy">
+                    </a>
+                    <img src="https://asobares.org/wp-content/uploads/2026/05/CCB_Logosimbolo_Version_Principal_Blanco.png" alt="Cámara de Comercio de Bogotá" loading="lazy">
+                  </div>
+                </div>
+              </div>
+              <div class="footer-col">
+                <h4>Programa</h4>
+                <a href="#programa">Sobre</a>
+                <a href="#beneficios">Beneficios</a>
+                <a href="#formacion">Formación</a>
+                <a href="#showcases">Showcases</a>
+              </div>
+              <div class="footer-col">
+                <h4>Aplica</h4>
+                <a href="#postulate">Artistas</a>
+                <a href="#venue-form">Venues</a>
+                <a href="#partner-form">Aliados</a>
+              </div>
+              <div class="footer-col">
+                <h4>Conecta</h4>
+                <a href="#">Instagram</a>
+                <a href="#">TikTok</a>
+                <a href="#">Contacto</a>
+              </div>
+            </div>
+            <div class="footer-bot">
+              <div>© 2026 — Área en Vivo Lab · Bogotá</div>
+              <div>ASOBARES Colombia × Cámara de Comercio de Bogotá</div>
+            </div>
+          </div>
+        </footer>
+        </div>
+        
+        <script>
+        
+        (function(){
+          const root = document.querySelector('.aevl-root');
+          if (!root) return;
+        
+          // Reveal on scroll
+          const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+              if (e.isIntersecting) {
+                e.target.classList.add('in');
+                io.unobserve(e.target);
+              }
+            });
+          }, { threshold: 0.12 });
+          root.querySelectorAll('.reveal').forEach(el => io.observe(el));
+        
+          // Tabs de formularios
+          root.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+              root.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+              tab.classList.add('active');
+              const target = tab.dataset.tab;
+              root.querySelectorAll('.form-panel').forEach(p => {
+                p.style.display = (p.dataset.panel === target) ? 'grid' : 'none';
+              });
+            });
+          });
+        
+          // Anchors que cambian de tab
+          root.querySelectorAll('a[href="#venue-form"], a[href="#partner-form"]').forEach(a => {
+            a.addEventListener('click', () => {
+              const target = a.getAttribute('href') === '#venue-form' ? 'venue' : 'partner';
+              setTimeout(() => {
+                root.querySelector('.tab[data-tab="' + target + '"]')?.click();
+              }, 100);
+            });
+          });
+        
+          // Smooth scroll para anchors internos (sin tocar el html global)
+          root.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', (e) => {
+              const id = a.getAttribute('href').slice(1);
+              if (!id) return;
+              const tgt = root.querySelector('#' + CSS.escape(id));
+              if (tgt) {
+                e.preventDefault();
+                tgt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            });
+          });
+        
+          // Navegación directa por URL con hash (soporte para links externos)
+          // Casos: dominio.com/pagina#postulate, #venue-form, #partner-form, #galeria, #formacion, #showcases
+          const openFromHash = () => {
+            const hash = window.location.hash.slice(1);
+            if (!hash) return;
+        
+            // Si es un formulario específico, activar su tab
+            const tabMap = {
+              'venue-form': 'venue',
+              'partner-form': 'partner',
+              'postulate': 'artist'
+            };
+            if (tabMap[hash]) {
+              root.querySelector('.tab[data-tab="' + tabMap[hash] + '"]')?.click();
+            }
+        
+            // Scroll al elemento (con delay para dar tiempo a la reveal animation y tabs)
+            setTimeout(() => {
+              const tgt = root.querySelector('#' + CSS.escape(hash));
+              if (tgt) {
+                tgt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 250);
+          };
+        
+          // Al cargar la página
+          if (document.readyState === 'complete') {
+            openFromHash();
+          } else {
+            window.addEventListener('load', openFromHash);
+          }
+          // Y también si el hash cambia mientras estás en la página
+          window.addEventListener('hashchange', openFromHash);
+        
+          // Lightbox de la galería
+          const galleryImgs = Array.from(root.querySelectorAll('.gallery-item img'));
+          const lb = root.querySelector('#aevl-lightbox');
+          if (lb && galleryImgs.length) {
+            const lbImg = lb.querySelector('.lightbox-img');
+            const lbCounter = lb.querySelector('.lb-counter');
+            let curIdx = 0;
+        
+            const show = (i) => {
+              curIdx = (i + galleryImgs.length) % galleryImgs.length;
+              lbImg.src = galleryImgs[curIdx].src;
+              lbImg.alt = galleryImgs[curIdx].alt || 'Imagen ampliada';
+              lbCounter.textContent = (curIdx + 1) + ' / ' + galleryImgs.length;
+            };
+            const open = (i) => { show(i); lb.classList.add('open'); document.body.style.overflow = 'hidden'; };
+            const close = () => { lb.classList.remove('open'); document.body.style.overflow = ''; };
+        
+            galleryImgs.forEach((img, i) => {
+              img.parentElement.addEventListener('click', () => open(i));
+            });
+            lb.querySelector('.lb-close').addEventListener('click', close);
+            lb.querySelector('.lb-prev').addEventListener('click', (e) => { e.stopPropagation(); show(curIdx - 1); });
+            lb.querySelector('.lb-next').addEventListener('click', (e) => { e.stopPropagation(); show(curIdx + 1); });
+            lb.addEventListener('click', (e) => { if (e.target === lb) close(); });
+            document.addEventListener('keydown', (e) => {
+              if (!lb.classList.contains('open')) return;
+              if (e.key === 'Escape') close();
+              else if (e.key === 'ArrowLeft') show(curIdx - 1);
+              else if (e.key === 'ArrowRight') show(curIdx + 1);
+            });
+          }
+        // ── BOOTCAMP MODALES ──
+        (function() {
+          const modals = root.querySelectorAll('.bc-modal');
+          modals.forEach(modal => {
+            const thumbs = Array.from(modal.querySelectorAll('.bc-thumb'));
+            const bigImg = modal.querySelector('.bc-gallery-big');
+            const counter = modal.querySelector('.bc-gallery-counter');
+            const srcs = thumbs.map(t => t.src);
+            let cur = 0;
+
+            const showSlide = (i) => {
+              cur = (i + srcs.length) % srcs.length;
+              bigImg.src = srcs[cur];
+              counter.textContent = (cur + 1) + ' / ' + srcs.length;
+              thumbs.forEach((t, idx) => t.classList.toggle('active', idx === cur));
+              thumbs[cur].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            };
+
+            thumbs.forEach((t, i) => t.addEventListener('click', () => showSlide(i)));
+            modal.querySelector('.bc-nav-prev').addEventListener('click', (e) => { e.stopPropagation(); showSlide(cur - 1); });
+            modal.querySelector('.bc-nav-next').addEventListener('click', (e) => { e.stopPropagation(); showSlide(cur + 1); });
+
+            const openModal = () => { modal.classList.add('open'); document.body.style.overflow = 'hidden'; showSlide(0); };
+            const closeModal = () => { modal.classList.remove('open'); document.body.style.overflow = ''; };
+
+            modal.querySelector('.bc-modal-close').addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+          });
+
+          // abrir modal al hacer click en tarjeta "past"
+          root.querySelectorAll('.bc-past').forEach(card => {
+            const modalId = card.dataset.modal;
+            const modal = root.querySelector('#' + modalId);
+            if (!modal) return;
+            card.querySelector('.bc-img-wrap').addEventListener('click', () => { modal.classList.add('open'); document.body.style.overflow = 'hidden'; });
+            card.querySelector('.bc-btn').addEventListener('click', () => { modal.classList.add('open'); document.body.style.overflow = 'hidden'; });
+          });
+
+          document.addEventListener('keydown', (e) => {
+            const open = root.querySelector('.bc-modal.open');
+            if (!open) return;
+            const thumbs = Array.from(open.querySelectorAll('.bc-thumb'));
+            const cur = thumbs.findIndex(t => t.classList.contains('active'));
+            const srcs = thumbs.map(t => t.src);
+            const bigImg = open.querySelector('.bc-gallery-big');
+            const counter = open.querySelector('.bc-gallery-counter');
+            if (e.key === 'Escape') { open.classList.remove('open'); document.body.style.overflow = ''; }
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              const next = e.key === 'ArrowLeft' ? (cur - 1 + srcs.length) % srcs.length : (cur + 1) % srcs.length;
+              bigImg.src = srcs[next];
+              counter.textContent = (next + 1) + ' / ' + srcs.length;
+              thumbs.forEach((t, i) => t.classList.toggle('active', i === next));
+            }
+          });
+        })(); // cierra IIFE bootcamp modales
+
+        })(); // cierra IIFE principal
+
+        </script>
+
+        <!-- ============================================
+             Envío del formulario de artistas a Supabase
+             ============================================ -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script>
+        (function() {
+          const SUPABASE_URL = 'https://pbqmkodwmntujezbokgo.supabase.co';
+          const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34';
+          const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+          const form = document.getElementById('form-artista');
+          if (!form) return;
+        
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = form.querySelector('[type=submit]');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+        
+            try {
+              const fd = new FormData(form);
+        
+              // Subir foto
+              let foto_url = null;
+              const fotoFile = fd.get('foto');
+              if (fotoFile && fotoFile.size > 0) {
+                const ext = fotoFile.name.split('.').pop();
+                const path = 'fotos/' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + ext;
+                const { error: upErr } = await sb.storage.from('artistas-media').upload(path, fotoFile);
+                if (!upErr) {
+                  const { data } = sb.storage.from('artistas-media').getPublicUrl(path);
+                  foto_url = data.publicUrl;
+                }
+              }
+        
+              // Subir EPK
+              let epk_url = null;
+              const epkFile = fd.get('epk');
+              if (epkFile && epkFile.size > 0) {
+                const ext = epkFile.name.split('.').pop();
+                const path = 'epk/' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + ext;
+                const { error: upErr } = await sb.storage.from('artistas-media').upload(path, epkFile);
+                if (!upErr) {
+                  const { data } = sb.storage.from('artistas-media').getPublicUrl(path);
+                  epk_url = data.publicUrl;
+                }
+              }
+        
+              const toBool = function(val) {
+                if (val === 'Si') return true;
+                if (val === 'No') return false;
+                return null;
+              };
+        
+              const record = {
+                nombre: fd.get('nombre'),
+                apellidos: fd.get('apellidos'),
+                nombre_artistico: fd.get('nombre_artistico'),
+                cargo: fd.get('cargo'),
+                generos_dj: fd.getAll('generos_dj[]'),
+                generos_artista: fd.getAll('generos_artista[]'),
+                genero: fd.get('genero'),
+                perfil_cargo: fd.get('perfil_cargo'),
+                tipo_documento: fd.get('tipo_documento'),
+                numero_documento: fd.get('numero_documento'),
+                telefono: fd.get('telefono'),
+                email: (fd.get('email') || '').toLowerCase().trim(),
+                direccion: fd.get('direccion') || null,
+                ciudad_departamento: fd.get('ciudad_departamento'),
+                resena: fd.get('resena'),
+                precio_show: fd.get('precio_show') || null,
+                foto_url: foto_url,
+                epk_url: epk_url,
+                epk_link: fd.get('epk_link') || null,
+                facebook: fd.get('facebook') || null,
+                twitter: fd.get('twitter') || null,
+                instagram: fd.get('instagram') || null,
+                youtube: fd.get('youtube') || null,
+                vimeo: fd.get('vimeo') || null,
+                tiktok: fd.get('tiktok') || null,
+                experiencia_anios: fd.get('experiencia_anios') || null,
+                participo_bomm: toBool(fd.get('participo_bomm')),
+                eventos_masivos: toBool(fd.get('eventos_masivos')),
+                num_eventos: fd.get('num_eventos') || null,
+                link_audio: fd.get('link_audio') || null,
+                trabaja_establecimiento: toBool(fd.get('trabaja_establecimiento')),
+                nombre_establecimiento: fd.get('nombre_establecimiento') || null,
+                nit_establecimiento: fd.get('nit_establecimiento') || null,
+                como_se_entero: fd.getAll('como_se_entero[]'),
+                ruedas_negocio_bomm: toBool(fd.get('ruedas_negocio_bomm')),
+                capacitaciones_aev: toBool(fd.get('capacitaciones_aev')),
+                acepta_datos: fd.get('acepta_datos') === 'Si',
+              };
+        
+              const { error } = await sb.from('artistas_area_en_vivo').insert(record);
+              if (error) {
+                // Manejo específico de email duplicado (código 23505 unique_violation)
+                if (error.code === '23505') {
+                  btn.disabled = false;
+                  btn.textContent = originalText;
+                  alert('Ya recibimos una postulación con este correo. Si necesitas actualizar tus datos, escríbenos a mel@asobares.org');
+                  return;
+                }
+                throw error;
+              }
+        
+              btn.textContent = '✓ Postulación enviada';
+              form.reset();
+              alert('¡Gracias! Tu postulación fue recibida. Te contactaremos pronto.');
+        
+            } catch (err) {
+              console.error(err);
+              btn.disabled = false;
+              btn.textContent = originalText;
+              alert('Ocurrió un error al enviar. Por favor intenta de nuevo.');
+            }
+          });
+        })();
+        </script>
+        <!-- ============================================
+             FIN ÁREA EN VIVO LAB
+             ============================================ -->

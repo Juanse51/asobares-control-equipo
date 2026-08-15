@@ -1588,12 +1588,15 @@
         const cfg = cfgMap[source];
         if (!cfg) { setCertImportando(false); return; }
         try {
-          const [{ data: origen }, { data: existentes }] = await Promise.all([
-            supabase.from(cfg.table).select('*').eq('estado', 'asistio'),
+          const [{ data: origen, error: errOrigen }, { data: existentes }] = await Promise.all([
+            supabase.from(cfg.table).select('*'),
             supabase.from('cert_personas').select('email').eq('lote_id', loteId),
           ]);
+          if (errOrigen) throw errOrigen;
+          const asistieron = (origen || []).filter(r => r.estado === 'asistio');
+          if (!asistieron.length) { showNotif('No hay personas marcadas como "Asistió" en esa fuente'); setCertImportando(false); return; }
           const used = new Set((existentes || []).map(p => (p.email || '').toLowerCase()));
-          const rows = (origen || [])
+          const rows = asistieron
             .filter(r => { const e = (cfg.mapE(r) || '').toLowerCase(); return e && !used.has(e); })
             .map(r => ({ lote_id: loteId, nombre: cfg.mapN(r), apellidos: cfg.mapA(r), email: (cfg.mapE(r)).toLowerCase(), documento: cfg.mapD(r), empresa: cfg.mapEmp(r), estado: 'pendiente' }));
           if (!rows.length) { showNotif('No hay personas nuevas para importar — todos ya están en el lote o nadie marcado como "Asistió"'); setCertImportando(false); return; }

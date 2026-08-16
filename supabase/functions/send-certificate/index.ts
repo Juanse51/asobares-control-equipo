@@ -27,20 +27,23 @@ serve(async (req) => {
           <img src="https://gestion.asobares.org/Documentacion/Logos/circulo-gastro-logo.png" alt="Círculo Gastro" style="height: 80px;" />
         </div>
         <div style="padding: 32px 40px;">
-          <p style="color: #475569; font-size: 16px; margin-bottom: 16px;">Estimados: <strong>${nombre}</strong>,</p>
+          <p style="color: #475569; font-size: 16px; margin-bottom: 16px;">Estimado: <strong>${nombre}</strong>,</p>
           <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 16px;">
-            Adjunto encontrará la carta de vinculación de tu establecimiento al Círculo Gastro de Asobares.
+            Adjunto encontrará la carta de vinculación de su establecimiento al Círculo Gastro de Asobares, la cual no tiene costo y su empresa y equipo de trabajo disfrutarán de todos los beneficios.
           </p>
           <p style="color: #475569; font-size: 15px; line-height: 1.6;">
             Bienvenido a la comunidad más importante de la industria de gastroentretenimiento del país.
           </p>
         </div>
-        <div style="background: #f8fafc; padding: 20px 40px; border-top: 1px solid #e5e7eb; border-radius: 0 0 8px 8px; text-align: center;">
+        <div style="background: #f8fafc; padding: 20px 40px; border-top: 1px solid #e5e7eb; text-align: center;">
           <img src="https://gestion.asobares.org/asobares_original.png" alt="Asobares" style="height: 36px; margin-bottom: 8px;" />
           <p style="color: #94a3b8; font-size: 12px; margin: 0;">
             <strong>Asociación de Bares y Restaurantes de Colombia — ASOBARES</strong><br>
             webasobares@gmail.com
           </p>
+        </div>
+        <div style="padding: 12px 40px 20px; text-align: center; border-radius: 0 0 8px 8px;">
+          <p style="color: #cbd5e1; font-size: 11px; margin: 0;">Plataforma desarrollada por <a href="https://vamosarayar.com" style="color: #94a3b8;">Rayar!</a></p>
         </div>
       </div>
     ` : `

@@ -371,8 +371,13 @@
       }
 
       // Enviar correo de confirmación
-      db.functions.invoke('send-confirmation', {
-        body: {
+      fetch('https://pbqmkodwmntujezbokgo.supabase.co/functions/v1/send-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34',
+        },
+        body: JSON.stringify({
           email: payload.email,
           nombre: payload.nombre + (payload.apellidos ? ' ' + payload.apellidos : ''),
           evento: 'La Seguridad También se Planifica — Área en Vivo Lab',
@@ -380,7 +385,7 @@
           hora: '10:00 a.m. a 2:00 p.m.',
           lugar: 'María Bonita',
           direccion: 'Carrera 75 #24b - 48, Bogotá',
-        }
+        })
       });
 
       card.style.display = 'none';

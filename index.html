@@ -907,6 +907,14 @@
       const [aevBoot2NotasEdit, setAevBoot2NotasEdit] = useState('');
       const [aevBoot2EditModal, setAevBoot2EditModal] = useState(false);
       const [aevBoot2EditData, setAevBoot2EditData] = useState({});
+      const [aevSegData, setAevSegData] = useState([]);
+      const [aevSegLoading, setAevSegLoading] = useState(false);
+      const [aevSegSearch, setAevSegSearch] = useState('');
+      const [aevSegFiltroEstado, setAevSegFiltroEstado] = useState('all');
+      const [aevSegDetalle, setAevSegDetalle] = useState(null);
+      const [aevSegNotasEdit, setAevSegNotasEdit] = useState('');
+      const [aevSegEditModal, setAevSegEditModal] = useState(false);
+      const [aevSegEditData, setAevSegEditData] = useState({});
       const [armeniaCapData, setArmeniaCapData] = useState([]);
       const [armeniaCapLoading, setArmeniaCapLoading] = useState(false);
       const [armeniaCapSearch, setArmeniaCapSearch] = useState('');
@@ -979,6 +987,7 @@
       useEffect(() => { if (view === 'crm' || view === 'crm-gastro') { setGastroDetalle(null); loadGastromarketing(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-aev-lab') { setAevLabDetalle(null); loadAevLab(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-aev-bootcamp2') { setAevBoot2Detalle(null); loadAevBoot2(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-aev-seguridad') { setAevSegDetalle(null); loadAevSeg(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-armenia-cap') { setArmeniaCapDetalle(null); loadArmeniaCap(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-armenia-diag') { setArmeniaDiagDetalle(null); loadArmeniaDiag(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-armenia-asistencia') { setArmeniaAsistDetalle(null); loadArmeniaAsist(); } }, [view]);
@@ -1365,6 +1374,63 @@
         ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
         XLSX.utils.book_append_sheet(wb, ws, 'Bootcamp 2');
         XLSX.writeFile(wb, 'inscripciones_aev_bootcamp2_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+      const loadAevSeg = async () => {
+        setAevSegLoading(true);
+        const { data } = await supabase.from('inscripciones_aev_seguridad').select('*').order('created_at', { ascending: false });
+        setAevSegData(data || []);
+        setAevSegLoading(false);
+      };
+      const updateAevSegEstado = async (id, estado) => {
+        await supabase.from('inscripciones_aev_seguridad').update({ estado }).eq('id', id);
+        setAevSegData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setAevSegDetalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveAevSegNotas = async (id, notas) => {
+        await supabase.from('inscripciones_aev_seguridad').update({ notas }).eq('id', id);
+        setAevSegData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setAevSegDetalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const updateAevSegPersona = async (id, data) => {
+        const { error } = await supabase.from('inscripciones_aev_seguridad').update(data).eq('id', id);
+        if (error) { showNotif('Error al guardar: ' + error.message); return; }
+        setAevSegData(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
+        setAevSegDetalle(prev => prev?.id === id ? { ...prev, ...data } : prev);
+        setAevSegEditModal(false);
+        showNotif('Datos actualizados');
+      };
+      const deleteAevSegPersona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_aev_seguridad').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setAevSegData(prev => prev.filter(r => r.id !== id));
+        setAevSegDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getAevSegFiltered = () => {
+        const q = aevSegSearch.toLowerCase();
+        return aevSegData.filter(r => {
+          if (aevSegFiltroEstado !== 'all' && r.estado !== aevSegFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.profesion, r.ciudad, r.departamento, r.empresa_nombre, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportAevSegExcel = () => {
+        const filtered = getAevSegFiltered();
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
+          r.genero, r.departamento || '', r.ciudad, r.profesion, r.empresa_nombre || '', r.empresa_nit || '',
+          r.empresa_direccion || '', r.empresa_telefono || '', r.empresa_representante || '',
+          r.empresa_cedula_rep || '', r.empresa_email || '', r.estado || '', r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Bootcamp 3 Seguridad');
+        XLSX.writeFile(wb, 'inscripciones_aev_seguridad_' + new Date().toISOString().slice(0, 10) + '.xlsx');
       };
       const loadArmeniaCap = async () => {
         setArmeniaCapLoading(true);
@@ -2007,7 +2073,7 @@
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
               <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
               <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>📁</span>Documentación</button>
-              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>🗂️</span>CRM</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>🗂️</span>CRM</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('certificaciones')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'certificaciones' ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'transparent', color: view === 'certificaciones' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'certificaciones' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><span style={{ fontSize: 18 }}>🎓</span>Certificaciones</button>}
               {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: '👥', label: 'Gestión de Equipo' }, { id: 'analytics', icon: '📈', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><span style={{ fontSize: 18 }}>{item.icon}</span>{item.label}</button>))}</>)}
             </nav>
@@ -2019,7 +2085,7 @@
 
           <main style={{ flex: 1, marginLeft: isMobile ? 0 : 260, padding: isMobile ? '16px 12px 80px' : '32px 32px 80px', minWidth: 0 }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 20 : 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
               <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'center', flexShrink: 0 }}>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}>🔔{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
@@ -2223,7 +2289,7 @@
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20, marginTop: 8 }}>
                   {[
-                    { id: 'crm-aev-folder', icon: '🎵', title: 'Área en Vivo', desc: 'Formularios y postulados del programa Área en Vivo. Artistas, capacitaciones y eventos.', count: crmData.length + aevLabData.length + aevBoot2Data.length, loading: crmLoading || aevLabLoading || aevBoot2Loading, color: '#E84338', bg: '#fee2e2' },
+                    { id: 'crm-aev-folder', icon: '🎵', title: 'Área en Vivo', desc: 'Formularios y postulados del programa Área en Vivo. Artistas, capacitaciones y eventos.', count: crmData.length + aevLabData.length + aevBoot2Data.length + aevSegData.length, loading: crmLoading || aevLabLoading || aevBoot2Loading || aevSegLoading, color: '#E84338', bg: '#fee2e2' },
                     { id: 'fontur', icon: '📋', title: 'Formulario FONTUR', desc: 'Inscripciones al programa NTC 6496:2020 financiado por FONTUR. Solo consulta y exportación.', count: fonturData.length, loading: fonturLoading, color: '#1e3a5f', bg: '#dbeafe' },
                     { id: 'registros', icon: '🏢', title: 'Registros de Formularios', desc: 'Envíos del formulario de afiliación de asobares.org. Establecimientos, datos de empresa y documentos adjuntos.', count: registrosData.length, loading: registrosLoading, color: '#059669', bg: '#d1fae5' },
                     { id: 'crm-gastro', icon: '🍽️', title: 'Postulados Gastromarketing Day', desc: 'Postulaciones al Gastromarketing Day — Catedral de Sal, 24-25 sep 2026. Gestiona estados y notas internas.', count: gastroData.length, loading: gastroLoading, color: '#f59e0b', bg: '#fef3c7' },
@@ -2255,7 +2321,8 @@
                   {[
                     { id: 'crm-aev', icon: '🎤', title: 'Postulados Área en Vivo', desc: 'Artistas y DJs postulados al programa Área en Vivo. Gestiona estados, edita y exporta.', count: crmData.length, loading: crmLoading, color: '#E84338', bg: '#fee2e2' },
                     { id: 'crm-aev-lab', icon: '🎧', title: 'Capacitación OCTAVA — Sonido, Video y Performance DJ', desc: 'Inscripciones al evento del 12 de agosto en Octava Club, Chapinero. Gestiona asistencia y estados.', count: aevLabData.length, loading: aevLabLoading, color: '#7c3aed', bg: '#ede9fe' },
-                    { id: 'crm-aev-bootcamp2', icon: '🎼', title: 'Bootcamp 2 — Music Business e Industria Musical', desc: 'Inscripciones al evento del 19 de agosto en Auditorio EMMAT. EMMAT + Creartech + ALQUMIA.', count: aevBoot2Data.length, loading: aevBoot2Loading, color: '#7c3aed', bg: '#ede9fe' }
+                    { id: 'crm-aev-bootcamp2', icon: '🎼', title: 'Bootcamp 2 — Music Business e Industria Musical', desc: 'Inscripciones al evento del 19 de agosto en Auditorio EMMAT. EMMAT + Creartech + ALQUMIA.', count: aevBoot2Data.length, loading: aevBoot2Loading, color: '#7c3aed', bg: '#ede9fe' },
+                    { id: 'crm-aev-seguridad', icon: '🛡️', title: 'Bootcamp 3 — La Seguridad También se Planifica', desc: 'Inscripciones al evento del 25 de agosto en María Bonita. Operar, Prevenir y Cuidar.', count: aevSegData.length, loading: aevSegLoading, color: '#7c3aed', bg: '#ede9fe' }
                   ].map(card => (
                     <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -3441,6 +3508,161 @@
                       </div>
                       {filtered.map(r => (
                         <div key={r.id} onClick={() => { setAevBoot2Detalle(r); setAevBoot2NotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#faf5ff'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 13 }}>{r.profesion}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
+                          {badge(r.estado)}
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-aev-seguridad' && (() => {
+              const segEstados = { inscrito: { label: 'Inscrito', color: '#3b82f6', bg: '#dbeafe' }, confirmado: { label: 'Confirmado', color: '#10b981', bg: '#d1fae5' }, asistio: { label: 'Asistió', color: '#7c3aed', bg: '#ede9fe' }, no_asistio: { label: 'No asistió', color: '#E84338', bg: '#fee2e2' } };
+              const filtered = getAevSegFiltered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = segEstados[estado] || segEstados.inscrito; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+              const inp = (lbl, key, type='text') => (
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 4 }}>{lbl}</label>
+                  <input type={type} value={aevSegEditData[key] ?? ''} onChange={e => setAevSegEditData(p => ({ ...p, [key]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: '2px solid #e5e7eb', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                </div>
+              );
+              if (aevSegDetalle) {
+                const r = aevSegDetalle;
+                return (
+                  <div>
+                    {aevSegEditModal && (
+                      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 580, maxHeight: '90vh', overflow: 'auto' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', borderRadius: '20px 20px 0 0' }}>
+                            <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}>✏️ Editar inscripción</h2>
+                            <button onClick={() => setAevSegEditModal(false)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 18, color: 'white', cursor: 'pointer' }}>×</button>
+                          </div>
+                          <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>DATOS PERSONALES</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                              {inp('Nombre', 'nombre')}{inp('Apellidos', 'apellidos')}
+                              {inp('Email', 'email', 'email')}{inp('Teléfono', 'telefono', 'tel')}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                              {inp('Tipo ID', 'tipo_identificacion')}{inp('Nº ID', 'numero_identificacion')}{inp('Género', 'genero')}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                              {inp('Departamento', 'departamento')}{inp('Ciudad', 'ciudad')}{inp('Profesión', 'profesion')}
+                            </div>
+                            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 4 }}>
+                              <button onClick={() => setAevSegEditModal(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                              <button onClick={() => updateAevSegPersona(r.id, aevSegEditData)} style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setAevSegDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Inscripciones</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.profesion} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { setAevSegEditData({ nombre: r.nombre, apellidos: r.apellidos, email: r.email, telefono: r.telefono, tipo_identificacion: r.tipo_identificacion, numero_identificacion: r.numero_identificacion, genero: r.genero, departamento: r.departamento, ciudad: r.ciudad, profesion: r.profesion }); setAevSegEditModal(true); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#ede9fe', color: '#7c3aed', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>✏️ Editar</button>
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteAevSegPersona(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>🗑️ Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN Y PROFESIÓN')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo ID', r.tipo_identificacion)}{cell('Nº ID', r.numero_identificacion)}{cell('Profesión', r.profesion)}
+                          </div>
+                        </div>
+                        {(r.empresa_nombre || r.empresa_nit) && (
+                          <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                            {sec('EMPRESA')}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                              {cell('Empresa', r.empresa_nombre)}{cell('NIT', r.empresa_nit)}{cell('Dirección', r.empresa_direccion)}{cell('Tel. Empresa', r.empresa_telefono)}{cell('Representante', r.empresa_representante)}{cell('Cédula Rep.', r.empresa_cedula_rep)}{cell('Email Empresa', r.empresa_email)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>ESTADO</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {Object.entries(segEstados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateAevSegEstado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid', borderColor: r.estado === key ? e.color : '#e5e7eb', background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>{e.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>NOTAS INTERNAS</p>
+                          <textarea value={aevSegNotasEdit !== '' ? aevSegNotasEdit : (r.notas || '')} onChange={e => setAevSegNotasEdit(e.target.value)} onFocus={() => setAevSegNotasEdit(r.notas || '')} rows={5} placeholder="Agrega notas internas..." style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          <button onClick={() => { saveAevSegNotas(r.id, aevSegNotasEdit !== '' ? aevSegNotasEdit : (r.notas || '')); setAevSegNotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              const counts = { inscrito: 0, confirmado: 0, asistio: 0, no_asistio: 0 };
+              aevSegData.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    {[['Total', aevSegData.length, '#7c3aed'], ['Inscrito', counts.inscrito, '#3b82f6'], ['Confirmado', counts.confirmado, '#10b981'], ['Asistió', counts.asistio, '#7c3aed'], ['No asistió', counts.no_asistio, '#E84338']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '12px 20px', minWidth: 100 }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>{lbl}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{aevSegLoading ? '…' : val}</p>
+                      </div>
+                    ))}
+                    <button onClick={exportAevSegExcel} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>📥 Exportar Excel</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, ID, email, profesión, ciudad o empresa..." value={aevSegSearch} onChange={e => setAevSegSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={aevSegFiltroEstado} onChange={e => setAevSegFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(segEstados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                  </div>
+                  {aevSegLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : aevSegData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>📭</p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin inscripciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los registros del Bootcamp 3.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setAevSegDetalle(r); setAevSegNotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.profesion} · {r.ciudad}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMAIL','PROFESIÓN / CIUDAD','ESTADO',''].map((h,i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setAevSegDetalle(r); setAevSegNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#faf5ff'} onMouseLeave={e => e.currentTarget.style.background='white'}>
                           <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
                           <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
                           <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>

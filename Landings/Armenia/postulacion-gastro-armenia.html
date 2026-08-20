@@ -211,6 +211,23 @@ window.apEnviar = async function() {
     return;
   }
 
+  fetch('https://pbqmkodwmntujezbokgo.supabase.co/functions/v1/send-confirmation', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34',
+    },
+    body: JSON.stringify({
+      email: payload.correo_contacto,
+      nombre: payload.nombre_contacto,
+      evento: 'Postulación — Asistencia Técnica Gastroentretenimiento · Armenia 24',
+      fecha: 'En los próximos días recibirás información sobre los seleccionados',
+      hora: '',
+      lugar: 'Alcaldía de Armenia · Asobares · Quindío Convention Bureau',
+      direccion: '',
+    })
+  });
+
   document.getElementById('ap-card').style.display = 'none';
   document.getElementById('ap-success').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });

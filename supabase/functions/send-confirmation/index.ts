@@ -23,8 +23,8 @@ serve(async (req) => {
     body.append('subject', `¡Inscripción confirmada! — ${evento}`);
     body.append('html', `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: #000; padding: 28px 40px; text-align: center; border-radius: 8px 8px 0 0;">
-          <img src="https://gestion.asobares.org/asobares_original.png" alt="Asobares" style="height: 44px; filter: brightness(0) invert(1);" />
+        <div style="background: #ffffff; padding: 28px 40px; text-align: center; border-radius: 8px 8px 0 0; border-bottom: 3px solid #E84338;">
+          <img src="https://gestion.asobares.org/asobares_original.png" alt="Asobares" style="height: 44px;" />
         </div>
         <div style="padding: 32px 40px; background: #ffffff;">
           <h2 style="color: #1a1a2e; margin-bottom: 8px;">¡Tu inscripción fue confirmada!</h2>

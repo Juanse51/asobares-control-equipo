@@ -370,6 +370,19 @@
         return;
       }
 
+      // Enviar correo de confirmación
+      db.functions.invoke('send-confirmation', {
+        body: {
+          email: payload.email,
+          nombre: payload.nombre + (payload.apellidos ? ' ' + payload.apellidos : ''),
+          evento: 'La Seguridad También se Planifica — Área en Vivo Lab',
+          fecha: 'Martes 25 de Agosto de 2026',
+          hora: '10:00 a.m. a 2:00 p.m.',
+          lugar: 'María Bonita',
+          direccion: 'Carrera 75 #24b - 48, Bogotá',
+        }
+      });
+
       card.style.display = 'none';
       success.style.display = 'block';
       document.getElementById('asFormSection').scrollIntoView({ behavior: 'smooth' });

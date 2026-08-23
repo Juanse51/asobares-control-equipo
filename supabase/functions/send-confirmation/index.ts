@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
   try {
-    const { email, nombre, evento, fecha, hora, lugar, direccion } = await req.json();
+    const { email, nombre, evento, fecha, hora, lugar, direccion, link, link_label } = await req.json();
 
     if (!email) return new Response(JSON.stringify({ error: 'Email requerido' }), { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } });
 
@@ -37,6 +37,7 @@ serve(async (req) => {
           </div>
 
           <p style="color: #475569; font-size: 15px; line-height: 1.6;">El ingreso es <strong>sin costo</strong>. Te esperamos puntual — los cupos son limitados.</p>
+          ${link ? `<div style="text-align:center; margin-top: 24px;"><a href="${link}" target="_blank" style="display:inline-block; background: #E84338; color: white; font-size: 16px; font-weight: 700; padding: 14px 32px; border-radius: 10px; text-decoration: none;">${link_label || 'Ingresar al evento'}</a></div>` : ''}
         </div>
         <div style="background: #f8fafc; padding: 20px 40px; border-top: 1px solid #e5e7eb; border-radius: 0 0 8px 8px; text-align: center;">
           <p style="color: #94a3b8; font-size: 12px; margin: 0;">

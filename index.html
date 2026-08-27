@@ -4259,7 +4259,6 @@
                   <td>${i + 1}</td>
                   <td>${[p.nombre, p.apellidos].filter(Boolean).join(' ')}</td>
                   <td>${p.email || '—'}</td>
-                  <td>${p.empresa || '—'}</td>
                 </tr>`).join('');
               const win = window.open('', '_blank');
               win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe — ${certLoteActivo.nombre}</title>
@@ -4298,7 +4297,7 @@
                   <div class="stat-item"><div class="stat-num">${certPersonas.filter(p => p.estado !== 'enviado').length}</div><div class="stat-label">Pendientes</div></div>
                 </div>
                 <table>
-                  <thead><tr><th>#</th><th>Nombre</th><th>Correo electrónico</th><th>Empresa</th></tr></thead>
+                  <thead><tr><th>#</th><th>Nombre</th><th>Correo electrónico</th></tr></thead>
                   <tbody>${filas}</tbody>
                 </table>
                 <div class="footer">Asociación de Bares y Restaurantes de Colombia — ASOBARES · gestion.asobares.org</div>

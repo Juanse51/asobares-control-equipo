@@ -4253,16 +4253,58 @@
           {certInformeOpen && certLoteActivo && (() => {
             const enviados = certPersonas.filter(p => p.estado === 'enviado');
             const exportInforme = () => {
-              const wb = XLSX.utils.book_new();
-              const ws = XLSX.utils.json_to_sheet(enviados.map(p => ({
-                'Nombre': [p.nombre, p.apellidos].filter(Boolean).join(' '),
-                'Correo': p.email || '',
-                'Empresa': p.empresa || '',
-                'Documento': p.documento || '',
-                'Estado': 'Enviado',
-              })));
-              XLSX.utils.book_append_sheet(wb, ws, 'Enviados');
-              XLSX.writeFile(wb, `informe_${certLoteActivo.nombre.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+              const fecha = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+              const filas = enviados.map((p, i) => `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>${[p.nombre, p.apellidos].filter(Boolean).join(' ')}</td>
+                  <td>${p.email || '—'}</td>
+                  <td>${p.empresa || '—'}</td>
+                </tr>`).join('');
+              const win = window.open('', '_blank');
+              win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe — ${certLoteActivo.nombre}</title>
+                <style>
+                  * { box-sizing: border-box; margin: 0; padding: 0; }
+                  body { font-family: Arial, sans-serif; color: #1a1a2e; padding: 40px; }
+                  .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #E84338; padding-bottom: 20px; margin-bottom: 28px; }
+                  .header img { height: 40px; }
+                  .header-right { text-align: right; }
+                  h1 { font-size: 18px; font-weight: 800; color: #1a1a2e; margin-bottom: 4px; }
+                  .meta { font-size: 12px; color: #64748b; margin-bottom: 2px; }
+                  .stats { background: #f8fafc; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 32px; }
+                  .stat-item { text-align: center; }
+                  .stat-num { font-size: 28px; font-weight: 800; color: #E84338; }
+                  .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+                  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+                  thead tr { background: #1a1a2e; color: white; }
+                  thead th { padding: 11px 14px; text-align: left; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+                  tbody tr:nth-child(even) { background: #f8fafc; }
+                  tbody td { padding: 10px 14px; border-bottom: 1px solid #e5e7eb; color: #374151; }
+                  .footer { margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px; font-size: 11px; color: #94a3b8; text-align: center; }
+                  @media print { body { padding: 20px; } button { display: none !important; } }
+                </style>
+              </head><body>
+                <div class="header">
+                  <img src="https://gestion.asobares.org/asobares_original.png" alt="Asobares" />
+                  <div class="header-right">
+                    <h1>Informe de Envíos</h1>
+                    <div class="meta">${certLoteActivo.nombre}</div>
+                    <div class="meta">Generado el ${fecha}</div>
+                  </div>
+                </div>
+                <div class="stats">
+                  <div class="stat-item"><div class="stat-num">${enviados.length}</div><div class="stat-label">Enviados</div></div>
+                  <div class="stat-item"><div class="stat-num">${certPersonas.length}</div><div class="stat-label">Total inscritos</div></div>
+                  <div class="stat-item"><div class="stat-num">${certPersonas.filter(p => p.estado !== 'enviado').length}</div><div class="stat-label">Pendientes</div></div>
+                </div>
+                <table>
+                  <thead><tr><th>#</th><th>Nombre</th><th>Correo electrónico</th><th>Empresa</th></tr></thead>
+                  <tbody>${filas}</tbody>
+                </table>
+                <div class="footer">Asociación de Bares y Restaurantes de Colombia — ASOBARES · gestion.asobares.org</div>
+                <script>window.onload = function() { window.print(); }<\/script>
+              </body></html>`);
+              win.document.close();
             };
             return (
               <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
@@ -4300,7 +4342,7 @@
                   </div>
                   <div style={{ padding: '16px 28px', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end', gap: 12, flexShrink: 0 }}>
                     <button onClick={() => setCertInformeOpen(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontWeight: 600, cursor: 'pointer' }}>Cerrar</button>
-                    <button onClick={exportInforme} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #0369a1)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>⬇️ Exportar Excel</button>
+                    <button onClick={exportInforme} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #0369a1)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>🖨️ Generar PDF</button>
                   </div>
                 </div>
               </div>

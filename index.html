@@ -1049,7 +1049,9 @@
 
       const showNotif = (msg, type = 'success') => { setNotification({ msg, type }); setTimeout(() => setNotification(null), 3000); };
       const handleLogin = () => {
-        const user = users.find(u => u.username === loginUsername && u.password === loginPassword);
+        const u = loginUsername.trim().toLowerCase();
+        const p = loginPassword.trim();
+        const user = users.find(x => (x.username?.toLowerCase() === u || x.email?.toLowerCase() === u) && x.password === p);
         if (user) { setCurrentUser(user); localStorage.setItem('asobares_user', JSON.stringify(user)); setLoginError(''); showNotif(`¡Bienvenido, ${user.name}!`); if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); }
         else setLoginError('Usuario o contraseña incorrectos');
       };

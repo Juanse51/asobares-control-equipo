@@ -1560,9 +1560,12 @@
         }
         .aevl-root .bc-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(4, 1fr);
           gap: 28px;
           margin-top: 48px;
+        }
+        @media (max-width: 1100px) {
+          .aevl-root .bc-grid { grid-template-columns: repeat(2, 1fr); }
         }
         /* tarjeta base */
         .aevl-root .bc-card {
@@ -1998,19 +2001,39 @@
 
             <div class="bc-grid reveal">
 
-              <!-- ── TARJETA 3: La Seguridad También se Planifica (más reciente) ── -->
+              <!-- ── TARJETA 4: El Ecosistema del DJ (más reciente) ── -->
               <article class="bc-card">
-                <a href="https://asobares.org/planificar-seguridad/" target="_blank" rel="noopener" class="bc-img-wrap" style="display:block;text-decoration:none;">
+                <div class="bc-img-wrap">
+                  <img src="https://asobares.org/wp-content/uploads/2026/09/el-ecosistema-del-dj.jpg"
+                       alt="El Ecosistema del DJ — Área en Vivo Lab" loading="lazy" />
+                  <span class="bc-badge bc-badge-live">Inscripción sin costo</span>
+                </div>
+                <div class="bc-body">
+                  <p class="bc-meta">Área En Vivo Lab · Bootcamp 4</p>
+                  <h3 class="bc-title">El Ecosistema<br/>del DJ</h3>
+                  <p class="bc-excerpt">Conectando talento, industria y oportunidades. Con Lega, Pao Calderón y Julián Cubillos. Jueves 17 de Septiembre · 4:30 p.m. · L1FE, Cl. 84A #13-17.</p>
+                  <a class="bc-btn bc-btn-live" href="https://asobares.org/ecosistema-dj/" target="_blank" rel="noopener">
+                    Inscríbete sin costo
+                    <span class="bc-arrow">
+                      <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+                    </span>
+                  </a>
+                </div>
+              </article>
+
+              <!-- ── TARJETA 3: La Seguridad También se Planifica ── -->
+              <article class="bc-card">
+                <div class="bc-img-wrap">
                   <img src="https://asobares.org/wp-content/uploads/2026/08/la-seguridad-tambien-se-planifica-2.jpeg"
                        alt="La Seguridad También se Planifica — Área en Vivo Lab" loading="lazy" />
-                  <span class="bc-badge bc-badge-live">Inscripción sin costo</span>
-                </a>
+                  <span class="bc-badge">Realizado</span>
+                </div>
                 <div class="bc-body">
                   <p class="bc-meta">Área En Vivo Lab · Bootcamp 3</p>
                   <h3 class="bc-title">La Seguridad<br/>También se Planifica</h3>
                   <p class="bc-excerpt">Operar, Prevenir y Cuidar. Una capacitación especializada para equipos que buscan fortalecer la operación, la gestión del riesgo y el bienestar. Miércoles 26 de Agosto · Virtual.</p>
-                  <a class="bc-btn bc-btn-live" href="https://asobares.org/planificar-seguridad/" target="_blank" rel="noopener">
-                    Inscríbete sin costo
+                  <a class="bc-btn" href="https://drive.google.com/file/d/1Re0qetiGdIrszFh3DEho-bTSBm_8STFL/view?usp=sharing" target="_blank" rel="noopener">
+                    Ver clase
                     <span class="bc-arrow">
                       <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
                     </span>

@@ -1984,14 +1984,8 @@
         for (let i = 0; i < personas.length; i++) {
           const p = personas[i];
           try {
-            let bytes;
-            if (p.cert_path) {
-              const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(p.cert_path);
-              bytes = await fetch(publicUrl + '?t=' + Date.now()).then(r => r.arrayBuffer());
-            } else {
-              const doc = await generarPDF(p, lote, plantilla);
-              bytes = doc.output('arraybuffer');
-            }
+            const doc = await generarPDF(p, lote, plantilla);
+            const bytes = doc.output('arraybuffer');
             const filename = `Certificado_${[p.nombre, p.apellidos].filter(Boolean).join('_')}.pdf`;
             zip.file(filename, bytes);
           } catch {}

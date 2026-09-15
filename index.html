@@ -12,6 +12,7 @@
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -964,6 +965,8 @@
       const [certProgreso, setCertProgreso] = useState({ done: 0, total: 0 });
       const [certEnviando, setCertEnviando] = useState(false);
       const [certProgresoEnvio, setCertProgresoEnvio] = useState({ done: 0, total: 0 });
+      const [certDescargando, setCertDescargando] = useState(false);
+      const [certProgresoDescarga, setCertProgresoDescarga] = useState({ done: 0, total: 0 });
       const [certImportando, setCertImportando] = useState(false);
       const [certEditLote, setCertEditLote] = useState(null);
       const [certShowPlantillaModal, setCertShowPlantillaModal] = useState(false);
@@ -1972,6 +1975,38 @@
         setCertGenerando(false);
         showNotif('¡Certificados generados!');
       };
+      const descargarTodos = async (personas, lote, plantilla) => {
+        if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
+        if (!window.JSZip) return showNotif('JSZip no disponible — recarga la página');
+        setCertDescargando(true);
+        setCertProgresoDescarga({ done: 0, total: personas.length });
+        const zip = new window.JSZip();
+        for (let i = 0; i < personas.length; i++) {
+          const p = personas[i];
+          try {
+            let bytes;
+            if (p.cert_path) {
+              const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(p.cert_path);
+              bytes = await fetch(publicUrl + '?t=' + Date.now()).then(r => r.arrayBuffer());
+            } else {
+              const doc = await generarPDF(p, lote, plantilla);
+              bytes = doc.output('arraybuffer');
+            }
+            const filename = `Certificado_${[p.nombre, p.apellidos].filter(Boolean).join('_')}.pdf`;
+            zip.file(filename, bytes);
+          } catch {}
+          setCertProgresoDescarga(prev => ({ ...prev, done: i + 1 }));
+        }
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Certificados_${lote.nombre.replace(/\s+/g, '_')}.zip`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        setCertDescargando(false);
+        showNotif('¡ZIP descargado!');
+      };
       const enviarTodos = async (personas, lote, plantilla, camposOverride = null) => {
         if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
         const pendientes = personas.filter(p => p.email && p.estado !== 'enviado');
@@ -2933,10 +2968,13 @@
                         <option value="armenia-cap">Armenia — Inscripción Capacitación (asistió)</option>
                         <option value="armenia-asist">Armenia — Registro Asistencia (asistió)</option>
                       </select>
-                      {certPersonas.length > 0 && !certGenerando && !certEnviando && (
+                      {certPersonas.length > 0 && !certGenerando && !certEnviando && !certDescargando && (
                         <button onClick={() => plantilla && setCertPreviewData({ persona: certPersonas[0], lote: certLoteActivo, plantilla, batchPersonas: certPersonas })} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>⚡ Generar todos ({certPersonas.length})</button>
                       )}
-                      {(() => { const sinEnviar = certPersonas.filter(p => p.email && p.estado !== 'enviado'); return sinEnviar.length > 0 && !certGenerando && !certEnviando ? (
+                      {certPersonas.length > 0 && !certGenerando && !certEnviando && !certDescargando && (
+                        <button onClick={() => plantilla && descargarTodos(certPersonas, certLoteActivo, plantilla)} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #0ea5e9, #0284c7)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>⬇️ Descargar todos ({certPersonas.length})</button>
+                      )}
+                      {(() => { const sinEnviar = certPersonas.filter(p => p.email && p.estado !== 'enviado'); return sinEnviar.length > 0 && !certGenerando && !certEnviando && !certDescargando ? (
                         <button onClick={() => { if (plantilla) enviarTodos(certPersonas, certLoteActivo, plantilla); }} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #059669, #065f46)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>✉️ Enviar a todos ({sinEnviar.length})</button>
                       ) : null; })()}
                       {certPersonas.filter(p => p.estado === 'enviado').length > 0 && (
@@ -2963,6 +3001,17 @@
                         </div>
                         <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${certProgresoEnvio.total > 0 ? (certProgresoEnvio.done / certProgresoEnvio.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #059669, #065f46)', borderRadius: 4, transition: 'width 0.4s ease' }} />
+                        </div>
+                      </div>
+                    )}
+                    {certDescargando && (
+                      <div style={{ background: 'white', borderRadius: 12, padding: '16px 20px', marginBottom: 16 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>Preparando ZIP con certificados...</span>
+                          <span style={{ fontSize: 13, color: '#0284c7', fontWeight: 700 }}>{certProgresoDescarga.done} / {certProgresoDescarga.total}</span>
+                        </div>
+                        <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${certProgresoDescarga.total > 0 ? (certProgresoDescarga.done / certProgresoDescarga.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #0ea5e9, #0284c7)', borderRadius: 4, transition: 'width 0.4s ease' }} />
                         </div>
                       </div>
                     )}

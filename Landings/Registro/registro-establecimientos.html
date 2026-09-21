@@ -1,8 +1,7 @@
 <!-- ============================================================
      FORMULARIO: REGISTRO DE ESTABLECIMIENTOS - ASOBARES
      Widget HTML para Elementor (pegar en widget "HTML")
-     Namespace: asbreg-  (todas las clases e IDs con prefijo
-     para evitar colisiones con el theme / Elementor)
+     Namespace: asbreg-
      ============================================================ -->
 
 <style>
@@ -21,21 +20,14 @@
   /* ---------- Encabezado ---------- */
   .asbreg-header {
     background: #1a1a2e;
-    color: #ffffff !important;
     padding: 28px 32px;
     text-align: center;
   }
-  .asbreg-header h2 {
-    font-size: 20px !important;
-    font-weight: 800 !important;
-    letter-spacing: 1px;
-    color: #ffffff !important;
-    line-height: 1.4 !important;
-  }
+  .asbreg-header img { height: 48px; width: auto; display: inline-block; }
   .asbreg-header p {
     font-size: 13px !important;
     color: #c9c9d9 !important;
-    margin-top: 6px !important;
+    margin-top: 10px !important;
     line-height: 1.5 !important;
   }
   .asbreg-title {
@@ -82,6 +74,24 @@
     text-transform: uppercase;
   }
 
+  /* ---------- Plataformas ---------- */
+  .asbreg-plataformas {
+    padding: 26px 40px;
+    background: #fff8f8;
+    border-bottom: 1px solid #e2e2ea;
+  }
+  .asbreg-plataformas .asbreg-group-label {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    color: #e63946 !important;
+    margin-bottom: 14px !important;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .asbreg-plataformas .asbreg-options {
+    gap: 14px 32px;
+  }
+
   /* ---------- Campos ---------- */
   .asbreg-row { display: flex; flex-wrap: wrap; gap: 20px 24px; margin-bottom: 22px; }
   .asbreg-field { flex: 1 1 260px; display: flex; flex-direction: column; }
@@ -92,6 +102,12 @@
     margin-bottom: 8px !important;
     letter-spacing: .3px;
     line-height: 1.4 !important;
+  }
+  .asbreg-field label .asbreg-opc {
+    font-weight: 400;
+    color: #94a3b8;
+    font-size: 11px;
+    margin-left: 4px;
   }
   .asbreg-field input[type="text"],
   .asbreg-field input[type="email"],
@@ -220,7 +236,7 @@
   .asbreg-msg.asbreg-err { color: #e63946 !important; display: block; }
 
   @media (max-width: 640px) {
-    .asbreg-section, .asbreg-toprow { padding: 26px 20px; }
+    .asbreg-section, .asbreg-toprow, .asbreg-plataformas { padding: 26px 20px; }
     .asbreg-submit-wrap { padding: 26px 20px 32px; }
     .asbreg-header { padding: 24px 20px; }
     .asbreg-title { font-size: 18px !important; }
@@ -231,12 +247,10 @@
 
 <div id="asbreg-form-wrap">
 
-  <!-- Encabezado institucional -->
+  <!-- Encabezado con logo -->
   <div class="asbreg-header">
-    <h2>ASOCIACION DE BARES DE COLOMBIA</h2>
-    <p>NIT 900.841.574 - 9<br>
-       CARRERA 15 N° 83-24 Bogotá-Colombia<br>
-       TELEFONOS (6013583884 - CEL 3142084831</p>
+    <img src="https://asobares.org/wp-content/uploads/2025/03/Nuevo-logo-Asobares-Blanco-1536x269.png" alt="Asobares">
+    <p>NIT 900.841.574 - 9 &nbsp;·&nbsp; CARRERA 15 N° 83-24 Bogotá-Colombia &nbsp;·&nbsp; (601) 358-3884 · CEL 314 208 4831</p>
   </div>
 
   <div class="asbreg-title">REGISTRO DE ESTABLECIMIENTOS</div>
@@ -253,26 +267,50 @@
         <label for="asbreg-afiliacion">AFILIACION</label>
         <input type="text" id="asbreg-afiliacion" name="afiliacion">
       </div>
+      <div class="asbreg-field" style="flex:0 1 200px;">
+        <label for="asbreg-fecha">FECHA *</label>
+        <input type="date" id="asbreg-fecha" name="fecha" required>
+      </div>
       <div class="asbreg-field" style="flex:0 1 220px;">
-        <label for="asbreg-fecha">FECHA (DIA / MES / AÑO)</label>
-        <input type="date" id="asbreg-fecha" name="fecha">
+        <label for="asbreg-inscrito-por">INSCRITO POR *</label>
+        <select id="asbreg-inscrito-por" name="inscrito_por" required>
+          <option value="" selected disabled>Seleccione…</option>
+          <option>Soporte</option>
+          <option>Circulo Gastro</option>
+          <option>Proyectos</option>
+          <option>Cluster DJ</option>
+          <option>Dirección Ejecutiva</option>
+          <option>Presidencia</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Plataformas a activar -->
+    <div class="asbreg-plataformas">
+      <span class="asbreg-group-label">PLATAFORMAS A ACTIVAR *</span>
+      <div class="asbreg-options">
+        <label><input type="checkbox" name="plataformas[]" value="Cluster DJ"> Cluster DJ</label>
+        <label><input type="checkbox" name="plataformas[]" value="Circulo Gastro"> Circulo Gastro</label>
+        <label><input type="checkbox" name="plataformas[]" value="Mi Destino Tu Noche"> Mi Destino Tu Noche</label>
+        <label><input type="checkbox" name="plataformas[]" value="Mix and Shake"> Mix and Shake</label>
+        <label><input type="checkbox" name="plataformas[]" value="RNT"> RNT</label>
       </div>
     </div>
 
     <!-- ================= I. DATOS DE LA EMPRESA ================= -->
     <div class="asbreg-section">
-      <div class="asbreg-section-title">I.DATOS DE LA EMPRESA</div>
+      <div class="asbreg-section-title">I. DATOS DE LA EMPRESA</div>
 
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-razon-social">RAZON SOCIAL DE LA EMPRESA O PERSONA NATURAL PROPIETARIA</label>
-          <input type="text" id="asbreg-razon-social" name="razon_social">
+          <label for="asbreg-razon-social">RAZON SOCIAL DE LA EMPRESA O PERSONA NATURAL PROPIETARIA *</label>
+          <input type="text" id="asbreg-razon-social" name="razon_social" required>
         </div>
       </div>
 
       <div class="asbreg-row">
         <div class="asbreg-field" style="flex:1 1 320px;">
-          <span class="asbreg-group-label">IDENTIFICACION</span>
+          <span class="asbreg-group-label">IDENTIFICACION *</span>
           <div class="asbreg-options">
             <label><input type="radio" name="identificacion" value="NIT"> NIT</label>
             <label><input type="radio" name="identificacion" value="CC"> CC</label>
@@ -281,26 +319,26 @@
           </div>
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-num-identificacion">Nº DE IDENTIFICACION</label>
-          <input type="text" id="asbreg-num-identificacion" name="num_identificacion">
+          <label for="asbreg-num-identificacion">Nº DE IDENTIFICACION *</label>
+          <input type="text" id="asbreg-num-identificacion" name="num_identificacion" required>
         </div>
       </div>
 
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-nombre-rep">NOMBRE REPRESENTANTE LEGAL O PROPIETARIO</label>
-          <input type="text" id="asbreg-nombre-rep" name="nombre_representante">
+          <label for="asbreg-nombre-rep">NOMBRE REPRESENTANTE LEGAL O PROPIETARIO *</label>
+          <input type="text" id="asbreg-nombre-rep" name="nombre_representante" required>
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-apellido-rep">APELLIDO REPRESENTANTE LEGAL</label>
-          <input type="text" id="asbreg-apellido-rep" name="apellido_representante">
+          <label for="asbreg-apellido-rep">APELLIDO REPRESENTANTE LEGAL *</label>
+          <input type="text" id="asbreg-apellido-rep" name="apellido_representante" required>
         </div>
       </div>
 
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-departamento-empresa">DEPARTAMENTO</label>
-          <select id="asbreg-departamento-empresa" name="departamento_empresa">
+          <label for="asbreg-departamento-empresa">DEPARTAMENTO *</label>
+          <select id="asbreg-departamento-empresa" name="departamento_empresa" required>
             <option value="" selected disabled>Seleccione…</option>
             <option>Amazonas</option><option>Antioquia</option><option>Arauca</option>
             <option>Atlántico</option><option>Bogotá D.C.</option><option>Bolívar</option>
@@ -316,25 +354,25 @@
           </select>
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-direccion-empresa">DIRECCION</label>
-          <input type="text" id="asbreg-direccion-empresa" name="direccion_empresa">
+          <label for="asbreg-direccion-empresa">DIRECCION *</label>
+          <input type="text" id="asbreg-direccion-empresa" name="direccion_empresa" required>
         </div>
       </div>
 
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-telefono-empresa">TELEFONO:</label>
-          <input type="tel" id="asbreg-telefono-empresa" name="telefono_empresa">
+          <label for="asbreg-telefono-empresa">TELEFONO *</label>
+          <input type="tel" id="asbreg-telefono-empresa" name="telefono_empresa" required>
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-email-empresa">EMAIL</label>
-          <input type="email" id="asbreg-email-empresa" name="email_empresa">
+          <label for="asbreg-email-empresa">EMAIL *</label>
+          <input type="email" id="asbreg-email-empresa" name="email_empresa" required>
         </div>
       </div>
 
       <div class="asbreg-row">
         <div class="asbreg-field" style="flex:1 1 340px;">
-          <span class="asbreg-group-label">Régimen</span>
+          <span class="asbreg-group-label">RÉGIMEN *</span>
           <div class="asbreg-options">
             <label><input type="radio" name="regimen" value="Común"> Común</label>
             <label><input type="radio" name="regimen" value="Simplificado"> Simplificado</label>
@@ -342,7 +380,7 @@
           </div>
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-regimen-cual">CUAL?</label>
+          <label for="asbreg-regimen-cual">CUAL? <span class="asbreg-opc">(si aplica)</span></label>
           <input type="text" id="asbreg-regimen-cual" name="regimen_cual">
         </div>
       </div>
@@ -354,15 +392,15 @@
 
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-nombre-est">NOMBRE ESTABLECIMIENTO</label>
-          <input type="text" id="asbreg-nombre-est" name="nombre_establecimiento">
+          <label for="asbreg-nombre-est">NOMBRE ESTABLECIMIENTO *</label>
+          <input type="text" id="asbreg-nombre-est" name="nombre_establecimiento" required>
         </div>
       </div>
 
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-departamento-est">DEPARTAMENTO</label>
-          <select id="asbreg-departamento-est" name="departamento_establecimiento">
+          <label for="asbreg-departamento-est">DEPARTAMENTO *</label>
+          <select id="asbreg-departamento-est" name="departamento_establecimiento" required>
             <option value="" selected disabled>Seleccione…</option>
             <option>Amazonas</option><option>Antioquia</option><option>Arauca</option>
             <option>Atlántico</option><option>Bogotá D.C.</option><option>Bolívar</option>
@@ -378,35 +416,35 @@
           </select>
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-direccion-est">DIRECCION DEL ESTABLECIMIENTO</label>
-          <input type="text" id="asbreg-direccion-est" name="direccion_establecimiento">
+          <label for="asbreg-direccion-est">DIRECCION DEL ESTABLECIMIENTO *</label>
+          <input type="text" id="asbreg-direccion-est" name="direccion_establecimiento" required>
         </div>
       </div>
 
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-celular-est">CELULAR</label>
-          <input type="tel" id="asbreg-celular-est" name="celular_establecimiento">
+          <label for="asbreg-celular-est">CELULAR *</label>
+          <input type="tel" id="asbreg-celular-est" name="celular_establecimiento" required>
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-localidad-est">LOCALIDAD</label>
-          <input type="text" id="asbreg-localidad-est" name="localidad">
+          <label for="asbreg-localidad-est">LOCALIDAD *</label>
+          <input type="text" id="asbreg-localidad-est" name="localidad" required>
         </div>
       </div>
 
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-estrato">ESTRATO</label>
-          <input type="text" id="asbreg-estrato" name="estrato">
+          <label for="asbreg-estrato">ESTRATO *</label>
+          <input type="text" id="asbreg-estrato" name="estrato" required>
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-email-est">EMAIL DEL ESTABLECIMIENTO</label>
-          <input type="email" id="asbreg-email-est" name="email_establecimiento">
+          <label for="asbreg-email-est">EMAIL DEL ESTABLECIMIENTO *</label>
+          <input type="email" id="asbreg-email-est" name="email_establecimiento" required>
         </div>
       </div>
 
       <div class="asbreg-block">
-        <span class="asbreg-group-label">TIPO DE NEGOCIO</span>
+        <span class="asbreg-group-label">TIPO DE NEGOCIO *</span>
         <div class="asbreg-options">
           <label><input type="checkbox" name="tipo_negocio[]" value="CAFÉ"> CAFÉ</label>
           <label><input type="checkbox" name="tipo_negocio[]" value="BAR"> BAR</label>
@@ -418,7 +456,7 @@
       </div>
 
       <div class="asbreg-block">
-        <span class="asbreg-group-label">CONCEPTO</span>
+        <span class="asbreg-group-label">CONCEPTO *</span>
         <div class="asbreg-options">
           <label><input type="checkbox" name="concepto[]" value="ROCK"> ROCK</label>
           <label><input type="checkbox" name="concepto[]" value="SALSA"> SALSA</label>
@@ -432,7 +470,7 @@
       </div>
 
       <div class="asbreg-block">
-        <span class="asbreg-group-label">MANEJA MUSICA EN VIVO</span>
+        <span class="asbreg-group-label">MANEJA MUSICA EN VIVO *</span>
         <div class="asbreg-options">
           <label><input type="radio" name="musica_en_vivo" value="SI"> SI</label>
           <label><input type="radio" name="musica_en_vivo" value="NO"> NO</label>
@@ -441,43 +479,43 @@
 
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <span class="asbreg-group-label">HORARIO DE SERVICIO</span>
+          <span class="asbreg-group-label">HORARIO DE SERVICIO *</span>
           <div style="display:flex; gap:10px;">
-            <input type="time" id="asbreg-horario-desde" name="horario_desde" title="Hora de apertura" style="flex:1; padding:10px 12px; font-size:14px; font-family:inherit; color:#1a1a2e; background:#fff; border:1px solid #c9c9d9; border-radius:8px; outline:none;">
-            <input type="time" id="asbreg-horario-hasta" name="horario_hasta" title="Hora de cierre" style="flex:1; padding:10px 12px; font-size:14px; font-family:inherit; color:#1a1a2e; background:#fff; border:1px solid #c9c9d9; border-radius:8px; outline:none;">
+            <input type="time" id="asbreg-horario-desde" name="horario_desde" title="Hora de apertura" required style="flex:1; padding:10px 12px; font-size:14px; font-family:inherit; color:#1a1a2e; background:#fff; border:1px solid #c9c9d9; border-radius:8px; outline:none;">
+            <input type="time" id="asbreg-horario-hasta" name="horario_hasta" title="Hora de cierre" required style="flex:1; padding:10px 12px; font-size:14px; font-family:inherit; color:#1a1a2e; background:#fff; border:1px solid #c9c9d9; border-radius:8px; outline:none;">
           </div>
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-dias-operacion">DIAS DE OPERACIÓN</label>
-          <input type="text" id="asbreg-dias-operacion" name="dias_operacion">
+          <label for="asbreg-dias-operacion">DIAS DE OPERACIÓN *</label>
+          <input type="text" id="asbreg-dias-operacion" name="dias_operacion" required>
         </div>
       </div>
 
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-aforo">AFORO DEL ESTABLECIMIENTO</label>
-          <input type="text" id="asbreg-aforo" name="aforo">
+          <label for="asbreg-aforo">AFORO DEL ESTABLECIMIENTO *</label>
+          <input type="text" id="asbreg-aforo" name="aforo" required>
         </div>
       </div>
 
-      <div class="asbreg-subtitle">REDES SOCIALES</div>
+      <div class="asbreg-subtitle">REDES SOCIALES <span style="font-size:11px; font-weight:400; color:#94a3b8;">(opcionales)</span></div>
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-web">PAGINA WEB:</label>
+          <label for="asbreg-web">PAGINA WEB <span class="asbreg-opc">(opcional)</span></label>
           <input type="url" id="asbreg-web" name="pagina_web">
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-x">X</label>
+          <label for="asbreg-x">X <span class="asbreg-opc">(opcional)</span></label>
           <input type="text" id="asbreg-x" name="x">
         </div>
       </div>
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-facebook">FACEBOOK</label>
+          <label for="asbreg-facebook">FACEBOOK <span class="asbreg-opc">(opcional)</span></label>
           <input type="text" id="asbreg-facebook" name="facebook">
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-instagram">INSTAGRAM</label>
+          <label for="asbreg-instagram">INSTAGRAM <span class="asbreg-opc">(opcional)</span></label>
           <input type="text" id="asbreg-instagram" name="instagram">
         </div>
       </div>
@@ -491,37 +529,43 @@
 
     <!-- ================= III. DOCUMENTACION ================= -->
     <div class="asbreg-section">
-      <div class="asbreg-section-title">III .DOCUMENTACION</div>
+      <div class="asbreg-section-title">III. DOCUMENTACION</div>
 
-      <div class="asbreg-subtitle">ADJUNTAR LOS SIGUIENTES DOCUMENTOS</div>
+      <div class="asbreg-subtitle">ADJUNTAR LOS SIGUIENTES DOCUMENTOS *</div>
       <div class="asbreg-row">
         <div class="asbreg-field">
-          <label for="asbreg-doc-camara">CAMARA DE COMERCIO</label>
-          <input type="file" id="asbreg-doc-camara" name="doc_camara_comercio" accept=".pdf,.jpg,.jpeg,.png">
+          <label for="asbreg-doc-logo">LOGO DEL ESTABLECIMIENTO *</label>
+          <input type="file" id="asbreg-doc-logo" name="doc_logo" accept=".jpg,.jpeg,.png,.svg,.pdf">
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-doc-cedula">CEDULA REPRESENTANTE LEGAL</label>
+          <label for="asbreg-doc-camara">CAMARA DE COMERCIO *</label>
+          <input type="file" id="asbreg-doc-camara" name="doc_camara_comercio" accept=".pdf,.jpg,.jpeg,.png">
+        </div>
+      </div>
+      <div class="asbreg-row">
+        <div class="asbreg-field">
+          <label for="asbreg-doc-cedula">CEDULA REPRESENTANTE LEGAL *</label>
           <input type="file" id="asbreg-doc-cedula" name="doc_cedula" accept=".pdf,.jpg,.jpeg,.png">
         </div>
         <div class="asbreg-field">
-          <label for="asbreg-doc-rut">RUT</label>
+          <label for="asbreg-doc-rut">RUT *</label>
           <input type="file" id="asbreg-doc-rut" name="doc_rut" accept=".pdf,.jpg,.jpeg,.png">
         </div>
       </div>
 
       <label class="asbreg-accept">
         <input type="checkbox" name="acepta_anticorrupcion" value="SI">
-        <span>ADENDO ANTI CORRIPCION&nbsp; Acepta la politica de anticorrupcion y lavado de activos. <a href="https://asobares.org/wp-content/uploads/2026/07/ADENDO-ANTICORRUPCION_compressed.pdf" target="_blank" rel="noopener">Ver documento</a></span>
+        <span>ADENDO ANTICORRUPCIÓN — Acepta la política de anticorrupción y lavado de activos. <a href="https://asobares.org/wp-content/uploads/2026/07/ADENDO-ANTICORRUPCION_compressed.pdf" target="_blank" rel="noopener">Ver documento</a></span>
       </label>
 
       <label class="asbreg-accept">
         <input type="checkbox" name="acepta_uso_marca" value="SI">
-        <span>Uso de marca.&nbsp; Acepta las condiciones de uso me marca acorde&nbsp; a la siguiente politica. <a href="https://asobares.org/wp-content/uploads/2026/07/Formato-Autorizacion-Uso-de-marca-Mi-destino-tu-noche-1-1-1_compressed.pdf" target="_blank" rel="noopener">Ver documento</a></span>
+        <span>USO DE MARCA — Acepta las condiciones de uso de marca conforme a la siguiente política. <a href="https://asobares.org/wp-content/uploads/2026/07/Formato-Autorizacion-Uso-de-marca-Mi-destino-tu-noche-1-1-1_compressed.pdf" target="_blank" rel="noopener">Ver documento</a></span>
       </label>
 
-      <p class="asbreg-legal">Por medio de la presente afiliación certifico como representante legal que la documentación del Establecimiento se encuentra al día y cumple los requisitos descritos en la ley 1801 de 2016 de&nbsp; y las disposiciones Distritales, municipales y/o de Alcaldía Local a la fecha.</p>
+      <p class="asbreg-legal">Por medio de la presente afiliación certifico como representante legal que la documentación del Establecimiento se encuentra al día y cumple los requisitos descritos en la ley 1801 de 2016 y las disposiciones Distritales, municipales y/o de Alcaldía Local a la fecha.</p>
 
-      <p class="asbreg-legal">(*) Al llenar sus datos autoriza a ASOBARES para enviar mas información y ponernos en contacto según la politica de proteccion de datos que puede consultar en nuestra pagina web www.asobares,org</p>
+      <p class="asbreg-legal">(*) Al llenar sus datos autoriza a ASOBARES para enviar más información y ponernos en contacto según la política de protección de datos que puede consultar en nuestra página web www.asobares.org</p>
     </div>
 
     <!-- ================= FIRMAS ================= -->
@@ -530,19 +574,19 @@
         <div class="asbreg-sign-box">
           <h4>FIRMA REPRESENTANTE LEGAL</h4>
           <div class="asbreg-field" style="margin-bottom:12px;">
-            <label for="asbreg-firma-rep-nombre">NOMBRE</label>
-            <input type="text" id="asbreg-firma-rep-nombre" name="firma_rep_nombre">
+            <label for="asbreg-firma-rep-nombre">NOMBRE *</label>
+            <input type="text" id="asbreg-firma-rep-nombre" name="firma_rep_nombre" required>
           </div>
           <div class="asbreg-field">
-            <label for="asbreg-firma-rep-doc">DOCUMENTO</label>
-            <input type="text" id="asbreg-firma-rep-doc" name="firma_rep_documento">
+            <label for="asbreg-firma-rep-doc">DOCUMENTO *</label>
+            <input type="text" id="asbreg-firma-rep-doc" name="firma_rep_documento" required>
           </div>
         </div>
         <div class="asbreg-sign-box">
           <h4>FIRMA FUNCIONARIO ASOBARES</h4>
           <div class="asbreg-field">
-            <label for="asbreg-firma-func-nombre">NOMBRE</label>
-            <input type="text" id="asbreg-firma-func-nombre" name="firma_func_nombre">
+            <label for="asbreg-firma-func-nombre">NOMBRE *</label>
+            <input type="text" id="asbreg-firma-func-nombre" name="firma_func_nombre" required>
           </div>
         </div>
       </div>
@@ -579,40 +623,40 @@
     '<div class="asbreg-contact">' +
       '<div class="asbreg-subtitle" style="margin-top:0;">' + c.titulo + '</div>' +
       '<div class="asbreg-row">' +
-        '<div class="asbreg-field"><label for="asbreg-' + k + '-nombre">NOMBRE</label>' +
-          '<input type="text" id="asbreg-' + k + '-nombre" name="' + k + '_nombre"></div>' +
-        '<div class="asbreg-field"><label for="asbreg-' + k + '-apellido">APELLIDO</label>' +
-          '<input type="text" id="asbreg-' + k + '-apellido" name="' + k + '_apellido"></div>' +
+        '<div class="asbreg-field"><label for="asbreg-' + k + '-nombre">NOMBRE *</label>' +
+          '<input type="text" id="asbreg-' + k + '-nombre" name="' + k + '_nombre" required></div>' +
+        '<div class="asbreg-field"><label for="asbreg-' + k + '-apellido">APELLIDO *</label>' +
+          '<input type="text" id="asbreg-' + k + '-apellido" name="' + k + '_apellido" required></div>' +
       '</div>' +
       '<div class="asbreg-row">' +
-        '<div class="asbreg-field"><span class="asbreg-group-label">GENERO</span>' +
+        '<div class="asbreg-field"><span class="asbreg-group-label">GENERO *</span>' +
           '<div class="asbreg-options">' +
             '<label><input type="radio" name="' + k + '_genero" value="MASCULINO"> MASCULINO</label>' +
             '<label><input type="radio" name="' + k + '_genero" value="FEMENINO"> FEMENINO</label>' +
           '</div></div>' +
-        '<div class="asbreg-field"><label for="asbreg-' + k + '-departamento">DEPARTAMENTO</label>' +
-          '<select id="asbreg-' + k + '-departamento" name="' + k + '_departamento">' + opciones(departamentos) + '</select></div>' +
+        '<div class="asbreg-field"><label for="asbreg-' + k + '-departamento">DEPARTAMENTO *</label>' +
+          '<select id="asbreg-' + k + '-departamento" name="' + k + '_departamento" required>' + opciones(departamentos) + '</select></div>' +
       '</div>' +
       '<div class="asbreg-row">' +
-        '<div class="asbreg-field"><span class="asbreg-group-label">PERFIL DEL CARGO</span>' +
+        '<div class="asbreg-field"><span class="asbreg-group-label">PERFIL DEL CARGO *</span>' +
           '<div class="asbreg-options">' +
             '<label><input type="radio" name="' + k + '_perfil" value="ADMINISTRATIVO"> ADMINISTRATIVO</label>' +
             '<label><input type="radio" name="' + k + '_perfil" value="OPERATIVO"> OPERATIVO</label>' +
           '</div></div>' +
-        '<div class="asbreg-field"><label for="asbreg-' + k + '-profesion">PROFESION</label>' +
-          '<select id="asbreg-' + k + '-profesion" name="' + k + '_profesion">' + opciones(cargos) + '</select></div>' +
+        '<div class="asbreg-field"><label for="asbreg-' + k + '-profesion">PROFESION *</label>' +
+          '<select id="asbreg-' + k + '-profesion" name="' + k + '_profesion" required>' + opciones(cargos) + '</select></div>' +
       '</div>' +
       '<div class="asbreg-row">' +
-        '<div class="asbreg-field"><label for="asbreg-' + k + '-tipodoc">TIPO DE DOCUMENTO</label>' +
-          '<input type="text" id="asbreg-' + k + '-tipodoc" name="' + k + '_tipo_documento"></div>' +
-        '<div class="asbreg-field"><label for="asbreg-' + k + '-numdoc">NUMERO DE DOCUMENTO</label>' +
-          '<input type="text" id="asbreg-' + k + '-numdoc" name="' + k + '_numero_documento"></div>' +
+        '<div class="asbreg-field"><label for="asbreg-' + k + '-tipodoc">TIPO DE DOCUMENTO *</label>' +
+          '<input type="text" id="asbreg-' + k + '-tipodoc" name="' + k + '_tipo_documento" required></div>' +
+        '<div class="asbreg-field"><label for="asbreg-' + k + '-numdoc">NUMERO DE DOCUMENTO *</label>' +
+          '<input type="text" id="asbreg-' + k + '-numdoc" name="' + k + '_numero_documento" required></div>' +
       '</div>' +
       '<div class="asbreg-row" style="margin-bottom:0;">' +
-        '<div class="asbreg-field"><label for="asbreg-' + k + '-correo">CORREO ELECTRONICO</label>' +
-          '<input type="email" id="asbreg-' + k + '-correo" name="' + k + '_correo"></div>' +
-        '<div class="asbreg-field"><label for="asbreg-' + k + '-celular">TELEFONO CELULAR</label>' +
-          '<input type="tel" id="asbreg-' + k + '-celular" name="' + k + '_celular"></div>' +
+        '<div class="asbreg-field"><label for="asbreg-' + k + '-correo">CORREO ELECTRONICO *</label>' +
+          '<input type="email" id="asbreg-' + k + '-correo" name="' + k + '_correo" required></div>' +
+        '<div class="asbreg-field"><label for="asbreg-' + k + '-celular">TELEFONO CELULAR *</label>' +
+          '<input type="tel" id="asbreg-' + k + '-celular" name="' + k + '_celular" required></div>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -621,7 +665,6 @@
 
   var SUPABASE_URL = "https://pbqmkodwmntujezbokgo.supabase.co";
   var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34";
-
   var BUCKET = "formularios";
   var NOMBRE_FORMULARIO = "registro-establecimientos";
 
@@ -631,6 +674,13 @@
   function limpiarNombre(n) {
     return n.normalize('NFD').replace(/[̀-ͯ]/g, '')
             .replace(/[^a-zA-Z0-9._-]/g, '_');
+  }
+
+  function validarRadio(name) {
+    return !!form.querySelector('input[name="' + name + '"]:checked');
+  }
+  function validarCheckboxGrupo(name) {
+    return form.querySelectorAll('input[name="' + name + '"]:checked').length > 0;
   }
 
   function subirArchivo(campo, archivo, carpeta) {
@@ -653,18 +703,71 @@
     e.preventDefault();
     msg.className = 'asbreg-msg';
 
+    /* Validaciones manuales (radio, checkbox, archivos, accepts) */
+    if (!validarCheckboxGrupo('plataformas[]')) {
+      msg.textContent = '✖ Selecciona al menos una plataforma a activar.';
+      msg.classList.add('asbreg-err'); return;
+    }
+    if (!validarRadio('identificacion')) {
+      msg.textContent = '✖ Selecciona el tipo de identificación de la empresa.';
+      msg.classList.add('asbreg-err'); return;
+    }
+    if (!validarRadio('regimen')) {
+      msg.textContent = '✖ Selecciona el régimen de la empresa.';
+      msg.classList.add('asbreg-err'); return;
+    }
+    if (!validarCheckboxGrupo('tipo_negocio[]')) {
+      msg.textContent = '✖ Selecciona al menos un tipo de negocio.';
+      msg.classList.add('asbreg-err'); return;
+    }
+    if (!validarCheckboxGrupo('concepto[]')) {
+      msg.textContent = '✖ Selecciona al menos un concepto musical.';
+      msg.classList.add('asbreg-err'); return;
+    }
+    if (!validarRadio('musica_en_vivo')) {
+      msg.textContent = '✖ Indica si el establecimiento maneja música en vivo.';
+      msg.classList.add('asbreg-err'); return;
+    }
+
+    var camposArchivo = ['doc_logo', 'doc_camara_comercio', 'doc_cedula', 'doc_rut'];
+    var nombresArchivo = { doc_logo: 'Logo del establecimiento', doc_camara_comercio: 'Cámara de Comercio', doc_cedula: 'Cédula del representante legal', doc_rut: 'RUT' };
+    for (var i = 0; i < camposArchivo.length; i++) {
+      var inp = form.querySelector('input[name="' + camposArchivo[i] + '"]');
+      if (!inp || inp.files.length === 0) {
+        msg.textContent = '✖ Debes adjuntar: ' + nombresArchivo[camposArchivo[i]];
+        msg.classList.add('asbreg-err'); return;
+      }
+    }
+
+    var claveContactos = ['rrhh', 'contable', 'operaciones'];
+    for (var j = 0; j < claveContactos.length; j++) {
+      var k = claveContactos[j];
+      if (!validarRadio(k + '_genero')) {
+        msg.textContent = '✖ Selecciona el género del contacto (' + k.toUpperCase() + ').';
+        msg.classList.add('asbreg-err'); return;
+      }
+      if (!validarRadio(k + '_perfil')) {
+        msg.textContent = '✖ Selecciona el perfil del cargo del contacto (' + k.toUpperCase() + ').';
+        msg.classList.add('asbreg-err'); return;
+      }
+    }
+
     if (!form.querySelector('input[name="acepta_anticorrupcion"]').checked ||
         !form.querySelector('input[name="acepta_uso_marca"]').checked) {
       msg.textContent = '✖ Debes aceptar el Adendo Anticorrupción y el Uso de Marca para continuar.';
-      msg.classList.add('asbreg-err');
+      msg.classList.add('asbreg-err'); return;
+    }
+
+    /* Validación HTML5 nativa (campos con required) */
+    if (!form.checkValidity()) {
+      form.reportValidity();
       return;
     }
 
     var fd = new FormData(form);
     var datos = {};
-    var camposArchivo = ['doc_camara_comercio', 'doc_cedula', 'doc_rut'];
 
-    ['tipo_negocio[]', 'concepto[]'].forEach(function (k) {
+    ['plataformas[]', 'tipo_negocio[]', 'concepto[]'].forEach(function (k) {
       datos[k.replace('[]', '')] = fd.getAll(k);
       fd.delete(k);
     });

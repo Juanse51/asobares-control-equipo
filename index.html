@@ -4335,7 +4335,7 @@
                       const doc = e.target.contentDocument;
                       if (!doc) return;
                       const s = doc.createElement('style');
-                      s.textContent = ':root{--nav:#1a1a2e!important;--accent:#E84338!important;--lime:#E84338!important}nav a.active{background:#16213e!important;border-left-color:#E84338!important}button.primary{background:#E84338!important;border-color:#E84338!important}.bar span{background:#E84338!important}';
+                      s.textContent = 'aside{position:relative!important;width:100%!important;height:auto!important;min-height:0!important;padding:6px 16px!important;flex-direction:row!important;align-items:center!important;gap:0!important}aside .brand{display:none!important}aside footer{display:none!important}aside button.backup{display:none!important}aside nav{margin-top:0!important;display:flex!important;flex-direction:row!important;overflow-x:auto!important;gap:2px!important;scrollbar-width:none!important;flex:1!important}aside nav::-webkit-scrollbar{display:none!important}aside nav a{white-space:nowrap!important;font-size:13px!important;padding:8px 12px!important}main{margin-left:0!important;padding:20px 28px!important}.notice{display:none!important}:root{--nav:#1a1a2e!important;--accent:#E84338!important;--lime:#E84338!important}aside nav a.active{background:#16213e!important;border-left:3px solid #E84338!important}button.primary{background:#E84338!important;border-color:#E84338!important}.bar span{background:#E84338!important}';
                       doc.head.appendChild(s);
                     } catch(err) {}
                   }}

@@ -883,6 +883,10 @@
       const [conectaModalRadar, setConectaModalRadar] = useState(undefined);
       const [conectaPropSearch, setConectaPropSearch] = useState('');
       const [conectaMostrarTareasTodas, setConectaMostrarTareasTodas] = useState(false);
+      const [conectaFinanzas, setConectaFinanzas] = useState([]);
+      const [conectaPanoramaPlat, setConectaPanoramaPlat] = useState('');
+      const [conectaPanoramaMes, setConectaPanoramaMes] = useState(() => new Date().toISOString().slice(0,7));
+      const [conectaModalFinanza, setConectaModalFinanza] = useState(undefined);
       const [showAddDocModal, setShowAddDocModal] = useState(false);
       const [crmData, setCrmData] = useState([]);
       const [crmLoading, setCrmLoading] = useState(false);
@@ -2128,7 +2132,7 @@
 
       const loadConecta = async () => {
         setConectaCargando(true);
-        const [a,p,t,s,pl,r,l] = await Promise.all([
+        const [a,p,t,s,pl,r,l,f] = await Promise.all([
           supabase.from('conecta_aliados').select('*').order('name'),
           supabase.from('conecta_propuestas').select('*').order('created_at',{ascending:false}),
           supabase.from('conecta_tareas').select('*').order('due'),
@@ -2136,15 +2140,19 @@
           supabase.from('conecta_planes').select('*').order('due'),
           supabase.from('conecta_radar').select('*').order('created_at',{ascending:false}),
           supabase.from('conecta_log').select('*').order('created_at',{ascending:false}).limit(50),
+          supabase.from('conecta_finanzas').select('*').order('date',{ascending:false}),
         ]);
         setConectaAliados(a.data||[]); setConectaPropuestas(p.data||[]); setConectaTareas(t.data||[]);
         setConectaSolicitudes(s.data||[]); setConectaPlanes(pl.data||[]); setConectaRadar(r.data||[]); setConectaActLog(l.data||[]);
+        setConectaFinanzas(f.data||[]);
         setConectaCargando(false);
       };
       const cLog = async text => { try { await supabase.from('conecta_log').insert({actor:currentUser?.name||'',text}); } catch{} };
 
       const saveAllyC = async d => { if(d.id){await supabase.from('conecta_aliados').update({...d,updated_at:new Date().toISOString()}).eq('id',d.id);await cLog('Editó aliado: '+d.name);}else{const {id,...rest}=d;await supabase.from('conecta_aliados').insert(rest);await cLog('Creó aliado: '+d.name);}setConectaModalAlly(undefined);loadConecta(); };
       const deleteAllyC = async (id,name) => { if(!confirm(`¿Eliminar aliado "${name}"?`))return;await supabase.from('conecta_aliados').delete().eq('id',id);await cLog('Eliminó aliado: '+name);loadConecta(); };
+      const saveFinanzaC = async d => { if(d.id){await supabase.from('conecta_finanzas').update(d).eq('id',d.id);}else{const {id,...rest}=d;await supabase.from('conecta_finanzas').insert({...rest,date:rest.date||cToday()});}await cLog(`Registró facturación ${formatCOP(d.invoiced)} · ${d.platform}`);setConectaModalFinanza(undefined);loadConecta(); };
+      const deleteFinanzaC = async id => { await supabase.from('conecta_finanzas').delete().eq('id',id);await cLog('Eliminó registro de facturación');loadConecta(); };
 
       const savePropC = async d => {
         const now=new Date().toISOString();
@@ -4484,6 +4492,18 @@
                     {(()=>{const d=conectaModalPlan,set=(k,v)=>setConectaModalPlan(p=>({...p,[k]:v}));return(<><label style={cLbl}>Aliado *</label><select style={cInp} value={d?.ally_id||''} onChange={e=>set('ally_id',e.target.value)}>{cAllyOptions}</select><label style={cLbl}>Mes</label><input type="month" style={{...cInp,marginTop:4}} value={d?.month||''} onChange={e=>set('month',e.target.value)}/><label style={cLbl}>Acción *</label><input style={{...cInp,marginTop:4}} value={d?.action||''} onChange={e=>set('action',e.target.value)}/><label style={cLbl}>Responsable</label><select style={{...cInp,marginTop:4}} value={d?.owner||currentUser?.name||''} onChange={e=>set('owner',e.target.value)}>{cUserOptions}</select><label style={cLbl}>Fecha límite</label><input type="date" style={{...cInp,marginTop:4}} value={d?.due||''} onChange={e=>set('due',e.target.value)}/><label style={cLbl}>Indicador y meta</label><textarea style={{...cInp,minHeight:60,marginTop:4,resize:'vertical'}} value={d?.metric||''} onChange={e=>set('metric',e.target.value)}/><CModalBtns onCancel={()=>setConectaModalPlan(undefined)} onSave={()=>d?.ally_id&&d?.action?.trim()&&savePlanC(d)}/></>);})()}
                   </CModalBox>}
 
+                  {conectaModalFinanza!==undefined&&<CModalBox title={conectaModalFinanza?.id?'Editar facturación':'Registrar facturación'} onClose={()=>setConectaModalFinanza(undefined)}>
+                    {(()=>{const d=conectaModalFinanza,set=(k,v)=>setConectaModalFinanza(p=>({...p,[k]:v}));return(<><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div><label style={cLbl}>Aliado</label><select style={cInp} value={d?.ally_id||''} onChange={e=>set('ally_id',e.target.value)}>{cAllyOptions}</select></div>
+                      <div><label style={cLbl}>Plataforma *</label><select style={cInp} value={d?.platform||''} onChange={e=>set('platform',e.target.value)}><option value="">Seleccionar...</option>{cPlatOptions}</select></div>
+                      <div><label style={cLbl}>Mes</label><input type="month" style={cInp} value={d?.month||conectaPanoramaMes} onChange={e=>set('month',e.target.value)}/></div>
+                      <div><label style={cLbl}>Fecha</label><input type="date" style={cInp} value={d?.date||cToday()} onChange={e=>set('date',e.target.value)}/></div>
+                      <div><label style={cLbl}>Facturado COP</label><input type="number" style={cInp} value={d?.invoiced||0} onChange={e=>set('invoiced',Number(e.target.value))}/></div>
+                      <div><label style={cLbl}>Pagado COP</label><input type="number" style={cInp} value={d?.paid||0} onChange={e=>set('paid',Number(e.target.value))}/></div>
+                      <div style={{gridColumn:'1/-1'}}><label style={cLbl}>Notas</label><textarea style={{...cInp,minHeight:60,resize:'vertical'}} value={d?.notes||''} onChange={e=>set('notes',e.target.value)}/></div>
+                    </div><CModalBtns onCancel={()=>setConectaModalFinanza(undefined)} onSave={()=>d?.platform&&saveFinanzaC(d)}/></>);})()}
+                  </CModalBox>}
+
                   {conectaModalRadar!==undefined&&<CModalBox title="Señal para el radar" onClose={()=>setConectaModalRadar(undefined)}>
                     {(()=>{const d=conectaModalRadar,set=(k,v)=>setConectaModalRadar(p=>({...p,[k]:v}));return(<><label style={cLbl}>Empresa / Prospecto *</label><input style={cInp} value={d?.name||''} onChange={e=>set('name',e.target.value)}/><label style={cLbl}>Idea de conexión</label><textarea style={{...cInp,minHeight:70,marginTop:4,resize:'vertical'}} value={d?.idea||''} onChange={e=>set('idea',e.target.value)}/><label style={cLbl}>Plataforma</label><select style={{...cInp,marginTop:4}} value={d?.platform||''} onChange={e=>set('platform',e.target.value)}><option value="">Seleccionar...</option>{cPlatOptions}</select><label style={cLbl}>Fuente (URL)</label><input style={{...cInp,marginTop:4}} value={d?.url||''} onChange={e=>set('url',e.target.value)}/><CModalBtns onCancel={()=>setConectaModalRadar(undefined)} onSave={()=>d?.name?.trim()&&saveRadarC(d)}/></>);})()}
                   </CModalBox>}
@@ -4498,32 +4518,118 @@
 
                   {/* PANORAMA */}
                   {!conectaCargando&&conectaView==='panorama'&&(()=>{
-                    const ingresoV=conectaAliados.reduce((s,a)=>s+(a.monthly||0),0);
-                    const ingresoA=conectaPropuestas.filter(p=>['Aceptada por aliado','En ejecución','Ejecutada'].includes(p.status)&&p.type!=='Incluida en el convenio').reduce((s,p)=>s+(p.revenue||0),0);
-                    const pendGO=conectaPropuestas.filter(p=>p.status==='Pendiente de GO').length;
-                    const alerta=conectaAliados.filter(a=>cHealth(a)!=='bien');
+                    const platActual = conectaPanoramaPlat;
+                    const mesActual = conectaPanoramaMes;
+                    const finMes = conectaFinanzas.filter(f=>f.month===mesActual&&(platActual?f.platform===platActual:true));
+                    const finMesPlat = p => conectaFinanzas.filter(f=>f.month===mesActual&&f.platform===p);
+                    const totalFact = finMes.reduce((s,f)=>s+(f.invoiced||0),0);
+                    const totalPag = finMes.reduce((s,f)=>s+(f.paid||0),0);
+                    const actMes = conectaPlanes.filter(p=>p.month===mesActual&&(platActual?p.platform===platActual:true));
+                    const actRealizadas = actMes.filter(p=>p.done);
+                    const solicMes = conectaSolicitudes.filter(s=>(s.date||'').slice(0,7)===mesActual&&(platActual?s.platform===platActual:true));
+                    const aliadosActivos = platActual ? conectaAliados.filter(a=>conectaPropuestas.some(p=>p.ally_id===a.id&&p.platform===platActual)) : conectaAliados;
+                    const pendGO = conectaPropuestas.filter(p=>p.status==='Pendiente de GO').length;
+                    const alerta = conectaAliados.filter(a=>cHealth(a)!=='bien');
+                    const signalColor = totalFact===0?'#E84338':totalPag>=totalFact?'#10b981':'#f59e0b';
+                    const signalLabel = totalFact===0?'ROJO · Gestión mensual':totalPag>=totalFact?'VERDE · Gestión mensual':'AMARILLO · Gestión mensual';
+                    const signalText = totalFact===0
+                      ? `No hay facturación registrada en ${mesActual}. Confirma los datos y programa una acción comercial esta semana.`
+                      : totalPag>=totalFact ? `Facturación y recaudo al día en ${mesActual}.`
+                      : `Hay ${formatCOP(totalFact-totalPag)} pendiente de recaudo en ${mesActual}.`;
                     return(<div>
-                      <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(3,1fr)',gap:16,marginBottom:20}}>
-                        {[[{label:'Aporte mensual vigente',val:formatCOP(ingresoV),color:'#1a1a2e',sub:'Total convenios activos'},{label:'Ingreso adicional aceptado',val:formatCOP(ingresoA),color:'#10b981',sub:'Propuestas con aceptación'},{label:'Decisiones de Presidencia',val:pendGO,color:'#E84338',sub:'Pendientes de GO',link:'go'}]][0].map((s,i)=>(
-                          <div key={i} onClick={s.link?()=>setConectaView(s.link):undefined} style={{...cCard,borderLeft:`4px solid ${s.color}`,cursor:s.link?'pointer':undefined}}>
-                            <p style={{fontSize:12,color:'#64748b',marginBottom:6}}>{s.label}</p>
-                            <p style={{fontSize:s.val?.toString().startsWith('$')?22:32,fontWeight:700,color:s.color,margin:'0 0 4px'}}>{s.val}</p>
+                      {/* Selector plataforma + mes */}
+                      <div style={{display:'flex',gap:12,marginBottom:16,flexWrap:'wrap',alignItems:'flex-end'}}>
+                        <div style={{flex:2,minWidth:180}}>
+                          <label style={{fontSize:12,fontWeight:600,color:'#64748b',display:'block',marginBottom:4}}>Plataforma</label>
+                          <select value={conectaPanoramaPlat} onChange={e=>setConectaPanoramaPlat(e.target.value)} style={{padding:'10px 14px',borderRadius:10,border:'2px solid #e5e7eb',fontSize:14,width:'100%',background:'white'}}>
+                            <option value="">Asobares Bogotá & Colombia</option>
+                            {CONECTA_PLATFORMS.map(p=><option key={p} value={p}>{p}</option>)}
+                          </select>
+                        </div>
+                        <div style={{flex:1,minWidth:150}}>
+                          <label style={{fontSize:12,fontWeight:600,color:'#64748b',display:'block',marginBottom:4}}>Mes</label>
+                          <input type="month" value={conectaPanoramaMes} onChange={e=>setConectaPanoramaMes(e.target.value)} style={{padding:'10px 14px',borderRadius:10,border:'2px solid #e5e7eb',fontSize:14,width:'100%',boxSizing:'border-box'}}/>
+                        </div>
+                      </div>
+                      {/* Botones de acción */}
+                      <div style={{display:'flex',gap:8,marginBottom:20,flexWrap:'wrap'}}>
+                        <button onClick={()=>setConectaModalFinanza({platform:conectaPanoramaPlat,month:conectaPanoramaMes,invoiced:0,paid:0})} style={{padding:'9px 18px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer',fontSize:13}}>Registrar facturación</button>
+                        <button onClick={()=>setConectaView('datos')} style={{padding:'9px 18px',borderRadius:10,border:'1px solid #e5e7eb',background:'white',fontWeight:500,cursor:'pointer',fontSize:13}}>Ver movimientos</button>
+                        <button onClick={()=>setConectaView('seguimiento')} style={{padding:'9px 18px',borderRadius:10,border:'1px solid #e5e7eb',background:'white',fontWeight:500,cursor:'pointer',fontSize:13}}>Registrar actividad</button>
+                        <button onClick={()=>setConectaModalSolicitud({owner:currentUser?.name||'',platform:conectaPanoramaPlat})} style={{padding:'9px 18px',borderRadius:10,border:'1px solid #e5e7eb',background:'white',fontWeight:500,cursor:'pointer',fontSize:13}}>Registrar solicitud</button>
+                      </div>
+                      {/* Alerta mensual */}
+                      <div style={{borderLeft:`4px solid ${signalColor}`,background:signalColor==='#E84338'?'#fff5f5':signalColor==='#10b981'?'#f0fdf4':'#fffbeb',borderRadius:12,padding:'14px 18px',marginBottom:20}}>
+                        <p style={{fontWeight:700,color:signalColor,fontSize:13,margin:'0 0 4px'}}>{signalLabel}</p>
+                        <p style={{color:'#475569',margin:'0 0 4px',fontSize:14}}>{signalText}</p>
+                        <p style={{color:'#94a3b8',fontSize:12,margin:0}}>Semana del {hoy} · {aliadosActivos.length} aliado{aliadosActivos.length!==1?'s':''} en este alcance.</p>
+                      </div>
+                      {/* Stats cards */}
+                      <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(3,1fr)',gap:12,marginBottom:20}}>
+                        {[
+                          {label:'Aliados actuales confirmados',val:aliadosActivos.length,sub:'Convenio activo',color:'#1a1a2e'},
+                          {label:'Facturación mensual',val:formatCOP(totalFact),sub:'Suma por registro, sin duplicar plataformas',color:'#1a1a2e'},
+                          {label:'Interacciones con afiliados',val:solicMes.length,sub:'Interacciones registradas en el mes',color:'#1a1a2e'},
+                          {label:'Actividades del mes',val:actMes.length,sub:'Planificadas y realizadas',color:'#1a1a2e'},
+                          {label:'Actividades realizadas',val:actRealizadas.length,sub:'Con resultado documentado',color:'#1a1a2e'},
+                          {label:'Recaudo mensual',val:formatCOP(totalPag),sub:'Dinero recibido registrado',color:totalPag>0?'#10b981':'#1a1a2e'},
+                        ].map((s,i)=>(
+                          <div key={i} style={{...cCard,padding:'16px 18px'}}>
+                            <p style={{fontSize:11,color:'#64748b',marginBottom:4}}>{s.label}</p>
+                            <p style={{fontSize:typeof s.val==='number'?28:20,fontWeight:700,color:s.color,margin:'0 0 2px'}}>{s.val}</p>
                             <p style={{fontSize:11,color:'#94a3b8',margin:0}}>{s.sub}</p>
                           </div>
                         ))}
                       </div>
+                      {/* Alerta comercial por plataforma */}
+                      <div style={{...cCard,marginBottom:16}}>
+                        <h3 style={{fontSize:15,fontWeight:700,marginBottom:14}}>Alerta comercial por plataforma</h3>
+                        {CONECTA_PLATFORMS.map(plat=>{
+                          const fPlat=finMesPlat(plat);
+                          const facPlat=fPlat.reduce((s,f)=>s+(f.invoiced||0),0);
+                          const newAllies=conectaAliados.filter(a=>conectaPropuestas.some(p=>p.ally_id===a.id&&p.platform===plat&&['GO aprobado','Presentada al aliado','Aceptada por aliado','En ejecución','Ejecutada'].includes(p.status))).length;
+                          const sig=facPlat===0?{bg:'#fff5f5',color:'#E84338'}:{bg:'#f0fdf4',color:'#059669'};
+                          return(<div key={plat} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0',borderBottom:'1px solid #f1f5f9',cursor:'pointer'}} onClick={()=>{setConectaPanoramaPlat(plat);}}>
+                            <span style={{fontSize:14,fontWeight:600}}>{plat}</span>
+                            <span style={{padding:'5px 14px',borderRadius:20,fontSize:12,fontWeight:600,background:sig.bg,color:sig.color}}>{formatCOP(facPlat)} facturado · {newAllies} aliado{newAllies!==1?'s':''} activo{newAllies!==1?'s':''}</span>
+                          </div>);
+                        })}
+                      </div>
+                      {/* Aliados con alerta */}
                       {alerta.length>0&&<div style={{...cCard,marginBottom:16}}>
                         <h3 style={{fontSize:15,fontWeight:700,marginBottom:10}}>⚠️ Aliados que requieren atención</h3>
                         {alerta.map(a=><div key={a.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:'1px solid #f1f5f9'}}><span style={{fontSize:14,fontWeight:500}}>{a.name}</span><HBadge a={a}/></div>)}
                       </div>}
-                      <div style={cCard}>
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-                          <h3 style={{fontSize:15,fontWeight:700,margin:0}}>Propuestas recientes</h3>
-                          <button onClick={()=>setConectaModalProp({owner:currentUser?.name||'',type:'Incluida en el convenio',revenue:0,cost:0,history:[]})} style={{padding:'8px 16px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer',fontSize:13}}>+ Nueva propuesta</button>
+                      {/* GO pendientes + Propuestas recientes */}
+                      <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:16}}>
+                        <div style={cCard}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+                            <h3 style={{fontSize:15,fontWeight:700,margin:0}}>Decisiones de Presidencia</h3>
+                            <span onClick={()=>setConectaView('go')} style={{fontSize:12,color:'#E84338',cursor:'pointer',fontWeight:600}}>{pendGO} pendiente{pendGO!==1?'s':''}</span>
+                          </div>
+                          {conectaPropuestas.filter(p=>p.status==='Pendiente de GO').slice(0,3).map(p=><div key={p.id} onClick={()=>setConectaPropDetalle(p)} style={{padding:'8px 0',borderBottom:'1px solid #f1f5f9',cursor:'pointer'}}><p style={{fontSize:13,fontWeight:600,margin:0}}>{p.title}</p><p style={{fontSize:11,color:'#64748b'}}>{cAllyName(p.ally_id)}</p></div>)}
+                          {pendGO===0&&<p style={{color:'#94a3b8',fontSize:13,textAlign:'center',padding:12}}>Sin pendientes de GO ✅</p>}
                         </div>
-                        {conectaPropuestas.slice(0,5).map(p=><div key={p.id} onClick={()=>setConectaPropDetalle(p)} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #f1f5f9',cursor:'pointer'}}><div><p style={{fontSize:14,fontWeight:600,margin:0}}>{p.title}</p><p style={{fontSize:12,color:'#64748b',marginTop:2}}>{cAllyName(p.ally_id)} · {p.platform}</p></div><SBadge s={p.status}/></div>)}
-                        {conectaPropuestas.length===0&&<p style={{color:'#94a3b8',textAlign:'center',padding:24}}>Sin propuestas aún.</p>}
+                        <div style={cCard}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+                            <h3 style={{fontSize:15,fontWeight:700,margin:0}}>Propuestas recientes</h3>
+                            <button onClick={()=>setConectaModalProp({owner:currentUser?.name||'',type:'Incluida en el convenio',revenue:0,cost:0,history:[]})} style={{padding:'6px 12px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer',fontSize:12}}>+ Nueva</button>
+                          </div>
+                          {conectaPropuestas.slice(0,4).map(p=><div key={p.id} onClick={()=>setConectaPropDetalle(p)} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:'1px solid #f1f5f9',cursor:'pointer'}}><div><p style={{fontSize:13,fontWeight:600,margin:0}}>{p.title}</p><p style={{fontSize:11,color:'#64748b'}}>{cAllyName(p.ally_id)}</p></div><SBadge s={p.status}/></div>)}
+                          {conectaPropuestas.length===0&&<p style={{color:'#94a3b8',textAlign:'center',padding:12}}>Sin propuestas aún.</p>}
+                        </div>
                       </div>
+                      {/* Movimientos del mes */}
+                      {finMes.length>0&&<div style={{...cCard,marginTop:16}}>
+                        <h3 style={{fontSize:15,fontWeight:700,marginBottom:12}}>Facturación registrada · {mesActual}</h3>
+                        {finMes.map(f=><div key={f.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:'1px solid #f1f5f9'}}>
+                          <div><p style={{fontSize:13,fontWeight:600,margin:0}}>{cAllyName(f.ally_id)||'Sin aliado'} · {f.platform}</p><p style={{fontSize:11,color:'#64748b'}}>{f.date}{f.notes?' · '+f.notes:''}</p></div>
+                          <div style={{textAlign:'right',flexShrink:0,marginLeft:12}}>
+                            <p style={{fontSize:13,fontWeight:700,margin:0}}>{formatCOP(f.invoiced)}</p>
+                            <p style={{fontSize:11,color:'#10b981'}}>Pagado: {formatCOP(f.paid)}</p>
+                          </div>
+                        </div>)}
+                      </div>}
                     </div>);
                   })()}
 

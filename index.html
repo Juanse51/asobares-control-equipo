@@ -967,6 +967,7 @@
       const [certProgresoEnvio, setCertProgresoEnvio] = useState({ done: 0, total: 0 });
       const [certDescargando, setCertDescargando] = useState(false);
       const [certProgresoDescarga, setCertProgresoDescarga] = useState({ done: 0, total: 0 });
+      const [zipDescargando, setZipDescargando] = useState(null);
       const [certImportando, setCertImportando] = useState(false);
       const [certEditLote, setCertEditLote] = useState(null);
       const [certShowPlantillaModal, setCertShowPlantillaModal] = useState(false);
@@ -2001,6 +2002,32 @@
         setCertDescargando(false);
         showNotif('¡ZIP descargado!');
       };
+      const descargarCarpetaZip = async (doc) => {
+        const folderId = doc.url.match(/folders\/([^/?&#]+)/)?.[1];
+        if (!folderId) return showNotif('No se pudo leer el ID de la carpeta', 'error');
+        setZipDescargando(doc.id);
+        try {
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/download-folder-zip`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
+            body: JSON.stringify({ folderId, folderName: doc.nombre }),
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || 'Error al generar el ZIP');
+          }
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${doc.nombre}.zip`;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+        } catch (e) {
+          showNotif('Error: ' + e.message, 'error');
+        }
+        setZipDescargando(null);
+      };
       const enviarTodos = async (personas, lote, plantilla, camposOverride = null) => {
         if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
         const pendientes = personas.filter(p => p.email && p.estado !== 'enviado');
@@ -2231,7 +2258,10 @@
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 'auto' }}>
                             <div style={{ display: 'flex', gap: 6 }}>
                               {previewUrl && <button onClick={() => setDocPreview(doc)} style={{ flex: 1, padding: '9px 0', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>👁 Preview</button>}
-                              <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '9px 0', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 12, fontWeight: 600, textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{doc.tipo === 'folder' ? '⬇️ Descargar ZIP' : '🔗 Abrir'}</a>
+                              {doc.tipo === 'folder'
+                                ? <button onClick={() => descargarCarpetaZip(doc)} disabled={zipDescargando === doc.id} style={{ flex: 1, padding: '9px 0', borderRadius: 8, border: 'none', background: zipDescargando === doc.id ? '#e5e7eb' : 'linear-gradient(135deg, #E84338, #c41e16)', color: zipDescargando === doc.id ? '#94a3b8' : 'white', fontSize: 12, fontWeight: 600, cursor: zipDescargando === doc.id ? 'default' : 'pointer' }}>{zipDescargando === doc.id ? '⏳ Preparando...' : '⬇️ Descargar ZIP'}</button>
+                                : <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '9px 0', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 12, fontWeight: 600, textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🔗 Abrir</a>
+                              }
                               {downloadUrl && doc.tipo !== 'folder' && <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '9px 12px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontSize: 12, fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>⬇️</a>}
                               {currentUser.role === 'admin' && <button onClick={() => handleDeleteDoc(doc.id)} style={{ padding: '9px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', cursor: 'pointer', fontSize: 12 }}>🗑️</button>}
                             </div>
@@ -4424,7 +4454,10 @@
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 24px', background: '#1a1a2e', gap: 12, flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span style={{ fontSize: 22 }}>{getDriveIcon(docPreview.tipo)}</span><p style={{ color: 'white', fontWeight: 700, fontSize: 15 }}>{docPreview.nombre}</p><span style={{ fontSize: 11, color: '#64748b', background: 'rgba(255,255,255,0.1)', padding: '3px 8px', borderRadius: 6 }}>{getDriveLabel(docPreview.tipo)}</span></div>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <a href={docPreview.url} target="_blank" rel="noopener noreferrer" style={{ padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', color: 'white', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>{docPreview.tipo === 'folder' ? '⬇️ Descargar ZIP' : '🔗 Abrir en Drive'}</a>
+                  {docPreview.tipo === 'folder'
+                    ? <button onClick={() => descargarCarpetaZip(docPreview)} disabled={zipDescargando === docPreview.id} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: zipDescargando === docPreview.id ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)', color: zipDescargando === docPreview.id ? '#94a3b8' : 'white', fontSize: 13, fontWeight: 600, cursor: zipDescargando === docPreview.id ? 'default' : 'pointer' }}>{zipDescargando === docPreview.id ? '⏳ Preparando...' : '⬇️ Descargar ZIP'}</button>
+                    : <a href={docPreview.url} target="_blank" rel="noopener noreferrer" style={{ padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', color: 'white', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>🔗 Abrir en Drive</a>
+                  }
                   {getDriveDownloadUrl(docPreview) && docPreview.tipo !== 'folder' && <a href={getDriveDownloadUrl(docPreview)} target="_blank" rel="noopener noreferrer" style={{ padding: '8px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>⬇️ Descargar</a>}
                   <button onClick={() => setDocPreview(null)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>×</button>
                 </div>

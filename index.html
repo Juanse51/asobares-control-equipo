@@ -4437,6 +4437,7 @@
                     {(()=>{const d=conectaModalAlly,set=(k,v)=>setConectaModalAlly(p=>({...p,[k]:v}));return(<><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
                       <div style={{gridColumn:'1/-1'}}><label style={cLbl}>Empresa *</label><input style={cInp} value={d?.name||''} onChange={e=>set('name',e.target.value)}/></div>
                       <div><label style={cLbl}>Categoría</label><input style={cInp} value={d?.category||''} onChange={e=>set('category',e.target.value)}/></div>
+                      <div><label style={cLbl}>Estado del convenio</label><select style={cInp} value={d?.status||'Por confirmar'} onChange={e=>set('status',e.target.value)}><option>Por confirmar</option><option>Activo</option><option>En negociación</option><option>Inactivo</option></select></div>
                       <div><label style={cLbl}>Aporte mensual COP</label><input type="number" style={cInp} value={d?.monthly||0} onChange={e=>set('monthly',Number(e.target.value))}/></div>
                       <div><label style={cLbl}>Renovación</label><input type="date" style={cInp} value={d?.renew||''} onChange={e=>set('renew',e.target.value)}/></div>
                       <div><label style={cLbl}>Contacto</label><input style={cInp} value={d?.contact||''} onChange={e=>set('contact',e.target.value)}/></div>
@@ -4643,7 +4644,7 @@
                       {conectaAliados.map(a=>{
                         const planesMes=conectaPlanes.filter(p=>p.ally_id===a.id&&p.month===hoy.slice(0,7));
                         return(<div key={a.id} style={cCard}>
-                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}><div><h3 style={{fontSize:16,fontWeight:700,margin:0}}>{a.name}</h3><p style={{fontSize:12,color:'#64748b',marginTop:2}}>{a.category}</p></div><HBadge a={a}/></div>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}><div><h3 style={{fontSize:16,fontWeight:700,margin:0}}>{a.name}</h3><p style={{fontSize:12,color:'#64748b',marginTop:2}}>{a.category}</p></div><div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}><span style={{padding:'3px 8px',borderRadius:6,fontSize:11,fontWeight:600,...(a.status==='Activo'?{background:'#e1f4eb',color:'#176246'}:a.status==='Inactivo'?{background:'#fce6e6',color:'#9b3030'}:{background:'#fff0c8',color:'#775410'})}}>{a.status||'Por confirmar'}</span><HBadge a={a}/></div></div>
                           <p style={{fontSize:22,fontWeight:700,color:'#1a1a2e',margin:'6px 0'}}>{formatCOP(a.monthly)}<span style={{fontSize:12,fontWeight:400,color:'#94a3b8'}}>/mes</span></p>
                           {a.renew&&<p style={{fontSize:12,color:'#64748b',margin:'0 0 8px'}}>Renovación: {a.renew}</p>}
                           {a.goal&&<p style={{fontSize:13,color:'#475569',marginBottom:8}}>{a.goal}</p>}

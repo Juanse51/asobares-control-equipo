@@ -907,6 +907,7 @@
       const [registrosSearch, setRegistrosSearch] = useState('');
       const [registrosFiltroForm, setRegistrosFiltroForm] = useState('all');
       const [registrosDetalle, setRegistrosDetalle] = useState(null);
+      const [registrosEditando, setRegistrosEditando] = useState(null);
       const [gastroData, setGastroData] = useState([]);
       const [gastroLoading, setGastroLoading] = useState(false);
       const [gastroSearch, setGastroSearch] = useState('');
@@ -1257,6 +1258,33 @@
         const { data, error } = await supabase.storage.from('formularios').createSignedUrl(ruta, 3600);
         if (data?.signedUrl) window.open(data.signedUrl, '_blank');
         else showNotif('No se pudo generar el enlace del documento');
+      };
+      const saveRegistroEdit = async (reg) => {
+        const { id, datos, notas, logo_url } = reg;
+        await supabase.from('envios_formularios').update({ datos, notas: notas||'', logo_url: logo_url||'' }).eq('id', id);
+        setRegistrosEditando(null);
+        await loadRegistros();
+        showNotif('Registro actualizado ✓');
+      };
+      const uploadLogoRegistro = (file, cb) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => cb(e.target.result);
+        reader.readAsDataURL(file);
+      };
+      const downloadExcelRegistros = () => {
+        const reg = getRegistrosFiltered();
+        if (!reg.length) { showNotif('Sin registros para exportar', 'error'); return; }
+        const headers = ['Fecha envío','Formulario','Nombre establecimiento','Razón social','Identificación','Representante','Departamento','Dirección','Email empresa','Teléfono empresa','Celular','Tipo negocio','Concepto','Música en vivo','Horario desde','Horario hasta','Días operación','Aforo','Instagram','Facebook','Página web','Notas admin'];
+        const rows = reg.map(r => {
+          const d = r.datos || {};
+          return [r.creado_en?new Date(r.creado_en).toLocaleString('es-CO'):'',r.formulario||'',d.nombre_establecimiento||'',d.razon_social||'',d.identificacion||'',((d.nombre_representante||'')+' '+(d.apellido_representante||'')).trim(),d.departamento_establecimiento||'',d.direccion_establecimiento||'',d.email_empresa||'',d.telefono_empresa||'',d.celular_establecimiento||'',d.tipo_negocio||'',d.concepto||'',d.musica_en_vivo||'',d.horario_desde||'',d.horario_hasta||'',d.dias_operacion||'',d.aforo||'',d.instagram||'',d.facebook||'',d.pagina_web||'',r.notas||''];
+        });
+        const csv = [headers,...rows].map(row=>row.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+        const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download=`registros_asobares_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+        URL.revokeObjectURL(url);
       };
       const getRegistrosFiltered = () => {
         const q = registrosSearch.toLowerCase();
@@ -2837,6 +2865,7 @@
                       {tiposForm.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                     <button onClick={loadRegistros} aria-label="Actualizar" style={{ padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 16 }}>🔄</button>
+                    <button onClick={downloadExcelRegistros} style={{ padding: '12px 18px', borderRadius: 10, border: '2px solid #059669', background: '#f0fdf4', color: '#059669', cursor: 'pointer', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>⬇️ Descargar Excel</button>
                   </div>
                   {registrosLoading ? (
                     <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando registros...</p></div>
@@ -2883,24 +2912,82 @@
                     </div>
                   ) : (
                     <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '150px minmax(0,1.2fr) minmax(0,1fr) 130px minmax(0,1fr) 48px', padding: '10px 16px', background: '#f8f9fa', borderBottom: '1px solid #f1f5f9', gap: 8 }}>
-                        {['FECHA','ESTABLECIMIENTO','RAZÓN SOCIAL','DEPARTAMENTO','EMAIL',''].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h}</span>)}
+                      <div style={{ display: 'grid', gridTemplateColumns: '150px 40px minmax(0,1.2fr) minmax(0,1fr) 130px minmax(0,1fr) 88px', padding: '10px 16px', background: '#f8f9fa', borderBottom: '1px solid #f1f5f9', gap: 8 }}>
+                        {['FECHA','','ESTABLECIMIENTO','RAZÓN SOCIAL','DEPARTAMENTO','EMAIL',''].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h}</span>)}
                       </div>
                       {regFiltered.map(r => {
                         const d = r.datos || {};
                         return (
-                          <div key={r.id} onClick={() => setRegistrosDetalle(r)} style={{ display: 'grid', gridTemplateColumns: '150px minmax(0,1.2fr) minmax(0,1fr) 130px minmax(0,1fr) 48px', padding: '13px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', alignItems: 'center', gap: 8, background: 'white', transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background='#fafbfc'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <div key={r.id} onClick={() => setRegistrosDetalle(r)} style={{ display: 'grid', gridTemplateColumns: '150px 40px minmax(0,1.2fr) minmax(0,1fr) 130px minmax(0,1fr) 88px', padding: '13px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', alignItems: 'center', gap: 8, background: 'white', transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background='#fafbfc'} onMouseLeave={e => e.currentTarget.style.background='white'}>
                             <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4 }}>{fmtDate(r.creado_en)}</p>
+                            <div>{r.logo_url ? <img src={r.logo_url} style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6, border: '1px solid #e5e7eb' }} alt="Logo" /> : <div style={{ width: 32, height: 32, borderRadius: 6, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🏢</div>}</div>
                             <p style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.nombre_establecimiento || '—'}</p>
                             <p style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.razon_social || '—'}</p>
                             <p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.departamento_establecimiento || '—'}</p>
                             <p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#64748b' }}>{d.email_empresa || '—'}</p>
-                            <button aria-label="Ver detalle" onClick={e => { e.stopPropagation(); setRegistrosDetalle(r); }} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#374151', fontSize: 14, cursor: 'pointer' }}>👁</button>
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              <button aria-label="Ver detalle" onClick={e => { e.stopPropagation(); setRegistrosDetalle(r); }} style={{ padding: '6px 8px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#374151', fontSize: 13, cursor: 'pointer' }}>👁</button>
+                              {currentUser.role !== 'invitado' && <button aria-label="Editar" onClick={e => { e.stopPropagation(); setRegistrosEditando({ id: r.id, datos: { ...(r.datos||{}) }, notas: r.notas||'', logo_url: r.logo_url||'' }); }} style={{ padding: '6px 8px', borderRadius: 8, border: 'none', background: '#dbeafe', color: '#1d4ed8', fontSize: 13, cursor: 'pointer' }}>✏️</button>}
+                            </div>
                           </div>
                         );
                       })}
                     </div>
                   )}
+                  {registrosEditando && (() => {
+                    const re = registrosEditando;
+                    const setRe = fn => setRegistrosEditando(prev => fn(prev));
+                    const setD = (k, v) => setRe(prev => ({ ...prev, datos: { ...prev.datos, [k]: v } }));
+                    const inpSt = { padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13, width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' };
+                    const lbl = t => <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 4, marginTop: 12 }}>{t}</label>;
+                    return (
+                      <div onClick={e => e.target === e.currentTarget && setRegistrosEditando(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+                        <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 800, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 28px', borderBottom: '1px solid #f1f5f9', flexShrink: 0 }}>
+                            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Editar registro</h2>
+                            <button onClick={() => setRegistrosEditando(null)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: '#f1f5f9', cursor: 'pointer', fontSize: 18 }}>×</button>
+                          </div>
+                          <div style={{ padding: '20px 28px', overflowY: 'auto', flex: 1 }}>
+                            {/* Logo */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+                              {re.logo_url ? <img src={re.logo_url} style={{ width: 72, height: 72, objectFit: 'contain', borderRadius: 12, border: '2px solid #e5e7eb', padding: 4 }} alt="Logo actual" /> : <div style={{ width: 72, height: 72, borderRadius: 12, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, border: '2px dashed #e5e7eb' }}>🏢</div>}
+                              <div>
+                                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Logo del establecimiento</p>
+                                <label style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                                  📁 Subir imagen
+                                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => uploadLogoRegistro(e.target.files[0], url => setRe(p => ({ ...p, logo_url: url })))} />
+                                </label>
+                                {re.logo_url && <button onClick={() => setRe(p => ({ ...p, logo_url: '' }))} style={{ marginLeft: 8, padding: '8px 12px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', cursor: 'pointer', fontSize: 12 }}>Quitar</button>}
+                              </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                              <div style={{ gridColumn: '1/-1' }}>{lbl('Nombre del establecimiento')}<input style={inpSt} value={re.datos.nombre_establecimiento||''} onChange={e=>setD('nombre_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Razón social')}<input style={inpSt} value={re.datos.razon_social||''} onChange={e=>setD('razon_social',e.target.value)}/></div>
+                              <div>{lbl('Tipo de identificación')}<input style={inpSt} value={re.datos.identificacion||''} onChange={e=>setD('identificacion',e.target.value)}/></div>
+                              <div>{lbl('Número de identificación')}<input style={inpSt} value={re.datos.num_identificacion||''} onChange={e=>setD('num_identificacion',e.target.value)}/></div>
+                              <div>{lbl('Email empresa')}<input style={inpSt} value={re.datos.email_empresa||''} onChange={e=>setD('email_empresa',e.target.value)}/></div>
+                              <div>{lbl('Teléfono empresa')}<input style={inpSt} value={re.datos.telefono_empresa||''} onChange={e=>setD('telefono_empresa',e.target.value)}/></div>
+                              <div>{lbl('Celular establecimiento')}<input style={inpSt} value={re.datos.celular_establecimiento||''} onChange={e=>setD('celular_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Departamento')}<input style={inpSt} value={re.datos.departamento_establecimiento||''} onChange={e=>setD('departamento_establecimiento',e.target.value)}/></div>
+                              <div style={{ gridColumn: '1/-1' }}>{lbl('Dirección establecimiento')}<input style={inpSt} value={re.datos.direccion_establecimiento||''} onChange={e=>setD('direccion_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Tipo de negocio')}<input style={inpSt} value={re.datos.tipo_negocio||''} onChange={e=>setD('tipo_negocio',e.target.value)}/></div>
+                              <div>{lbl('Concepto')}<input style={inpSt} value={re.datos.concepto||''} onChange={e=>setD('concepto',e.target.value)}/></div>
+                              <div>{lbl('Instagram')}<input style={inpSt} value={re.datos.instagram||''} onChange={e=>setD('instagram',e.target.value)}/></div>
+                              <div>{lbl('Página web')}<input style={inpSt} value={re.datos.pagina_web||''} onChange={e=>setD('pagina_web',e.target.value)}/></div>
+                              <div>{lbl('Facebook')}<input style={inpSt} value={re.datos.facebook||''} onChange={e=>setD('facebook',e.target.value)}/></div>
+                              <div>{lbl('Régimen')}<input style={inpSt} value={re.datos.regimen||''} onChange={e=>setD('regimen',e.target.value)}/></div>
+                              <div style={{ gridColumn: '1/-1' }}>{lbl('Notas internas (solo equipo Asobares)')}<textarea style={{ ...inpSt, minHeight: 80, resize: 'vertical' }} value={re.notas||''} onChange={e=>setRe(p=>({...p,notas:e.target.value}))}/></div>
+                            </div>
+                          </div>
+                          <div style={{ padding: '16px 28px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+                            <button onClick={() => setRegistrosEditando(null)} style={{ padding: '10px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                            <button onClick={() => saveRegistroEdit(re)} style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #065f46, #047857)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {registrosDetalle && (() => {
                     const d = registrosDetalle.datos || {};
                     const arch = registrosDetalle.archivos || {};
@@ -2914,11 +3001,14 @@
                       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
                         <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 860, maxHeight: '90vh', overflow: 'auto' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 28px', background: 'linear-gradient(135deg, #065f46, #047857)', borderRadius: '20px 20px 0 0', gap: 16 }}>
-                            <div>
-                              <p style={{ color: 'white', fontSize: 18, fontWeight: 700 }}>{d.nombre_establecimiento || 'Sin nombre'}</p>
-                              <p style={{ color: '#a7f3d0', fontSize: 13, marginTop: 2 }}>{d.razon_social || '—'} · {registrosDetalle.formulario}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0 }}>
+                              {registrosDetalle.logo_url && <img src={registrosDetalle.logo_url} style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 10, background: 'white', padding: 4, flexShrink: 0 }} alt="Logo" />}
+                              <div><p style={{ color: 'white', fontSize: 18, fontWeight: 700 }}>{d.nombre_establecimiento || 'Sin nombre'}</p><p style={{ color: '#a7f3d0', fontSize: 13, marginTop: 2 }}>{d.razon_social || '—'} · {registrosDetalle.formulario}</p></div>
                             </div>
-                            <button onClick={() => setRegistrosDetalle(null)} aria-label="Cerrar" style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                              {currentUser.role !== 'invitado' && <button onClick={() => { setRegistrosDetalle(null); setRegistrosEditando({ id: registrosDetalle.id, datos: { ...(registrosDetalle.datos||{}) }, notas: registrosDetalle.notas||'', logo_url: registrosDetalle.logo_url||'' }); }} style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>✏️ Editar</button>}
+                              <button onClick={() => setRegistrosDetalle(null)} aria-label="Cerrar" style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                            </div>
                           </div>
                           <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
                             {sectionTitle('DATOS DE LA EMPRESA')}
@@ -2932,6 +3022,7 @@
                             <div style={grid2}>{[['Acepta anticorrupción', d.acepta_anticorrupcion ? 'Sí ✓' : 'No'],['Acepta uso de marca', d.acepta_uso_marca ? 'Sí ✓' : 'No'],['Firma — Nombre rep.', d.firma_rep_nombre],['Firma — Documento rep.', d.firma_rep_documento],['Firma — Nombre func.', d.firma_func_nombre]].map(([l,v]) => cell(l,v))}</div>
                             {sectionTitle('DATOS GENERALES')}
                             <div style={grid3}>{[['N° formulario', d.formulario_n],['Afiliación', d.afiliacion],['Fecha formulario', d.fecha],['Fecha envío', fmtDate(registrosDetalle.creado_en)]].map(([l,v]) => cell(l,v))}</div>
+                            {registrosDetalle.notas && <><div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 16px' }}><p style={{ fontSize: 11, fontWeight: 700, color: '#92400e', marginBottom: 4 }}>NOTAS INTERNAS</p><p style={{ fontSize: 13, color: '#78350f', whiteSpace: 'pre-wrap' }}>{registrosDetalle.notas}</p></div></>}
                             {Object.keys(arch).length > 0 && (
                               <>{sectionTitle('DOCUMENTOS ADJUNTOS')}
                               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>

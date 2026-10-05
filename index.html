@@ -1109,7 +1109,7 @@
       const loadDocs = async () => {
         setDocsLoading(true);
         try {
-          const { data, error } = await supabase.from('documentos').select('*').order('categoria').order('subcategoria').order('created_at', { ascending: false });
+          const { data, error } = await supabase.from('documentos').select('*').order('categoria').order('subcategoria').order('nombre');
           if (!error) setDocs(data || []);
         } catch (e) { console.error(e); }
         setDocsLoading(false);
@@ -2261,9 +2261,9 @@
                               {previewUrl && <button onClick={() => setDocPreview(doc)} style={{ flex: 1, padding: '9px 0', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>👁 Preview</button>}
                               {doc.tipo === 'folder'
                                 ? <button onClick={() => descargarCarpetaZip(doc)} disabled={zipDescargando === doc.id} style={{ flex: 1, padding: '9px 0', borderRadius: 8, border: 'none', background: zipDescargando === doc.id ? '#e5e7eb' : 'linear-gradient(135deg, #E84338, #c41e16)', color: zipDescargando === doc.id ? '#94a3b8' : 'white', fontSize: 12, fontWeight: 600, cursor: zipDescargando === doc.id ? 'default' : 'pointer' }}>{zipDescargando === doc.id ? '⏳ Preparando...' : '⬇️ Descargar ZIP'}</button>
-                                : <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '9px 0', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 12, fontWeight: 600, textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{doc.url && doc.url.includes('supabase.co/storage') && doc.url.endsWith('.zip') ? '⬇️ Descargar ZIP' : '🔗 Abrir'}</a>
+                                : <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '9px 0', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 12, fontWeight: 600, textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{doc.url && doc.url.includes('supabase.co/storage') && doc.url.endsWith('.zip') ? '🗜️ Descargar ZIP' : '🔗 Abrir'}</a>
                               }
-                              {downloadUrl && doc.tipo !== 'folder' && <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '9px 12px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontSize: 12, fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>⬇️</a>}
+                              {downloadUrl && doc.tipo !== 'folder' && !doc.url?.includes('supabase.co/storage') && <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '9px 12px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontSize: 12, fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>⬇️</a>}
                               {currentUser.role === 'admin' && <button onClick={() => handleDeleteDoc(doc.id)} style={{ padding: '9px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', cursor: 'pointer', fontSize: 12 }}>🗑️</button>}
                             </div>
                             <div style={{ position: 'relative' }}>

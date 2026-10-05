@@ -4420,7 +4420,7 @@
               const cCard = {background:'white',borderRadius:16,padding:24,border:'1px solid #f1f5f9',boxShadow:'0 1px 3px rgba(0,0,0,0.04)'};
               const cInp = {padding:'11px 14px',borderRadius:10,border:'2px solid #e5e7eb',fontSize:14,width:'100%',boxSizing:'border-box',fontFamily:'inherit'};
               const cLbl = {display:'block',fontSize:13,fontWeight:600,color:'#374151',marginBottom:5,marginTop:12};
-              const TABS = [{id:'panorama',label:'📊 Panorama'},{id:'aliados',label:'🤝 Aliados'},{id:'propuestas',label:'📄 Propuestas'},{id:'go',label:'✅ Bandeja GO'},{id:'viernes',label:'📅 Mesa Viernes'},{id:'afiliados',label:'🏪 Afiliados'},{id:'seguimiento',label:'📋 Seguimiento'},{id:'radar',label:'🔭 Radar'},{id:'datos',label:'📊 Actividad'}];
+              const TABS = [{id:'panorama',label:'📊 Panorama'},{id:'aliados',label:'🤝 Aliados'},{id:'propuestas',label:'📄 Propuestas'},{id:'go',label:'✅ Bandeja GO'},{id:'viernes',label:'📅 Mesa Viernes'},{id:'afiliados',label:'🏪 Afiliados'},{id:'planes',label:'📆 Planes y actividades'},{id:'seguimiento',label:'📋 Seguimiento'},{id:'radar',label:'🔭 Radar'},{id:'datos',label:'📊 Actividad'}];
               const SBadge = ({s}) => <span style={{padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:600,...cPropBadge(s)}}>{s}</span>;
               const HBadge = ({a}) => { const h=cHealth(a); return <span style={{padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:600,...cHealthStyle(h)}}>{cHealthLabel(h)}</span>; };
               const cUserOptions = users.filter(u=>u.role!=='invitado').map(u=><option key={u.id} value={u.name}>{u.name}</option>);
@@ -4763,6 +4763,48 @@
                       {conectaSolicitudes.length===0&&<p style={{color:'#94a3b8',textAlign:'center',padding:24}}>Sin solicitudes registradas.</p>}
                     </div>
                   </div>)}
+
+                  {/* PLANES Y ACTIVIDADES */}
+                  {!conectaCargando&&conectaView==='planes'&&(()=>{
+                    const mesActual = new Date().toISOString().slice(0,7);
+                    const planesMes = mes => conectaPlanes.filter(p=>p.month===mes);
+                    const meses = [...new Set(conectaPlanes.map(p=>p.month))].sort().reverse();
+                    if(!meses.includes(mesActual)) meses.unshift(mesActual);
+                    return(<div>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:10}}>
+                        <p style={{color:'#64748b',margin:0}}>Acciones mensuales de valor por aliado</p>
+                        <button onClick={()=>setConectaModalPlan({month:mesActual,owner:currentUser?.name||'',done:false})} style={{padding:'10px 20px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer'}}>+ Nueva actividad</button>
+                      </div>
+                      {meses.map(mes=>{
+                        const planes=planesMes(mes);
+                        if(planes.length===0&&mes!==mesActual) return null;
+                        const realizadas=planes.filter(p=>p.done).length;
+                        return(<div key={mes} style={{...cCard,marginBottom:16}}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+                            <h3 style={{fontSize:15,fontWeight:700,margin:0}}>{mes}</h3>
+                            <span style={{fontSize:12,color:'#64748b'}}>{realizadas}/{planes.length} realizadas</span>
+                          </div>
+                          {planes.length===0&&<p style={{color:'#94a3b8',fontSize:13,textAlign:'center',padding:12}}>Sin actividades registradas para este mes.</p>}
+                          {planes.map(plan=>(
+                            <div key={plan.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'12px 0',borderBottom:'1px solid #f1f5f9'}}>
+                              <div style={{flex:1}}>
+                                <p style={{fontSize:14,fontWeight:600,margin:0,textDecoration:plan.done?'line-through':'none',color:plan.done?'#94a3b8':'#1a1a2e'}}>{plan.action}</p>
+                                <p style={{fontSize:12,color:'#64748b',marginTop:2}}>{cAllyName(plan.ally_id)} · {plan.owner} · Límite: {plan.due}</p>
+                                {plan.metric&&<p style={{fontSize:11,color:'#94a3b8',margin:'4px 0 0'}}>Indicador: {plan.metric}</p>}
+                                {plan.result&&<p style={{fontSize:12,color:'#10b981',marginTop:4,fontStyle:'italic'}}>Resultado: {plan.result}</p>}
+                              </div>
+                              <div style={{display:'flex',gap:6,marginLeft:12,flexShrink:0}}>
+                                {!plan.done&&<button onClick={()=>resultadoPlanC(plan)} style={{padding:'6px 10px',borderRadius:8,border:'none',background:'#e1f4eb',color:'#176246',cursor:'pointer',fontSize:12}}>✓ Resultado</button>}
+                                <button onClick={()=>setConectaModalPlan({...plan})} style={{padding:'6px 10px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',cursor:'pointer',fontSize:12}}>✏️</button>
+                                {currentUser?.role==='admin'&&<button onClick={async()=>{if(confirm('¿Eliminar esta actividad?')){await supabase.from('conecta_planes').delete().eq('id',plan.id);loadConecta();}}} style={{padding:'6px 10px',borderRadius:8,border:'none',background:'#fee2e2',color:'#E84338',cursor:'pointer',fontSize:12}}>🗑️</button>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>);
+                      })}
+                      {conectaPlanes.length===0&&<div style={{...cCard,textAlign:'center',padding:48}}><p style={{fontSize:40,marginBottom:8}}>📆</p><p style={{color:'#64748b'}}>Sin actividades registradas. Crea la primera desde aquí o desde la ficha de un aliado.</p></div>}
+                    </div>);
+                  })()}
 
                   {/* SEGUIMIENTO */}
                   {!conectaCargando&&conectaView==='seguimiento'&&(<div>

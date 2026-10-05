@@ -1272,19 +1272,28 @@
         reader.onload = e => cb(e.target.result);
         reader.readAsDataURL(file);
       };
-      const downloadExcelRegistros = () => {
+      const downloadExcelRegistros = async () => {
         const reg = getRegistrosFiltered();
         if (!reg.length) { showNotif('Sin registros para exportar', 'error'); return; }
-        const headers = ['Fecha envío','Formulario','Nombre establecimiento','Razón social','Identificación','Representante','Departamento','Dirección','Email empresa','Teléfono empresa','Celular','Tipo negocio','Concepto','Música en vivo','Horario desde','Horario hasta','Días operación','Aforo','Instagram','Facebook','Página web','Notas admin'];
+        if (!window.XLSX) {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+            s.onload = resolve; s.onerror = reject;
+            document.head.appendChild(s);
+          });
+        }
+        const XLSX = window.XLSX;
+        const headers = ['Fecha envío','Formulario','Nombre establecimiento','Razón social','Identificación','Representante legal','Departamento','Dirección','Email empresa','Teléfono empresa','Celular','Tipo negocio','Concepto','Música en vivo','Horario desde','Horario hasta','Días operación','Aforo','Instagram','Facebook','Página web','Notas admin'];
         const rows = reg.map(r => {
           const d = r.datos || {};
           return [r.creado_en?new Date(r.creado_en).toLocaleString('es-CO'):'',r.formulario||'',d.nombre_establecimiento||'',d.razon_social||'',d.identificacion||'',((d.nombre_representante||'')+' '+(d.apellido_representante||'')).trim(),d.departamento_establecimiento||'',d.direccion_establecimiento||'',d.email_empresa||'',d.telefono_empresa||'',d.celular_establecimiento||'',d.tipo_negocio||'',d.concepto||'',d.musica_en_vivo||'',d.horario_desde||'',d.horario_hasta||'',d.dias_operacion||'',d.aforo||'',d.instagram||'',d.facebook||'',d.pagina_web||'',r.notas||''];
         });
-        const csv = [headers,...rows].map(row=>row.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-        const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href=url; a.download=`registros_asobares_${new Date().toISOString().slice(0,10)}.csv`; a.click();
-        URL.revokeObjectURL(url);
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h,i) => ({ wch: i < 2 ? 20 : i < 4 ? 30 : 18 }));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Registros');
+        XLSX.writeFile(wb, `registros_asobares_${new Date().toISOString().slice(0,10)}.xlsx`);
       };
       const getRegistrosFiltered = () => {
         const q = registrosSearch.toLowerCase();

@@ -1715,6 +1715,58 @@
 
       const exportArmeniaDiagExcel = () => exportDynamicExcel(getArmeniaDiagFiltered(), 'Diagnóstico Armenia', 'diagnostico_armenia');
 
+      const downloadArchivosZip = async (data, nameKey, fileMapping, zipName) => {
+        const withFiles = data.filter(r => fileMapping.some(f => r[f.key]));
+        if (!withFiles.length) { showNotif('No hay archivos adjuntos en los registros filtrados', 'error'); return; }
+        showNotif(`Descargando archivos de ${withFiles.length} registros...`);
+        if (!window.JSZip) {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          });
+        }
+        const zip = new window.JSZip();
+        const sanitize = str => (str || 'sin_nombre').replace(/[\/\\:*?"<>|]/g, '_').slice(0, 60);
+        const getExt = url => { try { const p = new URL(url).pathname.split('/').pop().split('?')[0]; const d = p.lastIndexOf('.'); return d > -1 ? p.slice(d).toLowerCase() : ''; } catch { return ''; } };
+        let count = 0;
+        for (const r of withFiles) {
+          const nombre = sanitize(r[nameKey]);
+          for (const f of fileMapping) {
+            if (!r[f.key]) continue;
+            try {
+              const res = await fetch(r[f.key]);
+              if (!res.ok) continue;
+              const blob = await res.blob();
+              let ext = getExt(r[f.key]);
+              if (!ext) ext = blob.type.includes('pdf') ? '.pdf' : blob.type.includes('png') ? '.png' : '.jpg';
+              zip.folder(f.folder).file(`${nombre}_${f.suffix}${ext}`, blob);
+              count++;
+            } catch (e) { /* omitir archivos que fallen */ }
+          }
+        }
+        if (!count) { showNotif('No se pudieron descargar los archivos', 'error'); return; }
+        showNotif('Generando ZIP...');
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = zipName + '_' + new Date().toISOString().slice(0, 10) + '.zip';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+        showNotif(`ZIP listo — ${count} archivos descargados ✓`);
+      };
+      const downloadArmeniaGuiaArchivos = () => downloadArchivosZip(
+        getArmeniaGuiaFiltered(), 'nombre_establecimiento',
+        [{key:'link_logo',folder:'Logos',suffix:'logo'},{key:'link_foto_establecimiento',folder:'Fotos',suffix:'foto'},{key:'link_camara_comercio',folder:'Documentos',suffix:'camara_comercio'}],
+        'guia_armenia_archivos'
+      );
+      const downloadArmeniaDiagArchivos = () => downloadArchivosZip(
+        getArmeniaDiagFiltered(), 'nombre_establecimiento',
+        [{key:'link_camara_comercio',folder:'Documentos',suffix:'camara_comercio'},{key:'link_rut',folder:'Documentos',suffix:'rut'},{key:'link_cedula_representante',folder:'Documentos',suffix:'cedula_representante'}],
+        'diagnostico_armenia_archivos'
+      );
+
       const deleteGastroPersona = async (id) => {
         const { error, count } = await supabase.from('postulaciones_gastromarketing').delete({ count: 'exact' }).eq('id', id);
         if (error) { showNotif('Error al eliminar: ' + error.message); return; }
@@ -4161,6 +4213,7 @@
                         </select>
                         <button onClick={loadArmeniaDiag} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}>🔄</button>
                         <button onClick={exportArmeniaDiagExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                        <button onClick={downloadArmeniaDiagArchivos} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#0369a1,#0284c7)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>📦 Archivos ZIP</button>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
                         {[['Total', armeniaDiagData.length, '#1e7c34'], ['Visitado', armeniaDiagData.filter(r=>r.estado==='visitado').length, '#3b82f6'], ['En Proceso', armeniaDiagData.filter(r=>r.estado==='en_proceso').length, '#f59e0b'], ['Completado', armeniaDiagData.filter(r=>r.estado==='completado').length, '#2db84b'], ['Cancelado', armeniaDiagData.filter(r=>r.estado==='cancelado').length, '#E84338']].map(([lbl, val, color]) => (
@@ -4342,6 +4395,7 @@
                         </select>
                         <button onClick={loadArmeniaGuia} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}>🔄</button>
                         <button onClick={exportArmeniaGuiaExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#1e7c34,#2db84b)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                        <button onClick={downloadArmeniaGuiaArchivos} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#0369a1,#0284c7)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>📦 Archivos ZIP</button>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 16 }}>
                         {[['Total',armeniaGuiaData.length,'#1e7c34'],['Pendiente',armeniaGuiaData.filter(r=>!r.estado||r.estado==='pendiente').length,'#94a3b8'],['En Guía',armeniaGuiaData.filter(r=>r.estado==='en_guia').length,'#10b981'],['Rechazado',armeniaGuiaData.filter(r=>r.estado==='rechazado').length,'#E84338']].map(([lbl,val,color]) => (

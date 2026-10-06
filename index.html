@@ -1541,21 +1541,31 @@
           return true;
         });
       };
-      const exportArmeniaCapExcel = () => {
-        const filtered = getArmeniaCapFiltered();
-        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Cargo','Capacitaciones','Acepta Datos','Estado','Notas'];
-        const rows = filtered.map(r => [
-          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
-          r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
-          r.genero || '', r.departamento || '', r.ciudad, r.cargo, r.capacitaciones || '',
-          r.acepta_datos ? 'Sí' : 'No', r.estado || '', r.notas || ''
-        ]);
+      const exportDynamicExcel = (data, sheetName, filename) => {
+        if (!data.length) { showNotif('Sin registros para exportar', 'error'); return; }
+        const skipKeys = new Set(['id']);
+        const colPriority = { created_at: 0, nombre: 1, nombre_establecimiento: 1, apellidos: 2, apellido: 2, email: 3, correo: 3, telefono: 4, estado: 9998, notas: 9999 };
+        const seenKeys = new Set();
+        const allKeys = [];
+        data.forEach(r => Object.keys(r).forEach(k => { if (!skipKeys.has(k) && !seenKeys.has(k)) { seenKeys.add(k); allKeys.push(k); } }));
+        allKeys.sort((a, b) => { const pa = colPriority[a] ?? 500; const pb = colPriority[b] ?? 500; return pa !== pb ? pa - pb : a.localeCompare(b); });
+        const fmtKey = k => k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const headers = allKeys.map(fmtKey);
+        const rows = data.map(r => allKeys.map(k => {
+          const v = r[k];
+          if (k === 'created_at' && v) return new Date(v).toLocaleString('es-CO');
+          if (v === null || v === undefined) return '';
+          if (typeof v === 'boolean') return v ? 'Sí' : 'No';
+          if (Array.isArray(v)) return v.join(', ');
+          return String(v);
+        }));
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
         ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
-        XLSX.utils.book_append_sheet(wb, ws, 'Inscripciones Armenia Cap');
-        XLSX.writeFile(wb, 'inscripciones_armenia_cap_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        XLSX.writeFile(wb, filename + '_' + new Date().toISOString().slice(0, 10) + '.xlsx');
       };
+      const exportArmeniaCapExcel = () => exportDynamicExcel(getArmeniaCapFiltered(), 'Inscripciones Cap', 'inscripciones_armenia_cap');
 
       const loadArmeniaDiag = async () => {
         setArmeniaDiagLoading(true);
@@ -1631,21 +1641,7 @@
           return true;
         });
       };
-      const exportArmeniaAsistExcel = () => {
-        const filtered = getArmeniaAsistFiltered();
-        const headers = ['Fecha','Nombre','Apellido','Tipo Doc.','Nº Doc.','Género','Departamento','Ciudad','Cargo','Correo','Teléfono','Estado','Notas'];
-        const rows = filtered.map(r => [
-          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
-          r.nombre || '', r.apellido, r.tipo_documento, r.numero_identificacion,
-          r.genero || '', r.departamento, r.ciudad, r.cargo, r.correo, r.telefono,
-          r.estado || '', r.notas || ''
-        ]);
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
-        XLSX.utils.book_append_sheet(wb, ws, 'Asistencia Armenia');
-        XLSX.writeFile(wb, 'asistencia_armenia_' + new Date().toISOString().slice(0, 10) + '.xlsx');
-      };
+      const exportArmeniaAsistExcel = () => exportDynamicExcel(getArmeniaAsistFiltered(), 'Asistencia Armenia', 'asistencia_armenia');
 
       const loadArmeniaGuia = async () => {
         setArmeniaGuiaLoading(true);
@@ -1680,23 +1676,7 @@
           return true;
         });
       };
-      const exportArmeniaGuiaExcel = () => {
-        const filtered = getArmeniaGuiaFiltered();
-        const headers = ['Fecha','Establecimiento','Ciudad','Barrio','Estrato','Instagram','Tipo Negocio','Concepto','Música Vivo','Días Op.','Horario','Contacto','Correo Contacto','Teléfono Contacto','Estado','Notas'];
-        const rows = filtered.map(r => [
-          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
-          r.nombre_establecimiento, r.ciudad, r.barrio, r.estrato, r.instagram,
-          r.tipo_negocio, r.concepto_establecimiento, r.musica_en_vivo,
-          r.dias_operacion, r.horario_servicio,
-          r.nombre_contacto, r.correo_contacto, r.telefono_contacto,
-          r.estado || '', r.notas || ''
-        ]);
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
-        XLSX.utils.book_append_sheet(wb, ws, 'Guía Armenia');
-        XLSX.writeFile(wb, 'guia_armenia_' + new Date().toISOString().slice(0, 10) + '.xlsx');
-      };
+      const exportArmeniaGuiaExcel = () => exportDynamicExcel(getArmeniaGuiaFiltered(), 'Guía Armenia', 'guia_armenia');
 
       const loadArmeniaPostGastro = async () => {
         setArmeniaPostGastroLoading(true);
@@ -1731,39 +1711,9 @@
           return true;
         });
       };
-      const exportArmeniaPostGastroExcel = () => {
-        const filtered = getArmeniaPostGastroFiltered();
-        const headers = ['Fecha','Establecimiento','Teléfono Est.','Correo Est.','Dirección','Ciudad','Barrio','Nombre Contacto','Correo Contacto','Teléfono Contacto','Estado','Notas'];
-        const rows = filtered.map(r => [
-          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
-          r.nombre_establecimiento, r.telefono_establecimiento, r.correo_establecimiento,
-          r.direccion_establecimiento, r.ciudad, r.barrio,
-          r.nombre_contacto, r.correo_contacto, r.telefono_contacto,
-          r.estado || '', r.notas || ''
-        ]);
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
-        XLSX.utils.book_append_sheet(wb, ws, 'Postulaciones Gastro');
-        XLSX.writeFile(wb, 'postulaciones_gastro_armenia_' + new Date().toISOString().slice(0, 10) + '.xlsx');
-      };
+      const exportArmeniaPostGastroExcel = () => exportDynamicExcel(getArmeniaPostGastroFiltered(), 'Postulaciones Gastro', 'postulaciones_gastro_armenia');
 
-      const exportArmeniaDiagExcel = () => {
-        const filtered = getArmeniaDiagFiltered();
-        const headers = ['Fecha','Establecimiento','Razón Social','Representante','Ciudad','Tipo Negocio','CIIU Principal','Aforo','Nº Sillas','Días Op.','Horario','Estado','Notas'];
-        const rows = filtered.map(r => [
-          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
-          r.nombre_establecimiento, r.razon_social, r.nombre_representante,
-          r.ciudad_empresa, r.tipo_negocio, r.actividad_principal_ciiu,
-          r.aforo, r.num_sillas, r.dias_operacion, r.horario_servicio,
-          r.estado || '', r.notas || ''
-        ]);
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
-        XLSX.utils.book_append_sheet(wb, ws, 'Diagnóstico Armenia');
-        XLSX.writeFile(wb, 'diagnostico_armenia_' + new Date().toISOString().slice(0, 10) + '.xlsx');
-      };
+      const exportArmeniaDiagExcel = () => exportDynamicExcel(getArmeniaDiagFiltered(), 'Diagnóstico Armenia', 'diagnostico_armenia');
 
       const deleteGastroPersona = async (id) => {
         const { error, count } = await supabase.from('postulaciones_gastromarketing').delete({ count: 'exact' }).eq('id', id);
@@ -4189,6 +4139,7 @@
                             ))}
                           </div>
                         )}
+                        {(() => { const knownDiagKeys = new Set(['id','created_at','nombre_establecimiento','razon_social','tipo_identificacion','numero_identificacion','nombre_representante','departamento','ciudad_empresa','telefono_representante','correo_representante','regimen','telefono_establecimiento','direccion','correo_establecimiento','barrio','estrato','instagram','tiene_sucursales','area_establecimiento','tipo_negocio','actividad_principal_ciiu','concepto_establecimiento','musica_en_vivo','dias_operacion','horario_servicio','aforo','num_sillas','num_usuarios_pie','num_banos_hombres','num_banos_mujeres','num_banos_discapacitados','num_salidas','rampas_acceso','sistema_cctv','ventilacion_artificial','parqueadero','nombre_informe','correo_informe','telefono_informe','documentacion','estado','notas']); const extras = Object.entries(armeniaDiagDetalle).filter(([k,v])=>!knownDiagKeys.has(k)&&v!==null&&v!==undefined&&v!==''); return extras.length > 0 ? (<div style={{marginBottom:20}}><p style={{fontSize:11,fontWeight:700,color:'#1e7c34',letterSpacing:'1px',marginBottom:10,paddingBottom:6,borderBottom:'2px solid #e8f5e9'}}>OTROS CAMPOS</p><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>{extras.map(([k,v])=>(<div key={k}><p style={{fontSize:11,color:'#94a3b8',marginBottom:2}}>{k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</p><p style={{fontSize:13,color:'#1e293b',fontWeight:500}}>{String(v)}</p></div>))}</div></div>) : null; })()}
                         <div>
                           <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '1px', marginBottom: 8 }}>NOTAS INTERNAS</p>
                           <textarea value={armeniaDiagNotasEdit} onChange={e => setArmeniaDiagNotasEdit(e.target.value)} onFocus={() => setArmeniaDiagNotasEdit(armeniaDiagDetalle.notas || '')} style={{ width: '100%', padding: 12, border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', minHeight: 80, resize: 'vertical', boxSizing: 'border-box' }} placeholder="Añade notas internas sobre este establecimiento..."/>
@@ -4276,9 +4227,9 @@
                           </div>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
-                          {[['Tipo Doc.','tipo_documento'],['Nº Identificación','numero_identificacion'],['Género','genero'],['Departamento','departamento'],['Ciudad','ciudad'],['Cargo','cargo'],['Correo','correo'],['Teléfono','telefono']].map(([lbl, key]) => armeniaAsistDetalle[key] ? (
-                            <div key={key}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{armeniaAsistDetalle[key]}</p></div>
-                          ) : null)}
+                          {Object.entries(armeniaAsistDetalle).filter(([k,v])=>!['id','created_at','nombre','apellido','cargo','ciudad','estado','notas'].includes(k)&&v!==null&&v!==undefined&&v!=='').map(([k,v])=>(
+                            <div key={k}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{String(v)}</p></div>
+                          ))}
                         </div>
                         <div>
                           <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '1px', marginBottom: 8 }}>NOTAS INTERNAS</p>
@@ -4362,9 +4313,9 @@
                         )}
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
-                        {[['Teléfono Est.',armeniaGuiaDetalle.telefono_establecimiento],['Dirección',armeniaGuiaDetalle.direccion],['Correo Est.',armeniaGuiaDetalle.correo_establecimiento],['Ciudad',armeniaGuiaDetalle.ciudad],['Barrio',armeniaGuiaDetalle.barrio],['Estrato',armeniaGuiaDetalle.estrato],['Instagram',armeniaGuiaDetalle.instagram],['Página Web',armeniaGuiaDetalle.pagina_web],['Facebook',armeniaGuiaDetalle.facebook],['Tipo Negocio',armeniaGuiaDetalle.tipo_negocio],['Concepto',armeniaGuiaDetalle.concepto_establecimiento],['Música en Vivo',armeniaGuiaDetalle.musica_en_vivo],['Edad Clientes',armeniaGuiaDetalle.edad_promedio_clientes],['Días Op.',armeniaGuiaDetalle.dias_operacion],['Horario',armeniaGuiaDetalle.horario_servicio],['Acceso Discapacidad',armeniaGuiaDetalle.acceso_discapacidad],['Parqueadero',armeniaGuiaDetalle.parqueadero],['CIIU Principal',armeniaGuiaDetalle.actividad_principal_ciiu],['CIIU Secundario',armeniaGuiaDetalle.actividad_secundaria_ciiu],['Otra Actividad CIIU',armeniaGuiaDetalle.otra_actividad_ciiu],['Contacto',armeniaGuiaDetalle.nombre_contacto],['Correo Contacto',armeniaGuiaDetalle.correo_contacto],['Teléfono Contacto',armeniaGuiaDetalle.telefono_contacto]].map(([lbl, key]) => key ? (
-                          <div key={lbl}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{key}</p></div>
-                        ) : null)}
+                        {Object.entries(armeniaGuiaDetalle).filter(([k, v]) => !['id','created_at','nombre_establecimiento','tipo_negocio','ciudad','estado','notas','link_camara_comercio','link_foto_establecimiento','link_logo','documentacion'].includes(k) && v !== null && v !== undefined && v !== '').map(([k, v]) => (
+                          <div key={k}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{String(v)}</p></div>
+                        ))}
                       </div>
                       {armeniaGuiaDetalle.documentacion && <div style={{ marginTop: 12 }}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>DOCUMENTACIÓN</p><p style={{ fontSize: 13, color: '#1e293b' }}>{armeniaGuiaDetalle.documentacion.split(' | ').join(', ')}</p></div>}
                       <div style={{ marginTop: 12 }}>
@@ -4452,9 +4403,9 @@
                         )}
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
-                        {[['Tel. Establecimiento', armeniaPostGastroDetalle.telefono_establecimiento],['Correo Est.', armeniaPostGastroDetalle.correo_establecimiento],['Dirección', armeniaPostGastroDetalle.direccion_establecimiento],['Ciudad', armeniaPostGastroDetalle.ciudad],['Barrio', armeniaPostGastroDetalle.barrio],['Contacto', armeniaPostGastroDetalle.nombre_contacto],['Correo Contacto', armeniaPostGastroDetalle.correo_contacto],['Tel. Contacto', armeniaPostGastroDetalle.telefono_contacto]].map(([lbl, val]) => val ? (
-                          <div key={lbl}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{val}</p></div>
-                        ) : null)}
+                        {Object.entries(armeniaPostGastroDetalle).filter(([k,v])=>!['id','created_at','nombre_establecimiento','ciudad','barrio','estado','notas'].includes(k)&&v!==null&&v!==undefined&&v!=='').map(([k,v])=>(
+                          <div key={k}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{String(v)}</p></div>
+                        ))}
                       </div>
                       <div style={{ marginTop: 16 }}>
                         <p style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>NOTAS</p>

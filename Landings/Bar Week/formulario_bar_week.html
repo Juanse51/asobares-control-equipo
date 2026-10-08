@@ -1,0 +1,562 @@
+<!--
+  Bar Week Bogotá — Formulario de Registro de Establecimientos
+  Tabla Supabase: inscripciones_bar_week
+  ──────────────────────────────────────────────────────────────
+  SQL para crear la tabla (ejecutar en Supabase → SQL Editor):
+
+  create table if not exists inscripciones_bar_week (
+    id uuid primary key default gen_random_uuid(),
+    created_at timestamptz default now(),
+    acepta_datos boolean default false,
+    nombre_establecimiento text,
+    direccion text,
+    barrio text,
+    localidad text,
+    telefono_reservas text,
+    concepto_musical text,
+    tiene_patrocinios text,
+    cuales_patrocinios text,
+    instagram text,
+    nombre_contacto text,
+    telefono_contacto text,
+    correo_contacto text,
+    estado text default 'pendiente',
+    notas text default ''
+  );
+  alter table inscripciones_bar_week enable row level security;
+  create policy "anon_all" on inscripciones_bar_week
+    for all to anon using (true) with check (true);
+-->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<style>
+#bw-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+#bw-wrap {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #0d0d0d;
+  color: #f1f5f9;
+  width: 100%;
+}
+
+/* ── HEADER ── */
+#bw-wrap .bw-header {
+  background: #0d0d0d;
+  padding: 48px 24px 0;
+  text-align: center;
+  border-bottom: 3px solid #d4a017;
+}
+#bw-wrap .bw-logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+#bw-wrap .bw-tag {
+  background: #d4a017;
+  color: #0d0d0d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 5px 14px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+#bw-wrap .bw-header h1 {
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+#bw-wrap .bw-header h1 span { color: #d4a017; }
+#bw-wrap .bw-header .bw-ciudad {
+  font-size: 14px;
+  font-weight: 700;
+  color: #d4a017;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+#bw-wrap .bw-precio-pill {
+  display: inline-block;
+  background: #d4a017;
+  color: #0d0d0d;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 10px 28px;
+  border-radius: 40px;
+  margin-bottom: 28px;
+  letter-spacing: 0.3px;
+}
+#bw-wrap .bw-dates-row {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding: 20px 0 28px;
+  border-top: 1px solid #222;
+}
+#bw-wrap .bw-date-item { text-align: center; }
+#bw-wrap .bw-date-item .bw-di-label { font-size: 10px; font-weight: 700; color: #d4a017; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+#bw-wrap .bw-date-item .bw-di-val { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+
+/* ── DESCRIPCIÓN ── */
+#bw-wrap .bw-desc {
+  background: #111;
+  padding: 40px 24px;
+  border-bottom: 1px solid #1f1f1f;
+}
+#bw-wrap .bw-desc-inner {
+  max-width: 780px;
+  margin: 0 auto;
+  text-align: center;
+}
+#bw-wrap .bw-desc-inner p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+#bw-wrap .bw-desc-inner p:last-child { margin-bottom: 0; }
+
+/* ── FORM ── */
+#bw-wrap .bw-form-wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+#bw-wrap .bw-form-title {
+  text-align: center;
+  margin-bottom: 36px;
+}
+#bw-wrap .bw-form-title h2 {
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+#bw-wrap .bw-form-title p { font-size: 14px; color: #64748b; }
+
+#bw-wrap .bw-card {
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 20px;
+  padding: 44px 48px;
+}
+
+#bw-wrap .bw-sec {
+  font-size: 10px;
+  font-weight: 800;
+  color: #d4a017;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  display: block;
+  margin-top: 36px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #2a2a2a;
+}
+#bw-wrap .bw-sec:first-child { margin-top: 0; }
+
+#bw-wrap .bw-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+#bw-wrap .bw-fg { margin-bottom: 18px; }
+#bw-wrap .bw-fg label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 7px;
+  letter-spacing: 0.2px;
+}
+#bw-wrap .bw-req { color: #d4a017; }
+#bw-wrap .bw-fg input,
+#bw-wrap .bw-fg select,
+#bw-wrap .bw-fg textarea {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid #2a2a2a;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  background: #0d0d0d;
+  color: #f1f5f9;
+  transition: border-color 0.15s;
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+#bw-wrap .bw-fg input::placeholder,
+#bw-wrap .bw-fg textarea::placeholder { color: #3a3a3a; }
+#bw-wrap .bw-fg input:focus,
+#bw-wrap .bw-fg select:focus,
+#bw-wrap .bw-fg textarea:focus { outline: none; border-color: #d4a017; }
+#bw-wrap .bw-fg textarea { resize: vertical; min-height: 90px; }
+#bw-wrap .bw-fg select option { background: #1a1a1a; color: #f1f5f9; }
+
+/* acepta box */
+#bw-wrap .bw-acepta-box {
+  background: #111;
+  border: 1.5px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 22px 24px;
+  margin-bottom: 4px;
+}
+#bw-wrap .bw-acepta-box p {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.75;
+  margin-bottom: 16px;
+}
+#bw-wrap .bw-acepta-box a { color: #d4a017; font-weight: 600; }
+#bw-wrap .bw-radio-row { display: flex; gap: 28px; flex-wrap: wrap; }
+#bw-wrap .bw-radio-row label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  color: #f1f5f9;
+  font-weight: 600;
+}
+#bw-wrap .bw-radio-row input[type="radio"] { width: 18px; height: 18px; accent-color: #d4a017; }
+
+/* patrocinios condicional */
+#bw-wrap .bw-patrocinio-cual { display: none; margin-top: 14px; }
+
+#bw-wrap .bw-submit {
+  width: 100%;
+  padding: 18px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #d4a017, #b8860b);
+  color: #0d0d0d;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 32px;
+  font-family: inherit;
+  letter-spacing: 0.3px;
+  transition: opacity 0.2s;
+}
+#bw-wrap .bw-submit:hover { opacity: 0.88; }
+#bw-wrap .bw-submit:disabled { opacity: 0.5; cursor: default; }
+#bw-wrap .bw-err {
+  display: none;
+  background: #2d1515;
+  color: #f87171;
+  border: 1px solid #7f1d1d;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+/* success */
+#bw-wrap .bw-success {
+  display: none;
+  text-align: center;
+  padding: 80px 20px;
+}
+#bw-wrap .bw-check {
+  width: 90px; height: 90px;
+  background: linear-gradient(135deg, #d4a017, #b8860b);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 46px; color: #0d0d0d;
+  margin: 0 auto 24px;
+}
+#bw-wrap .bw-success h2 { font-size: 30px; font-weight: 800; color: #ffffff; margin-bottom: 12px; }
+#bw-wrap .bw-success p { font-size: 15px; color: #94a3b8; line-height: 1.7; margin-bottom: 6px; }
+
+/* footer */
+#bw-wrap .bw-footer {
+  background: #080808;
+  border-top: 1px solid #1f1f1f;
+  text-align: center;
+  padding: 28px 24px;
+  font-size: 12px;
+  color: #3a3a3a;
+}
+#bw-wrap .bw-footer a { color: #d4a017; }
+
+@media (max-width: 640px) {
+  #bw-wrap .bw-g2 { grid-template-columns: 1fr; }
+  #bw-wrap .bw-card { padding: 28px 20px; }
+  #bw-wrap .bw-dates-row { gap: 20px; }
+}
+</style>
+
+<div id="bw-wrap">
+
+  <!-- HEADER -->
+  <div class="bw-header">
+    <div class="bw-logo-row">
+      <span class="bw-tag">ASOBARES Colombia</span>
+      <span style="color:#333;font-size:18px">×</span>
+      <span class="bw-tag">IDT Bogotá</span>
+    </div>
+    <h1>Bar<span>Week</span></h1>
+    <div class="bw-ciudad">Bogotá, Colombia</div>
+    <div class="bw-precio-pill">🍸 Cóctel + Tapa por $35.000</div>
+    <div class="bw-dates-row">
+      <div class="bw-date-item">
+        <div class="bw-di-label">Inicio</div>
+        <div class="bw-di-val">27 nov 2026</div>
+      </div>
+      <div class="bw-date-item">
+        <div class="bw-di-label">Cierre</div>
+        <div class="bw-di-val">7 dic 2026</div>
+      </div>
+      <div class="bw-date-item">
+        <div class="bw-di-label">Alianza</div>
+        <div class="bw-di-val">Asobares · IDT</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESCRIPCIÓN -->
+  <div class="bw-desc">
+    <div class="bw-desc-inner">
+      <p>Desde <strong style="color:#d4a017">ASOBARES Colombia</strong>, en alianza con el <strong style="color:#d4a017">Instituto Distrital de Turismo – IDT</strong>, te invitamos a participar en una activación comercial en Bogotá del <strong style="color:#f1f5f9">27 de noviembre al 7 de diciembre</strong>.</p>
+      <p>La iniciativa busca promover la oferta gastronómica y de entretenimiento de la ciudad, invitando a residentes y turistas a descubrir lugares y experiencias únicas.</p>
+      <p>Todos los establecimientos participantes ofrecerán una experiencia especial: <strong style="color:#d4a017">Cóctel + Tapa por $35.000</strong>.</p>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div class="bw-form-wrap">
+    <div class="bw-form-title">
+      <h2>Registro de Establecimiento</h2>
+      <p>Completa el formulario para inscribir tu bar o restaurante en Bar Week Bogotá 2026</p>
+    </div>
+
+    <div class="bw-success" id="bw-success">
+      <div class="bw-check">✓</div>
+      <h2>¡Registro enviado!</h2>
+      <p>Hemos recibido la inscripción de tu establecimiento.</p>
+      <p>Te enviamos la confirmación al correo registrado.</p>
+      <p style="margin-top:16px;font-size:13px;">¿Preguntas? Escríbenos a <a href="mailto:info@asobares.org" style="color:#d4a017">info@asobares.org</a></p>
+    </div>
+
+    <div class="bw-card" id="bw-card">
+
+      <!-- AUTORIZACIÓN -->
+      <span class="bw-sec">Autorización de Uso de Datos</span>
+      <div class="bw-acepta-box">
+        <p>Por medio de la presente acepto el uso de los datos contemplados en este formulario por parte de Asobares, conforme a la política de la asociación, disponible en: <a href="https://asobares.org/politica-de-datos/" target="_blank">https://asobares.org/politica-de-datos/</a> <span class="bw-req">*</span></p>
+        <div class="bw-radio-row">
+          <label><input type="radio" name="acepta_datos" value="si"> Sí, acepto</label>
+          <label><input type="radio" name="acepta_datos" value="no"> No acepto</label>
+        </div>
+      </div>
+
+      <!-- DATOS DEL ESTABLECIMIENTO -->
+      <span class="bw-sec">Datos del Establecimiento</span>
+
+      <div class="bw-fg">
+        <label>Nombre del establecimiento <span class="bw-req">*</span></label>
+        <input type="text" name="nombre_establecimiento" required placeholder="Nombre completo de tu bar o restaurante"/>
+      </div>
+
+      <div class="bw-g2">
+        <div class="bw-fg">
+          <label>Dirección <span class="bw-req">*</span></label>
+          <input type="text" name="direccion" required placeholder="Calle / Carrera / Número"/>
+        </div>
+        <div class="bw-fg">
+          <label>Barrio <span class="bw-req">*</span></label>
+          <input type="text" name="barrio" required placeholder="Barrio donde está ubicado"/>
+        </div>
+      </div>
+
+      <div class="bw-g2">
+        <div class="bw-fg">
+          <label>Localidad <span class="bw-req">*</span></label>
+          <select name="localidad" required>
+            <option value="">Seleccionar localidad...</option>
+            <option>Usaquén</option>
+            <option>Chapinero</option>
+            <option>Santa Fe</option>
+            <option>San Cristóbal</option>
+            <option>Usme</option>
+            <option>Tunjuelito</option>
+            <option>Bosa</option>
+            <option>Kennedy</option>
+            <option>Fontibón</option>
+            <option>Engativá</option>
+            <option>Suba</option>
+            <option>Barrios Unidos</option>
+            <option>Teusaquillo</option>
+            <option>Los Mártires</option>
+            <option>Antonio Nariño</option>
+            <option>Puente Aranda</option>
+            <option>La Candelaria</option>
+            <option>Rafael Uribe Uribe</option>
+            <option>Ciudad Bolívar</option>
+          </select>
+        </div>
+        <div class="bw-fg">
+          <label>Teléfono de contacto / Reservas <span class="bw-req">*</span></label>
+          <input type="tel" name="telefono_reservas" required placeholder="3001234567" maxlength="10"/>
+        </div>
+      </div>
+
+      <div class="bw-fg">
+        <label>Concepto Musical <span class="bw-req">*</span></label>
+        <input type="text" name="concepto_musical" required placeholder="Ej: Jazz, Electrónica, Salsa, Vallenato, Variado..."/>
+      </div>
+
+      <div class="bw-fg">
+        <label>¿Tiene patrocinios con licores importados, nacionales o acuerdos con cervezas? <span class="bw-req">*</span></label>
+        <div class="bw-radio-row" style="margin-top:4px">
+          <label><input type="radio" name="tiene_patrocinios" value="Sí" onclick="bwTogglePatrocinio(true)"> Sí, tengo patrocinios</label>
+          <label><input type="radio" name="tiene_patrocinios" value="No" onclick="bwTogglePatrocinio(false)"> No tengo patrocinios</label>
+        </div>
+        <div class="bw-patrocinio-cual" id="bw-cual-wrap">
+          <label style="margin-top:0;margin-bottom:7px;display:block;font-size:13px;font-weight:600;color:#94a3b8;">¿Cuáles marcas o acuerdos? <span class="bw-req">*</span></label>
+          <textarea name="cuales_patrocinios" id="bw-cuales" placeholder="Ej: Johnnie Walker, Águila, Club Colombia..."></textarea>
+        </div>
+      </div>
+
+      <div class="bw-fg">
+        <label>Instagram</label>
+        <input type="text" name="instagram" placeholder="@tu_establecimiento"/>
+      </div>
+
+      <!-- PERSONA DE CONTACTO -->
+      <span class="bw-sec">Persona de Contacto del Establecimiento</span>
+
+      <div class="bw-g2">
+        <div class="bw-fg">
+          <label>Nombre completo <span class="bw-req">*</span></label>
+          <input type="text" name="nombre_contacto" required placeholder="Nombre y apellido"/>
+        </div>
+        <div class="bw-fg">
+          <label>Teléfono <span class="bw-req">*</span></label>
+          <input type="tel" name="telefono_contacto" required placeholder="3001234567" maxlength="10"/>
+        </div>
+      </div>
+
+      <div class="bw-fg">
+        <label>Correo electrónico <span class="bw-req">*</span> <small style="font-weight:400;color:#3a3a3a;">Para enviarte la confirmación de registro</small></label>
+        <input type="email" name="correo_contacto" required placeholder="correo@ejemplo.com"/>
+      </div>
+
+      <div class="bw-err" id="bw-err-msg"></div>
+      <button class="bw-submit" id="bw-submit-btn" type="button" onclick="bwEnviar()">
+        Inscribir mi establecimiento →
+      </button>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="bw-footer">
+    Bar Week Bogotá 2026 · Asobares Colombia · Instituto Distrital de Turismo ·
+    <a href="https://asobares.org/politica-de-datos/" target="_blank">Política de datos</a>
+  </div>
+
+</div>
+
+<script>
+function bwTogglePatrocinio(show) {
+  document.getElementById('bw-cual-wrap').style.display = show ? 'block' : 'none';
+  if (!show) document.getElementById('bw-cuales').value = '';
+}
+
+(function(){
+  var _sb;
+  function getSB(){
+    if(_sb) return _sb;
+    if(typeof supabase !== 'undefined' && supabase.createClient){
+      _sb = supabase.createClient(
+        'https://pbqmkodwmntujezbokgo.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34'
+      );
+      return _sb;
+    }
+    return null;
+  }
+
+  function vv(name){ var el=document.querySelector('#bw-wrap [name="'+name+'"]'); return el ? el.value.trim() : ''; }
+  function radio(name){ var el=document.querySelector('#bw-wrap [name="'+name+'"]:checked'); return el ? el.value : ''; }
+
+  window.bwEnviar = async function(){
+    var sb = getSB();
+    if(!sb){ setTimeout(bwEnviar, 150); return; }
+
+    var errEl = document.getElementById('bw-err-msg');
+    errEl.style.display='none';
+
+    // Validaciones
+    if(radio('acepta_datos') !== 'si'){ errEl.textContent='Debes aceptar la política de datos para continuar.'; errEl.style.display='block'; return; }
+    if(!vv('nombre_establecimiento')){ errEl.textContent='El nombre del establecimiento es obligatorio.'; errEl.style.display='block'; return; }
+    if(!vv('direccion')){ errEl.textContent='La dirección es obligatoria.'; errEl.style.display='block'; return; }
+    if(!vv('barrio')){ errEl.textContent='El barrio es obligatorio.'; errEl.style.display='block'; return; }
+    if(!vv('localidad')){ errEl.textContent='Selecciona la localidad.'; errEl.style.display='block'; return; }
+    var telRes = vv('telefono_reservas');
+    if(!telRes || telRes.length < 7){ errEl.textContent='El teléfono de reservas no es válido.'; errEl.style.display='block'; return; }
+    if(!vv('concepto_musical')){ errEl.textContent='El concepto musical es obligatorio.'; errEl.style.display='block'; return; }
+    var patrocinio = radio('tiene_patrocinios');
+    if(!patrocinio){ errEl.textContent='Indica si tienes patrocinios o acuerdos con licores.'; errEl.style.display='block'; return; }
+    if(patrocinio === 'Sí' && !vv('cuales_patrocinios')){ errEl.textContent='Especifica cuáles son los patrocinios o acuerdos.'; errEl.style.display='block'; return; }
+    if(!vv('nombre_contacto')){ errEl.textContent='El nombre de la persona de contacto es obligatorio.'; errEl.style.display='block'; return; }
+    var telCon = vv('telefono_contacto');
+    if(!telCon || telCon.length < 7){ errEl.textContent='El teléfono de contacto no es válido.'; errEl.style.display='block'; return; }
+    if(!vv('correo_contacto')){ errEl.textContent='El correo electrónico de contacto es obligatorio.'; errEl.style.display='block'; return; }
+
+    var btn = document.getElementById('bw-submit-btn');
+    btn.disabled=true; btn.textContent='Enviando...';
+
+    var payload = {
+      acepta_datos: true,
+      nombre_establecimiento: vv('nombre_establecimiento'),
+      direccion: vv('direccion'),
+      barrio: vv('barrio'),
+      localidad: vv('localidad'),
+      telefono_reservas: vv('telefono_reservas'),
+      concepto_musical: vv('concepto_musical'),
+      tiene_patrocinios: patrocinio,
+      cuales_patrocinios: patrocinio === 'Sí' ? vv('cuales_patrocinios') : '',
+      instagram: vv('instagram'),
+      nombre_contacto: vv('nombre_contacto'),
+      telefono_contacto: vv('telefono_contacto'),
+      correo_contacto: vv('correo_contacto'),
+    };
+
+    var res = await sb.from('inscripciones_bar_week').insert([payload]);
+
+    if(res.error){
+      btn.disabled=false; btn.textContent='Inscribir mi establecimiento →';
+      errEl.textContent='Error al enviar el registro: ' + res.error.message;
+      errEl.style.display='block';
+      return;
+    }
+
+    // Correo de confirmación
+    fetch('https://pbqmkodwmntujezbokgo.supabase.co/functions/v1/send-confirmation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34',
+      },
+      body: JSON.stringify({
+        email: vv('correo_contacto'),
+        nombre: vv('nombre_contacto'),
+        evento: 'Bar Week Bogotá 2026',
+        fecha: '27 de noviembre al 7 de diciembre de 2026',
+        hora: 'Durante el evento',
+        lugar: 'Bogotá D.C. — ' + vv('nombre_establecimiento'),
+        direccion: vv('direccion') + ', ' + vv('barrio') + ', ' + vv('localidad'),
+      })
+    }).catch(function(){});
+
+    document.getElementById('bw-success').style.display='block';
+    document.getElementById('bw-card').style.display='none';
+    document.getElementById('bw-wrap').scrollIntoView({behavior:'smooth'});
+  };
+})();
+</script>

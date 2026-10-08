@@ -1761,7 +1761,7 @@
       const downloadArchivosZip = async (data, nameKey, fileMapping, zipName) => {
         const withFiles = data.filter(r => fileMapping.some(f => r[f.key]));
         if (!withFiles.length) { showNotif('No hay archivos adjuntos en los registros filtrados', 'error'); return; }
-        showNotif(`Descargando archivos de ${withFiles.length} registros...`);
+        showNotif(`Preparando ${withFiles.length} registros...`);
         if (!window.JSZip) {
           await new Promise((res, rej) => {
             const s = document.createElement('script');
@@ -1773,31 +1773,40 @@
         const zip = new window.JSZip();
         const sanitize = str => (str || 'sin_nombre').replace(/[\/\\:*?"<>|]/g, '_').slice(0, 60);
         const getExt = url => { try { const p = new URL(url).pathname.split('/').pop().split('?')[0]; const d = p.lastIndexOf('.'); return d > -1 ? p.slice(d).toLowerCase() : ''; } catch { return ''; } };
-        let count = 0;
+        const fetchHeaders = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` };
+        let count = 0, errors = 0, idx = 0;
         for (const r of withFiles) {
+          idx++;
+          showNotif(`Descargando ${idx}/${withFiles.length}...`);
           const nombre = sanitize(r[nameKey]);
           for (const f of fileMapping) {
             if (!r[f.key]) continue;
             try {
-              const res = await fetch(r[f.key]);
-              if (!res.ok) continue;
+              const res = await fetch(r[f.key], { headers: fetchHeaders });
+              if (!res.ok) { errors++; continue; }
               const blob = await res.blob();
               let ext = getExt(r[f.key]);
               if (!ext) ext = blob.type.includes('pdf') ? '.pdf' : blob.type.includes('png') ? '.png' : '.jpg';
               zip.folder(f.folder).file(`${nombre}_${f.suffix}${ext}`, blob);
               count++;
-            } catch (e) { /* omitir archivos que fallen */ }
+            } catch (e) { errors++; console.warn('ZIP fetch error:', r[f.key], e); }
           }
         }
-        if (!count) { showNotif('No se pudieron descargar los archivos', 'error'); return; }
+        if (!count) {
+          showNotif(`Sin archivos descargables (${errors} errores). Verifica que el bucket de Storage sea público.`, 'error');
+          return;
+        }
         showNotif('Generando ZIP...');
         const blob = await zip.generateAsync({ type: 'blob' });
+        const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
+        a.href = blobUrl;
         a.download = zipName + '_' + new Date().toISOString().slice(0, 10) + '.zip';
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
-        showNotif(`ZIP listo — ${count} archivos descargados ✓`);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+        showNotif(`✓ ZIP listo — ${count} archivos${errors ? ` (${errors} no disponibles)` : ''}`);
       };
       const downloadArmeniaGuiaArchivos = () => downloadArchivosZip(
         getArmeniaGuiaFiltered(), 'nombre_establecimiento',

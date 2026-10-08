@@ -1,42 +1,29 @@
-<!--
-  Bar Week Bogotá — Formulario de Registro de Establecimientos
-  Tabla Supabase: inscripciones_bar_week
-  ──────────────────────────────────────────────────────────────
-  SQL para crear la tabla (ejecutar en Supabase → SQL Editor):
-
-  create table if not exists inscripciones_bar_week (
-    id uuid primary key default gen_random_uuid(),
-    created_at timestamptz default now(),
-    acepta_datos boolean default false,
-    nombre_establecimiento text,
-    direccion text,
-    barrio text,
-    localidad text,
-    telefono_reservas text,
-    concepto_musical text,
-    tiene_patrocinios text,
-    cuales_patrocinios text,
-    instagram text,
-    nombre_contacto text,
-    telefono_contacto text,
-    correo_contacto text,
-    estado text default 'pendiente',
-    notas text default ''
-  );
-  alter table inscripciones_bar_week enable row level security;
-  create policy "anon_all" on inscripciones_bar_week
-    for all to anon using (true) with check (true);
--->
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+  document.documentElement.style.setProperty('background','#0d0d0d','important');
+  document.documentElement.style.setProperty('margin','0','important');
+  if(document.body){ document.body.style.setProperty('background','#0d0d0d','important'); document.body.style.setProperty('margin','0','important'); }
+  else { document.addEventListener('DOMContentLoaded',function(){ document.body.style.setProperty('background','#0d0d0d','important'); document.body.style.setProperty('margin','0','important'); }); }
+})();
+</script>
 
 <style>
+/* Fondo negro solo cuando esta landing está presente — no afecta otras páginas */
+body:has(#bw-wrap),
+html:has(#bw-wrap) {
+  background: #0d0d0d !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 #bw-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
 #bw-wrap {
   font-family: 'Segoe UI', Arial, sans-serif;
   background: #0d0d0d;
   color: #f1f5f9;
   width: 100%;
+  min-height: 100vh;
 }
 
 /* ── HEADER ── */

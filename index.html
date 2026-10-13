@@ -3070,24 +3070,73 @@
                               </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                              <div style={{ gridColumn: '1/-1' }}>{lbl('Nombre del establecimiento')}<input style={inpSt} value={re.datos.nombre_establecimiento||''} onChange={e=>setD('nombre_establecimiento',e.target.value)}/></div>
-                              <div>{lbl('Razón social')}<input style={inpSt} value={re.datos.razon_social||''} onChange={e=>setD('razon_social',e.target.value)}/></div>
+                              {/* DATOS GENERALES */}
+                              <div style={{ gridColumn:'1/-1' }}><p style={{ fontSize:10, fontWeight:700, color:'#94a3b8', letterSpacing:1, padding:'6px 0', borderBottom:'1px solid #f1f5f9', marginTop:4 }}>DATOS GENERALES DEL FORMULARIO</p></div>
+                              <div>{lbl('N° formulario')}<input style={inpSt} value={re.datos.formulario_n||''} onChange={e=>setD('formulario_n',e.target.value)}/></div>
+                              <div>{lbl('Afiliación')}<input style={inpSt} value={re.datos.afiliacion||''} onChange={e=>setD('afiliacion',e.target.value)}/></div>
+                              <div>{lbl('Fecha')}<input type="date" style={inpSt} value={re.datos.fecha||''} onChange={e=>setD('fecha',e.target.value)}/></div>
+                              <div>{lbl('Inscrito por')}<input style={inpSt} value={re.datos.inscrito_por||''} onChange={e=>setD('inscrito_por',e.target.value)}/></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Plataformas a activar')}<input style={inpSt} value={(Array.isArray(re.datos.plataformas)?re.datos.plataformas.join(', '):re.datos.plataformas)||''} onChange={e=>setD('plataformas',e.target.value)}/></div>
+                              {/* I. DATOS DE LA EMPRESA */}
+                              <div style={{ gridColumn:'1/-1' }}><p style={{ fontSize:10, fontWeight:700, color:'#94a3b8', letterSpacing:1, padding:'6px 0', borderBottom:'1px solid #f1f5f9', marginTop:8 }}>I. DATOS DE LA EMPRESA</p></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Razón social')}<input style={inpSt} value={re.datos.razon_social||''} onChange={e=>setD('razon_social',e.target.value)}/></div>
                               <div>{lbl('Tipo de identificación')}<input style={inpSt} value={re.datos.identificacion||''} onChange={e=>setD('identificacion',e.target.value)}/></div>
                               <div>{lbl('Número de identificación')}<input style={inpSt} value={re.datos.num_identificacion||''} onChange={e=>setD('num_identificacion',e.target.value)}/></div>
-                              <div>{lbl('Email empresa')}<input style={inpSt} value={re.datos.email_empresa||''} onChange={e=>setD('email_empresa',e.target.value)}/></div>
+                              <div>{lbl('Nombre representante legal')}<input style={inpSt} value={re.datos.nombre_representante||''} onChange={e=>setD('nombre_representante',e.target.value)}/></div>
+                              <div>{lbl('Apellido representante legal')}<input style={inpSt} value={re.datos.apellido_representante||''} onChange={e=>setD('apellido_representante',e.target.value)}/></div>
+                              <div>{lbl('Departamento empresa')}<input style={inpSt} value={re.datos.departamento_empresa||''} onChange={e=>setD('departamento_empresa',e.target.value)}/></div>
+                              <div>{lbl('Dirección empresa')}<input style={inpSt} value={re.datos.direccion_empresa||''} onChange={e=>setD('direccion_empresa',e.target.value)}/></div>
                               <div>{lbl('Teléfono empresa')}<input style={inpSt} value={re.datos.telefono_empresa||''} onChange={e=>setD('telefono_empresa',e.target.value)}/></div>
-                              <div>{lbl('Celular establecimiento')}<input style={inpSt} value={re.datos.celular_establecimiento||''} onChange={e=>setD('celular_establecimiento',e.target.value)}/></div>
-                              <div>{lbl('Departamento')}<input style={inpSt} value={re.datos.departamento_establecimiento||''} onChange={e=>setD('departamento_establecimiento',e.target.value)}/></div>
-                              <div style={{ gridColumn: '1/-1' }}>{lbl('Dirección establecimiento')}<input style={inpSt} value={re.datos.direccion_establecimiento||''} onChange={e=>setD('direccion_establecimiento',e.target.value)}/></div>
-                              <div>{lbl('Tipo de negocio')}<input style={inpSt} value={re.datos.tipo_negocio||''} onChange={e=>setD('tipo_negocio',e.target.value)}/></div>
-                              <div>{lbl('Concepto')}<input style={inpSt} value={re.datos.concepto||''} onChange={e=>setD('concepto',e.target.value)}/></div>
-                              <div>{lbl('Instagram')}<input style={inpSt} value={re.datos.instagram||''} onChange={e=>setD('instagram',e.target.value)}/></div>
-                              <div>{lbl('Página web')}<input style={inpSt} value={re.datos.pagina_web||''} onChange={e=>setD('pagina_web',e.target.value)}/></div>
-                              <div>{lbl('Facebook')}<input style={inpSt} value={re.datos.facebook||''} onChange={e=>setD('facebook',e.target.value)}/></div>
+                              <div>{lbl('Email empresa')}<input style={inpSt} value={re.datos.email_empresa||''} onChange={e=>setD('email_empresa',e.target.value)}/></div>
                               <div>{lbl('Régimen')}<input style={inpSt} value={re.datos.regimen||''} onChange={e=>setD('regimen',e.target.value)}/></div>
-                              <div style={{ gridColumn: '1/-1' }}>{lbl('Tel / Link de reservas')}<input style={inpSt} value={re.datos.telefono_reservas||''} onChange={e=>setD('telefono_reservas',e.target.value)}/></div>
-                              <div style={{ gridColumn: '1/-1' }}>{lbl('Descripción de la oferta')}<textarea style={{ ...inpSt, minHeight: 80, resize: 'vertical' }} value={re.datos.descripcion_oferta||''} onChange={e=>setD('descripcion_oferta',e.target.value)}/></div>
-                              <div style={{ gridColumn: '1/-1' }}>{lbl('Notas internas (solo equipo Asobares)')}<textarea style={{ ...inpSt, minHeight: 80, resize: 'vertical' }} value={re.notas||''} onChange={e=>setRe(p=>({...p,notas:e.target.value}))}/></div>
+                              <div>{lbl('Régimen (cuál)')}<input style={inpSt} value={re.datos.regimen_cual||''} onChange={e=>setD('regimen_cual',e.target.value)}/></div>
+                              {/* II. DATOS DEL ESTABLECIMIENTO */}
+                              <div style={{ gridColumn:'1/-1' }}><p style={{ fontSize:10, fontWeight:700, color:'#94a3b8', letterSpacing:1, padding:'6px 0', borderBottom:'1px solid #f1f5f9', marginTop:8 }}>II. DATOS DEL ESTABLECIMIENTO</p></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Nombre del establecimiento')}<input style={inpSt} value={re.datos.nombre_establecimiento||''} onChange={e=>setD('nombre_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Departamento')}<input style={inpSt} value={re.datos.departamento_establecimiento||''} onChange={e=>setD('departamento_establecimiento',e.target.value)}/></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Dirección establecimiento')}<input style={inpSt} value={re.datos.direccion_establecimiento||''} onChange={e=>setD('direccion_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Celular')}<input style={inpSt} value={re.datos.celular_establecimiento||''} onChange={e=>setD('celular_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Localidad')}<input style={inpSt} value={re.datos.localidad||''} onChange={e=>setD('localidad',e.target.value)}/></div>
+                              <div>{lbl('Estrato')}<input style={inpSt} value={re.datos.estrato||''} onChange={e=>setD('estrato',e.target.value)}/></div>
+                              <div>{lbl('Email establecimiento')}<input style={inpSt} value={re.datos.email_establecimiento||''} onChange={e=>setD('email_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Tipo de negocio')}<input style={inpSt} value={(Array.isArray(re.datos.tipo_negocio)?re.datos.tipo_negocio.join(', '):re.datos.tipo_negocio)||''} onChange={e=>setD('tipo_negocio',e.target.value)}/></div>
+                              <div>{lbl('Concepto')}<input style={inpSt} value={(Array.isArray(re.datos.concepto)?re.datos.concepto.join(', '):re.datos.concepto)||''} onChange={e=>setD('concepto',e.target.value)}/></div>
+                              <div>{lbl('Música en vivo')}<input style={inpSt} value={re.datos.musica_en_vivo||''} onChange={e=>setD('musica_en_vivo',e.target.value)}/></div>
+                              <div>{lbl('Horario desde')}<input type="time" style={inpSt} value={re.datos.horario_desde||''} onChange={e=>setD('horario_desde',e.target.value)}/></div>
+                              <div>{lbl('Horario hasta')}<input type="time" style={inpSt} value={re.datos.horario_hasta||''} onChange={e=>setD('horario_hasta',e.target.value)}/></div>
+                              <div>{lbl('Días de operación')}<input style={inpSt} value={re.datos.dias_operacion||''} onChange={e=>setD('dias_operacion',e.target.value)}/></div>
+                              <div>{lbl('Aforo')}<input style={inpSt} value={re.datos.aforo||''} onChange={e=>setD('aforo',e.target.value)}/></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Tel / Link de reservas')}<input style={inpSt} value={re.datos.telefono_reservas||''} onChange={e=>setD('telefono_reservas',e.target.value)}/></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Descripción de la oferta')}<textarea style={{ ...inpSt, minHeight:80, resize:'vertical' }} value={re.datos.descripcion_oferta||''} onChange={e=>setD('descripcion_oferta',e.target.value)}/></div>
+                              <div>{lbl('Página web')}<input style={inpSt} value={re.datos.pagina_web||''} onChange={e=>setD('pagina_web',e.target.value)}/></div>
+                              <div>{lbl('X / Twitter')}<input style={inpSt} value={re.datos.x||''} onChange={e=>setD('x',e.target.value)}/></div>
+                              <div>{lbl('Facebook')}<input style={inpSt} value={re.datos.facebook||''} onChange={e=>setD('facebook',e.target.value)}/></div>
+                              <div>{lbl('Instagram')}<input style={inpSt} value={re.datos.instagram||''} onChange={e=>setD('instagram',e.target.value)}/></div>
+                              {/* CONTACTOS */}
+                              {[['rrhh','RECURSOS HUMANOS'],['contable','CONTABLE'],['operaciones','OPERACIONES']].map(([ck,cT])=>(
+                                <React.Fragment key={ck}>
+                                  <div style={{ gridColumn:'1/-1' }}><p style={{ fontSize:10, fontWeight:700, color:'#94a3b8', letterSpacing:1, padding:'6px 0', borderBottom:'1px solid #f1f5f9', marginTop:8 }}>CONTACTO {cT}</p></div>
+                                  <div>{lbl('Nombre')}<input style={inpSt} value={re.datos[ck+'_nombre']||''} onChange={e=>setD(ck+'_nombre',e.target.value)}/></div>
+                                  <div>{lbl('Apellido')}<input style={inpSt} value={re.datos[ck+'_apellido']||''} onChange={e=>setD(ck+'_apellido',e.target.value)}/></div>
+                                  <div>{lbl('Género')}<input style={inpSt} value={re.datos[ck+'_genero']||''} onChange={e=>setD(ck+'_genero',e.target.value)}/></div>
+                                  <div>{lbl('Departamento')}<input style={inpSt} value={re.datos[ck+'_departamento']||''} onChange={e=>setD(ck+'_departamento',e.target.value)}/></div>
+                                  <div>{lbl('Perfil del cargo')}<input style={inpSt} value={re.datos[ck+'_perfil']||''} onChange={e=>setD(ck+'_perfil',e.target.value)}/></div>
+                                  <div>{lbl('Profesión')}<input style={inpSt} value={re.datos[ck+'_profesion']||''} onChange={e=>setD(ck+'_profesion',e.target.value)}/></div>
+                                  <div>{lbl('Tipo de documento')}<input style={inpSt} value={re.datos[ck+'_tipo_documento']||''} onChange={e=>setD(ck+'_tipo_documento',e.target.value)}/></div>
+                                  <div>{lbl('Número de documento')}<input style={inpSt} value={re.datos[ck+'_numero_documento']||''} onChange={e=>setD(ck+'_numero_documento',e.target.value)}/></div>
+                                  <div>{lbl('Correo electrónico')}<input style={inpSt} value={re.datos[ck+'_correo']||''} onChange={e=>setD(ck+'_correo',e.target.value)}/></div>
+                                  <div>{lbl('Teléfono celular')}<input style={inpSt} value={re.datos[ck+'_celular']||''} onChange={e=>setD(ck+'_celular',e.target.value)}/></div>
+                                </React.Fragment>
+                              ))}
+                              {/* FIRMAS Y ACEPTACIONES */}
+                              <div style={{ gridColumn:'1/-1' }}><p style={{ fontSize:10, fontWeight:700, color:'#94a3b8', letterSpacing:1, padding:'6px 0', borderBottom:'1px solid #f1f5f9', marginTop:8 }}>FIRMAS Y ACEPTACIONES</p></div>
+                              <div>{lbl('Firma — Nombre rep. legal')}<input style={inpSt} value={re.datos.firma_rep_nombre||''} onChange={e=>setD('firma_rep_nombre',e.target.value)}/></div>
+                              <div>{lbl('Firma — Documento rep. legal')}<input style={inpSt} value={re.datos.firma_rep_documento||''} onChange={e=>setD('firma_rep_documento',e.target.value)}/></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Firma — Nombre funcionario Asobares')}<input style={inpSt} value={re.datos.firma_func_nombre||''} onChange={e=>setD('firma_func_nombre',e.target.value)}/></div>
+                              <div>{lbl('Acepta anticorrupción')}<input style={inpSt} value={re.datos.acepta_anticorrupcion||''} onChange={e=>setD('acepta_anticorrupcion',e.target.value)}/></div>
+                              <div>{lbl('Acepta uso de marca')}<input style={inpSt} value={re.datos.acepta_uso_marca||''} onChange={e=>setD('acepta_uso_marca',e.target.value)}/></div>
+                              {/* NOTAS */}
+                              <div style={{ gridColumn:'1/-1', marginTop:4 }}>{lbl('Notas internas (solo equipo Asobares)')}<textarea style={{ ...inpSt, minHeight:80, resize:'vertical' }} value={re.notas||''} onChange={e=>setRe(p=>({...p,notas:e.target.value}))}/></div>
                             </div>
                           </div>
                           <div style={{ padding: '16px 28px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>

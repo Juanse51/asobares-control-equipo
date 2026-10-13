@@ -986,6 +986,13 @@
       const [barWeekDetalle, setBarWeekDetalle] = useState(null);
       const [barWeekNotasEdit, setBarWeekNotasEdit] = useState('');
 
+      const [espaciosCorpData, setEspaciosCorpData] = useState([]);
+      const [espaciosCorpLoading, setEspaciosCorpLoading] = useState(false);
+      const [espaciosCorpSearch, setEspaciosCorpSearch] = useState('');
+      const [espaciosCorpFiltroEstado, setEspaciosCorpFiltroEstado] = useState('all');
+      const [espaciosCorpDetalle, setEspaciosCorpDetalle] = useState(null);
+      const [espaciosCorpNotasEdit, setEspaciosCorpNotasEdit] = useState('');
+
       const [certPlantillas, setCertPlantillas] = useState([]);
       const [certLotes, setCertLotes] = useState([]);
       const [certPersonas, setCertPersonas] = useState([]);
@@ -1030,6 +1037,7 @@
       useEffect(() => { if (view === 'crm' || view === 'crm-armenia-guia') { setArmeniaGuiaDetalle(null); loadArmeniaGuia(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-armenia-postgastro') { setArmeniaPostGastroDetalle(null); loadArmeniaPostGastro(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-bar-week') { setBarWeekDetalle(null); loadBarWeek(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-espacios-corp') { setEspaciosCorpDetalle(null); loadEspaciosCorp(); } }, [view]);
       useEffect(() => { if (view === 'conecta') loadConecta(); }, [view]);
 
       useEffect(() => {
@@ -1759,6 +1767,41 @@
       };
       const exportBarWeekExcel = () => exportDynamicExcel(getBarWeekFiltered(), 'Bar Week Bogotá', 'bar_week_bogota');
 
+      const loadEspaciosCorp = async () => {
+        setEspaciosCorpLoading(true);
+        const { data } = await supabase.from('registro_espacios_corporativos').select('*').order('created_at', { ascending: false });
+        setEspaciosCorpData(data || []);
+        setEspaciosCorpLoading(false);
+      };
+      const updateEspaciosCorpEstado = async (id, estado) => {
+        await supabase.from('registro_espacios_corporativos').update({ estado }).eq('id', id);
+        setEspaciosCorpData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setEspaciosCorpDetalle(prev => prev && prev.id === id ? { ...prev, estado } : prev);
+      };
+      const saveEspaciosCorpNotas = async (id, notas) => {
+        await supabase.from('registro_espacios_corporativos').update({ notas }).eq('id', id);
+        setEspaciosCorpData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setEspaciosCorpDetalle(prev => prev && prev.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteEspaciosCorpRegistro = async (id) => {
+        const { error, count } = await supabase.from('registro_espacios_corporativos').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setEspaciosCorpData(prev => prev.filter(r => r.id !== id));
+        setEspaciosCorpDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getEspaciosCorpFiltered = () => {
+        const q = espaciosCorpSearch.toLowerCase();
+        return espaciosCorpData.filter(r => {
+          if (espaciosCorpFiltroEstado !== 'all' && r.estado !== espaciosCorpFiltroEstado) return false;
+          if (q && ![r.nombre_establecimiento, r.localidad_zona, r.direccion, r.nombre_responsable, r.correo_electronico, r.telefono_whatsapp].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportEspaciosCorpExcel = () => exportDynamicExcel(getEspaciosCorpFiltered(), 'Espacios Corporativos', 'espacios_corporativos');
+
       const downloadArchivosZip = async (data, nameKey, fileMapping, zipName) => {
         const withFiles = data.filter(r => fileMapping.some(f => r[f.key]));
         if (!withFiles.length) { showNotif('No hay archivos adjuntos en los registros filtrados', 'error'); return; }
@@ -2316,7 +2359,7 @@
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
               <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
               <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2-open" style={{fontSize:18,marginRight:8}}></i>Documentación</button>
-              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('certificaciones')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'certificaciones' ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'transparent', color: view === 'certificaciones' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'certificaciones' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-mortarboard" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Certificaciones</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('conecta')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'conecta' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'conecta' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'conecta' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-handshake" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Conecta</button>}
               {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: 'bi-people', label: 'Gestión de Equipo' }, { id: 'analytics', icon: 'bi-graph-up', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><i className={'bi '+item.icon} style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>{item.label}</button>))}</>)}
@@ -2329,7 +2372,7 @@
 
           <main style={{ flex: 1, marginLeft: isMobile ? 0 : 260, padding: isMobile ? '16px 12px 80px' : '32px 32px 80px', minWidth: 0 }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 20 : 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
               <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'center', flexShrink: 0 }}>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}><i className="bi bi-bell"></i>{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
@@ -2541,7 +2584,8 @@
                     { id: 'registros', icon: 'bi-building', title: 'Registros de Formularios', desc: 'Envíos del formulario de afiliación de asobares.org. Establecimientos, datos de empresa y documentos adjuntos.', count: registrosData.length, loading: registrosLoading, color: '#059669', bg: '#d1fae5' },
                     { id: 'crm-gastro', icon: 'bi-cup-hot', title: 'Postulados Gastromarketing Day', desc: 'Postulaciones al Gastromarketing Day — Catedral de Sal, 24-25 sep 2026. Gestiona estados y notas internas.', count: gastroData.length, loading: gastroLoading, color: '#f59e0b', bg: '#fef3c7' },
                     { id: 'crm-armenia-folder', icon: 'bi-buildings', title: 'Armenia 24', desc: 'Formularios del programa de Fortalecimiento Empresarial en Armenia, Quindío — Alcaldía de Armenia · Asobares · Quindío Convention Bureau.', count: armeniaCapData.length + armeniaDiagData.length + armeniaAsistData.length + armeniaGuiaData.length + armeniaPostGastroData.length, loading: armeniaCapLoading || armeniaDiagLoading || armeniaAsistLoading || armeniaGuiaLoading || armeniaPostGastroLoading, color: '#2db84b', bg: '#f0f9f4' },
-                    { id: 'crm-bar-week', icon: 'bi-cup-straw', title: 'Bar Week Bogotá', desc: 'Establecimientos registrados en Bar Week Bogotá 2026 — Cóctel + Tapa por $35.000 · 27 nov al 7 dic · Asobares · IDT.', count: barWeekData.length, loading: barWeekLoading, color: '#d4a017', bg: '#fffde7' }
+                    { id: 'crm-bar-week', icon: 'bi-cup-straw', title: 'Bar Week Bogotá', desc: 'Establecimientos registrados en Bar Week Bogotá 2026 — Cóctel + Tapa por $35.000 · 27 nov al 7 dic · Asobares · IDT.', count: barWeekData.length, loading: barWeekLoading, color: '#d4a017', bg: '#fffde7' },
+                    { id: 'crm-espacios-corp', icon: 'bi-building-check', title: 'Espacios Corporativos', desc: 'Establecimientos registrados para el directorio de espacios para eventos corporativos — Iniciativa ASOBARES + ANATO Capítulo Central.', count: espaciosCorpData.length, loading: espaciosCorpLoading, color: '#1d4ed8', bg: '#eff6ff' }
                   ].map(card => (
                     <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -4643,6 +4687,97 @@
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                                 {bwBadge(r.estado)}
+                                <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-espacios-corp' && (() => {
+              const ecBadge = (estado) => { const m = { pendiente: { bg: '#dbeafe', color: '#1e40af', lbl: 'Pendiente' }, confirmado: { bg: '#d1fae5', color: '#065f46', lbl: 'Confirmado' }, rechazado: { bg: '#fee2e2', color: '#991b1b', lbl: 'Rechazado' } }; const s = m[estado] || m.pendiente; return <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color }}>{s.lbl}</span>; };
+              const filtered = getEspaciosCorpFiltered();
+              return (
+                <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
+                  {espaciosCorpDetalle ? (
+                    <div style={{ flex: 1, overflowY: 'auto', background: 'white', borderRadius: 16, padding: 24 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <button onClick={() => setEspaciosCorpDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← Volver</button>
+                        {currentUser.role === 'admin' && <button onClick={() => { if(window.confirm('¿Eliminar este registro?')) deleteEspaciosCorpRegistro(espaciosCorpDetalle.id); }} style={{ padding: '8px 16px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>}
+                      </div>
+                      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                        <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#1d4ed8,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, color: 'white', margin: '0 auto 12px' }}><i className="bi bi-building-check"></i></div>
+                        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{espaciosCorpDetalle.nombre_establecimiento}</h2>
+                        <p style={{ fontSize: 14, color: '#64748b' }}>{espaciosCorpDetalle.localidad_zona}</p>
+                        <p style={{ fontSize: 13, color: '#94a3b8' }}>{new Date(espaciosCorpDetalle.created_at).toLocaleDateString('es-CO')}</p>
+                      </div>
+                      {ecBadge(espaciosCorpDetalle.estado)}
+                      <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
+                        {[['pendiente','Pendiente'],['confirmado','Confirmado'],['rechazado','Rechazado']].map(([val,lbl]) =>
+                          <button key={val} onClick={() => updateEspaciosCorpEstado(espaciosCorpDetalle.id, val)} style={{ padding: '6px 14px', borderRadius: 8, border: `2px solid ${espaciosCorpDetalle.estado===val?'#1d4ed8':'#e5e7eb'}`, background: espaciosCorpDetalle.estado===val?'#1d4ed8':'white', color: espaciosCorpDetalle.estado===val?'white':'#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                        )}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+                        {[
+                          ['Responsable', espaciosCorpDetalle.nombre_responsable],
+                          ['Tel / WhatsApp', espaciosCorpDetalle.telefono_whatsapp],
+                          ['Correo', espaciosCorpDetalle.correo_electronico],
+                          ['Dirección', espaciosCorpDetalle.direccion],
+                          ['Redes / Web', espaciosCorpDetalle.redes_sociales],
+                        ].filter(([,v])=>v).map(([k,v]) => (
+                          <div key={k}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{k}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{v}</p></div>
+                        ))}
+                        {espaciosCorpDetalle.tipos_eventos && <div style={{ gridColumn: '1/-1' }}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>Tipos de eventos</p><div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>{espaciosCorpDetalle.tipos_eventos.split(', ').map(t => <span key={t} style={{ padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: '#eff6ff', color: '#1d4ed8' }}>{t}</span>)}</div></div>}
+                        {espaciosCorpDetalle.tipos_eventos_otros && <div style={{ gridColumn: '1/-1' }}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>Otros eventos</p><p style={{ fontSize: 13, color: '#1e293b' }}>{espaciosCorpDetalle.tipos_eventos_otros}</p></div>}
+                      </div>
+                      <div style={{ marginTop: 16 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>NOTAS INTERNAS</p>
+                        <textarea value={espaciosCorpNotasEdit} onChange={e => setEspaciosCorpNotasEdit(e.target.value)} onFocus={() => setEspaciosCorpNotasEdit(espaciosCorpDetalle.notas || '')} style={{ width: '100%', padding: 12, border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', minHeight: 80, resize: 'vertical', boxSizing: 'border-box' }} placeholder="Añade notas sobre este establecimiento..."/>
+                        <button onClick={() => saveEspaciosCorpNotas(espaciosCorpDetalle.id, espaciosCorpNotasEdit)} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#1d4ed8,#2563eb)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+                        <button onClick={() => setView('crm')} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← CRM</button>
+                        <input value={espaciosCorpSearch} onChange={e => setEspaciosCorpSearch(e.target.value)} placeholder="Buscar por establecimiento, localidad, contacto, correo..." style={{ flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}/>
+                        <select value={espaciosCorpFiltroEstado} onChange={e => setEspaciosCorpFiltroEstado(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}>
+                          <option value="all">Todos</option>
+                          <option value="pendiente">Pendiente</option>
+                          <option value="confirmado">Confirmado</option>
+                          <option value="rechazado">Rechazado</option>
+                        </select>
+                        <button onClick={loadEspaciosCorp} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
+                        <button onClick={exportEspaciosCorpExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#1d4ed8,#2563eb)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12, marginBottom: 16 }}>
+                        {[['Total',espaciosCorpData.length,'#1d4ed8'],['Pendiente',espaciosCorpData.filter(r=>!r.estado||r.estado==='pendiente').length,'#1e40af'],['Confirmado',espaciosCorpData.filter(r=>r.estado==='confirmado').length,'#065f46'],['Rechazado',espaciosCorpData.filter(r=>r.estado==='rechazado').length,'#E84338']].map(([lbl,val,color])=>(
+                          <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                            <p style={{ fontSize: 22, fontWeight: 700, color }}>{val}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{lbl}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {espaciosCorpLoading ? (
+                        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Cargando...</div>
+                      ) : filtered.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16, color: '#94a3b8' }}>No hay registros{espaciosCorpSearch ? ' que coincidan' : ''}.</div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                          {filtered.map((r,i) => (
+                            <div key={r.id} onClick={() => { setEspaciosCorpDetalle(r); setEspaciosCorpNotasEdit(r.notas||''); }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i<filtered.length-1?'1px solid #f1f5f9':'none', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='#eff6ff'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg,#1d4ed8,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: 'white', flexShrink: 0 }}><i className="bi bi-building-check"></i></div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 2 }}>{r.nombre_establecimiento}</p>
+                                <p style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.localidad_zona}{r.nombre_responsable ? ' · ' + r.nombre_responsable : ''}</p>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                                {ecBadge(r.estado)}
                                 <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
                               </div>
                             </div>

@@ -1,26 +1,3 @@
-<!--
-  TABLA SUPABASE REQUERIDA — ejecutar en el SQL Editor de Supabase:
-
-  create table registro_espacios_corporativos (
-    id                  bigserial primary key,
-    created_at          timestamptz default now(),
-    acepta_datos        boolean not null default false,
-    nombre_establecimiento text not null,
-    nombre_responsable  text,
-    telefono_whatsapp   text,
-    correo_electronico  text,
-    localidad_zona      text not null,
-    direccion           text not null,
-    redes_sociales      text,
-    tipos_eventos       text,
-    tipos_eventos_otros text
-  );
-
-  -- Habilitar RLS y permitir INSERT anónimo:
-  alter table registro_espacios_corporativos enable row level security;
-  create policy "insert publico" on registro_espacios_corporativos
-    for insert with check (true);
--->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 

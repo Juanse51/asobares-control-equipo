@@ -1,0 +1,593 @@
+<!--
+  TABLA SUPABASE REQUERIDA — ejecutar en el SQL Editor de Supabase:
+
+  create table registro_espacios_corporativos (
+    id                  bigserial primary key,
+    created_at          timestamptz default now(),
+    acepta_datos        boolean not null default false,
+    nombre_establecimiento text not null,
+    nombre_responsable  text,
+    telefono_whatsapp   text,
+    correo_electronico  text,
+    localidad_zona      text not null,
+    direccion           text not null,
+    redes_sociales      text,
+    tipos_eventos       text,
+    tipos_eventos_otros text
+  );
+
+  -- Habilitar RLS y permitir INSERT anónimo:
+  alter table registro_espacios_corporativos enable row level security;
+  create policy "insert publico" on registro_espacios_corporativos
+    for insert with check (true);
+-->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<style>
+#ce-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+#ce-wrap {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f8fafc;
+  color: #1e293b;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+#ce-wrap .ce-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f172a 100%);
+  padding: 52px 24px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+#ce-wrap .ce-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232563eb' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+#ce-wrap .ce-logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  position: relative;
+}
+#ce-wrap .ce-badge {
+  background: rgba(37,99,235,0.15);
+  border: 1px solid rgba(37,99,235,0.4);
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+#ce-wrap .ce-header h1 {
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 10px;
+  position: relative;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+#ce-wrap .ce-header h1 span { color: #60a5fa; }
+#ce-wrap .ce-header .ce-sub {
+  font-size: 15px;
+  color: #93c5fd;
+  font-weight: 500;
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.6;
+  position: relative;
+}
+
+/* ── DESCRIPCIÓN ── */
+#ce-wrap .ce-desc {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 40px 24px;
+}
+#ce-wrap .ce-desc-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+#ce-wrap .ce-desc-inner .ce-d-tag {
+  display: inline-block;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+#ce-wrap .ce-desc-inner p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #475569;
+  margin-bottom: 10px;
+}
+#ce-wrap .ce-desc-inner p:last-child { margin-bottom: 0; }
+#ce-wrap .ce-desc-inner strong { color: #1e293b; }
+#ce-wrap .ce-desc-inner .ce-hl { color: #1d4ed8; font-weight: 700; }
+
+/* ── FORM ── */
+#ce-wrap .ce-form-wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 24px 72px;
+}
+#ce-wrap .ce-form-title {
+  text-align: center;
+  margin-bottom: 36px;
+}
+#ce-wrap .ce-form-title h2 {
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+#ce-wrap .ce-form-title p { font-size: 14px; color: #64748b; }
+
+#ce-wrap .ce-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 44px 48px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+}
+
+#ce-wrap .ce-sec {
+  font-size: 10px;
+  font-weight: 800;
+  color: #1d4ed8;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  display: block;
+  margin-top: 36px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #dbeafe;
+}
+#ce-wrap .ce-sec:first-child { margin-top: 0; }
+
+#ce-wrap .ce-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+#ce-wrap .ce-fg { margin-bottom: 18px; }
+#ce-wrap .ce-fg label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 7px;
+}
+#ce-wrap .ce-req { color: #E84338; }
+#ce-wrap .ce-fg input,
+#ce-wrap .ce-fg select,
+#ce-wrap .ce-fg textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  background: #f8fafc;
+  color: #1e293b;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+#ce-wrap .ce-fg input::placeholder,
+#ce-wrap .ce-fg textarea::placeholder { color: #94a3b8; }
+#ce-wrap .ce-fg input:focus,
+#ce-wrap .ce-fg select:focus,
+#ce-wrap .ce-fg textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  background: #ffffff;
+}
+#ce-wrap .ce-fg textarea { resize: vertical; min-height: 90px; }
+
+/* Autorización */
+#ce-wrap .ce-acepta-box {
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 4px;
+}
+#ce-wrap .ce-acepta-box p {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.75;
+  margin-bottom: 14px;
+}
+#ce-wrap .ce-acepta-box a { color: #1d4ed8; font-weight: 600; text-decoration: none; }
+#ce-wrap .ce-acepta-box a:hover { text-decoration: underline; }
+#ce-wrap .ce-radio-row { display: flex; gap: 28px; flex-wrap: wrap; }
+#ce-wrap .ce-radio-row label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  font-size: 15px;
+  color: #1e293b;
+  font-weight: 600;
+}
+#ce-wrap .ce-radio-row input[type="radio"] { width: 17px; height: 17px; accent-color: #2563eb; }
+
+/* Checkboxes tipos de eventos */
+#ce-wrap .ce-checks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+#ce-wrap .ce-check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+#ce-wrap .ce-check-item:has(input:checked) {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+#ce-wrap .ce-check-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #2563eb;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+#ce-wrap .ce-check-item span {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1.3;
+}
+#ce-wrap .ce-otros-wrap { display: none; margin-top: 4px; }
+
+/* Botón submit */
+#ce-wrap .ce-submit {
+  width: 100%;
+  padding: 17px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 32px;
+  font-family: inherit;
+  letter-spacing: 0.3px;
+  transition: opacity 0.2s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+}
+#ce-wrap .ce-submit:hover { opacity: 0.92; transform: translateY(-1px); }
+#ce-wrap .ce-submit:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+/* Error */
+#ce-wrap .ce-err {
+  display: none;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+/* Success */
+#ce-wrap .ce-success {
+  display: none;
+  text-align: center;
+  padding: 80px 20px;
+}
+#ce-wrap .ce-check-circle {
+  width: 90px; height: 90px;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44px; color: #ffffff;
+  margin: 0 auto 24px;
+  box-shadow: 0 8px 24px rgba(37,99,235,0.35);
+}
+#ce-wrap .ce-success h2 { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+#ce-wrap .ce-success p { font-size: 15px; color: #64748b; line-height: 1.7; margin-bottom: 6px; }
+
+/* Footer */
+#ce-wrap .ce-footer {
+  background: #0f172a;
+  text-align: center;
+  padding: 28px 24px;
+  font-size: 12px;
+  color: #475569;
+}
+#ce-wrap .ce-footer a { color: #60a5fa; text-decoration: none; }
+#ce-wrap .ce-footer a:hover { text-decoration: underline; }
+
+@media (max-width: 640px) {
+  #ce-wrap .ce-g2 { grid-template-columns: 1fr; }
+  #ce-wrap .ce-card { padding: 28px 20px; }
+  #ce-wrap .ce-checks-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<div id="ce-wrap">
+
+  <!-- HEADER -->
+  <div class="ce-header">
+    <div class="ce-logo-row">
+      <span class="ce-badge">ASOBARES Colombia</span>
+      <span style="color:#334155;font-size:16px">×</span>
+      <span class="ce-badge">ANATO Capítulo Central</span>
+    </div>
+    <h1>¡Haz parte de la oferta de<br><span>espacios para eventos corporativos!</span></h1>
+    <p class="ce-sub">Conecta tu establecimiento con empresas que están buscando el lugar ideal para sus celebraciones</p>
+  </div>
+
+  <!-- DESCRIPCIÓN -->
+  <div class="ce-desc">
+    <div class="ce-desc-inner">
+      <span class="ce-d-tag">Iniciativa conjunta</span>
+      <p><strong>ASOBARES</strong> y <strong>ANATO Capítulo Central</strong> están desarrollando una iniciativa para facilitar la conexión entre empresas, agencias, organizadores de eventos y establecimientos de comercio que cuentan con <strong>espacios y servicios para realizar celebraciones corporativas</strong>, reuniones empresariales y eventos de fin de año.</p>
+      <p>Si tu establecimiento cuenta con espacios, ambientes, gastronomía, entretenimiento o servicios especializados para eventos corporativos, <span class="ce-hl">te invitamos a registrarlo en nuestro directorio de opciones disponibles.</span></p>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div class="ce-form-wrap">
+    <div class="ce-form-title">
+      <h2>Registra tu establecimiento</h2>
+      <p>Completa el formulario para aparecer en el directorio de espacios para eventos corporativos</p>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="ce-success" id="ce-success">
+      <div class="ce-check-circle">✓</div>
+      <h2>¡Registro recibido!</h2>
+      <p>Hemos registrado tu establecimiento en el directorio de espacios para eventos corporativos.</p>
+      <p>Te enviamos la confirmación al correo registrado.</p>
+      <p style="margin-top:16px;font-size:13px;">¿Preguntas? Escríbenos a <a href="mailto:info@asobares.org" style="color:#1d4ed8;font-weight:600;">info@asobares.org</a></p>
+    </div>
+
+    <!-- CARD FORM -->
+    <div class="ce-card" id="ce-card">
+
+      <!-- AUTORIZACIÓN -->
+      <span class="ce-sec">Autorización de uso de datos</span>
+      <div class="ce-acepta-box">
+        <p>Por medio de la presente acepto el uso de los datos contemplados en este formulario por parte de Asobares, conforme a la política de la asociación, disponible en: <a href="https://asobares.org/politica-de-datos/" target="_blank">asobares.org/politica-de-datos</a> <span class="ce-req">*</span></p>
+        <div class="ce-radio-row">
+          <label><input type="radio" name="acepta_datos" value="si"> Sí, acepto</label>
+          <label><input type="radio" name="acepta_datos" value="no"> No acepto</label>
+        </div>
+      </div>
+
+      <!-- DATOS DEL ESTABLECIMIENTO -->
+      <span class="ce-sec">Datos del establecimiento</span>
+
+      <div class="ce-fg">
+        <label>Nombre comercial del establecimiento <span class="ce-req">*</span></label>
+        <input type="text" name="nombre_establecimiento" required placeholder="Nombre completo como aparece en tu establecimiento"/>
+      </div>
+
+      <div class="ce-fg">
+        <label>Nombre del responsable / contacto comercial</label>
+        <input type="text" name="nombre_responsable" placeholder="Nombre y apellido de quien gestiona el establecimiento"/>
+      </div>
+
+      <div class="ce-g2">
+        <div class="ce-fg">
+          <label>Número de contacto / WhatsApp</label>
+          <input type="tel" name="telefono_whatsapp" placeholder="3001234567" maxlength="15"/>
+        </div>
+        <div class="ce-fg">
+          <label>Correo electrónico <small style="font-weight:400;color:#94a3b8;">(para confirmación)</small></label>
+          <input type="email" name="correo_electronico" placeholder="correo@tuestablecimiento.com"/>
+        </div>
+      </div>
+
+      <div class="ce-fg">
+        <label>Localidad / zona / sector <span class="ce-req">*</span></label>
+        <input type="text" name="localidad_zona" required placeholder="Ej: Chapinero, Zona Rosa, Usaquén, Teusaquillo..."/>
+      </div>
+
+      <div class="ce-fg">
+        <label>Dirección del establecimiento <span class="ce-req">*</span></label>
+        <input type="text" name="direccion" required placeholder="Calle / Carrera / Número / Ciudad"/>
+      </div>
+
+      <div class="ce-fg">
+        <label>Instagram / Facebook / página web</label>
+        <input type="text" name="redes_sociales" placeholder="@instagram, facebook.com/pagina o www.miweb.com"/>
+      </div>
+
+      <!-- CARACTERÍSTICAS DEL ESPACIO -->
+      <span class="ce-sec">Características del espacio</span>
+
+      <div class="ce-fg">
+        <label>¿Qué tipo de eventos puede atender tu establecimiento? <span class="ce-req">*</span> <small style="font-weight:400;color:#94a3b8;">(selección múltiple)</small></label>
+        <div class="ce-checks-grid" id="ce-checks">
+          <label class="ce-check-item"><input type="checkbox" name="tipo_ev" value="Cenas empresariales"><span>Cenas empresariales</span></label>
+          <label class="ce-check-item"><input type="checkbox" name="tipo_ev" value="Fiestas de fin de año"><span>Fiestas de fin de año</span></label>
+          <label class="ce-check-item"><input type="checkbox" name="tipo_ev" value="Cocteles empresariales"><span>Cocteles empresariales</span></label>
+          <label class="ce-check-item"><input type="checkbox" name="tipo_ev" value="Almuerzos corporativos"><span>Almuerzos corporativos</span></label>
+          <label class="ce-check-item"><input type="checkbox" name="tipo_ev" value="Reuniones empresariales"><span>Reuniones empresariales</span></label>
+          <label class="ce-check-item"><input type="checkbox" name="tipo_ev" value="Lanzamientos de producto"><span>Lanzamientos de producto</span></label>
+          <label class="ce-check-item"><input type="checkbox" name="tipo_ev" value="Networking"><span>Networking</span></label>
+          <label class="ce-check-item"><input type="checkbox" name="tipo_ev" value="Celebraciones privadas"><span>Celebraciones privadas</span></label>
+          <label class="ce-check-item"><input type="checkbox" name="tipo_ev" value="Eventos con música en vivo"><span>Eventos con música en vivo</span></label>
+          <label class="ce-check-item"><input type="checkbox" name="tipo_ev" value="Eventos con DJ"><span>Eventos con DJ</span></label>
+          <label class="ce-check-item" id="ce-otros-item">
+            <input type="checkbox" id="ce-otros-chk" name="tipo_ev" value="Otros" onchange="ceToggleOtros(this.checked)">
+            <span>Otros</span>
+          </label>
+        </div>
+        <div class="ce-otros-wrap" id="ce-otros-wrap">
+          <input type="text" name="tipos_eventos_otros" id="ce-otros-txt" placeholder="Especifica qué otros tipos de eventos..."/>
+        </div>
+      </div>
+
+      <div class="ce-err" id="ce-err-msg"></div>
+      <button class="ce-submit" id="ce-submit-btn" type="button" onclick="ceEnviar()">
+        Registrar mi establecimiento →
+      </button>
+
+    </div><!-- /ce-card -->
+  </div><!-- /ce-form-wrap -->
+
+  <!-- FOOTER -->
+  <div class="ce-footer">
+    ASOBARES Colombia · ANATO Capítulo Central ·
+    <a href="https://asobares.org/politica-de-datos/" target="_blank">Política de datos</a>
+  </div>
+
+</div><!-- /ce-wrap -->
+
+<script>
+function ceToggleOtros(show) {
+  document.getElementById('ce-otros-wrap').style.display = show ? 'block' : 'none';
+  if (!show) document.getElementById('ce-otros-txt').value = '';
+}
+
+(function(){
+  var _sb;
+  function getSB(){
+    if(_sb) return _sb;
+    if(typeof supabase !== 'undefined' && supabase.createClient){
+      _sb = supabase.createClient(
+        'https://pbqmkodwmntujezbokgo.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34'
+      );
+      return _sb;
+    }
+    return null;
+  }
+
+  function vv(name){
+    var el = document.querySelector('#ce-wrap [name="'+name+'"]');
+    return el ? el.value.trim() : '';
+  }
+  function radio(name){
+    var el = document.querySelector('#ce-wrap [name="'+name+'"]:checked');
+    return el ? el.value : '';
+  }
+  function getChecked(){
+    var checked = document.querySelectorAll('#ce-wrap [name="tipo_ev"]:checked');
+    var vals = [];
+    checked.forEach(function(c){ vals.push(c.value); });
+    return vals;
+  }
+
+  window.ceEnviar = async function(){
+    var sb = getSB();
+    if(!sb){ setTimeout(ceEnviar, 150); return; }
+
+    var errEl = document.getElementById('ce-err-msg');
+    errEl.style.display = 'none';
+
+    // Validaciones
+    if(radio('acepta_datos') !== 'si'){
+      errEl.textContent = 'Debes aceptar la política de datos para continuar.';
+      errEl.style.display = 'block'; return;
+    }
+    if(!vv('nombre_establecimiento')){
+      errEl.textContent = 'El nombre comercial del establecimiento es obligatorio.';
+      errEl.style.display = 'block'; return;
+    }
+    if(!vv('localidad_zona')){
+      errEl.textContent = 'La localidad / zona / sector es obligatoria.';
+      errEl.style.display = 'block'; return;
+    }
+    if(!vv('direccion')){
+      errEl.textContent = 'La dirección del establecimiento es obligatoria.';
+      errEl.style.display = 'block'; return;
+    }
+    var tiposSeleccionados = getChecked();
+    if(tiposSeleccionados.length === 0){
+      errEl.textContent = 'Selecciona al menos un tipo de evento que puede atender tu establecimiento.';
+      errEl.style.display = 'block'; return;
+    }
+    if(tiposSeleccionados.indexOf('Otros') !== -1 && !vv('tipos_eventos_otros')){
+      errEl.textContent = 'Especifica qué otros tipos de eventos puede atender.';
+      errEl.style.display = 'block'; return;
+    }
+
+    var btn = document.getElementById('ce-submit-btn');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+
+    var tiposStr = tiposSeleccionados.join(', ');
+    var payload = {
+      acepta_datos:          true,
+      nombre_establecimiento: vv('nombre_establecimiento'),
+      nombre_responsable:    vv('nombre_responsable'),
+      telefono_whatsapp:     vv('telefono_whatsapp'),
+      correo_electronico:    vv('correo_electronico'),
+      localidad_zona:        vv('localidad_zona'),
+      direccion:             vv('direccion'),
+      redes_sociales:        vv('redes_sociales'),
+      tipos_eventos:         tiposStr,
+      tipos_eventos_otros:   tiposSeleccionados.indexOf('Otros') !== -1 ? vv('tipos_eventos_otros') : ''
+    };
+
+    var res = await sb.from('registro_espacios_corporativos').insert([payload]);
+
+    if(res.error){
+      btn.disabled = false;
+      btn.textContent = 'Registrar mi establecimiento →';
+      errEl.textContent = 'Error al enviar el registro: ' + res.error.message;
+      errEl.style.display = 'block';
+      return;
+    }
+
+    // Correo de confirmación (solo si hay correo)
+    var correo = vv('correo_electronico');
+    if(correo){
+      fetch('https://pbqmkodwmntujezbokgo.supabase.co/functions/v1/send-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34'
+        },
+        body: JSON.stringify({
+          email:     correo,
+          nombre:    vv('nombre_responsable') || vv('nombre_establecimiento'),
+          evento:    'Directorio de Espacios para Eventos Corporativos',
+          fecha:     'Iniciativa ASOBARES + ANATO Capítulo Central',
+          hora:      '—',
+          lugar:     vv('nombre_establecimiento'),
+          direccion: vv('direccion') + (vv('localidad_zona') ? ', ' + vv('localidad_zona') : '')
+        })
+      }).catch(function(){});
+    }
+
+    document.getElementById('ce-success').style.display = 'block';
+    document.getElementById('ce-card').style.display = 'none';
+    document.getElementById('ce-wrap').scrollIntoView({ behavior: 'smooth' });
+  };
+})();
+</script>

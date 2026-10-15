@@ -105,14 +105,14 @@ html:has(#bw-wrap) {
 #bw-wrap .bw-desc-inner p {
   font-size: 15px;
   line-height: 1.8;
-  color: #94a3b8;
+  color: #b8c8d8;
   margin-bottom: 12px;
 }
 #bw-wrap .bw-desc-inner p:last-child { margin-bottom: 0; }
 
 /* ── FORM ── */
 #bw-wrap .bw-form-wrap {
-  max-width: 860px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 48px 24px 64px;
 }
@@ -132,7 +132,7 @@ html:has(#bw-wrap) {
   background: #161616;
   border: 1px solid #2a2a2a;
   border-radius: 20px;
-  padding: 44px 48px;
+  padding: 44px 60px;
 }
 
 #bw-wrap .bw-sec {
@@ -155,7 +155,7 @@ html:has(#bw-wrap) {
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #94a3b8;
+  color: #c0cfe0;
   margin-bottom: 7px;
   letter-spacing: 0.2px;
 }
@@ -169,14 +169,14 @@ html:has(#bw-wrap) {
   border-radius: 10px;
   font-size: 15px;
   font-family: inherit;
-  background: #0d0d0d;
+  background: #131313;
   color: #f1f5f9;
   transition: border-color 0.15s;
   -webkit-appearance: auto;
   appearance: auto;
 }
 #bw-wrap .bw-fg input::placeholder,
-#bw-wrap .bw-fg textarea::placeholder { color: #3a3a3a; }
+#bw-wrap .bw-fg textarea::placeholder { color: #606060; }
 #bw-wrap .bw-fg input:focus,
 #bw-wrap .bw-fg select:focus,
 #bw-wrap .bw-fg textarea:focus { outline: none; border-color: #d4a017; }
@@ -212,21 +212,6 @@ html:has(#bw-wrap) {
 
 /* patrocinios condicional */
 #bw-wrap .bw-patrocinio-cual { display: none; margin-top: 14px; }
-
-#bw-wrap .bw-fg textarea {
-  width: 100%;
-  padding: 13px 15px;
-  border: 2px solid #2a2a2a;
-  border-radius: 10px;
-  font-size: 14px;
-  font-family: inherit;
-  background: #111;
-  color: #f1f5f9;
-  resize: vertical;
-  transition: border-color 0.15s;
-  min-height: 90px;
-}
-#bw-wrap .bw-fg textarea:focus { outline: none; border-color: #d4a017; }
 
 #bw-wrap .bw-submit {
   width: 100%;
@@ -280,7 +265,7 @@ html:has(#bw-wrap) {
   text-align: center;
   padding: 28px 24px;
   font-size: 12px;
-  color: #3a3a3a;
+  color: #666;
 }
 #bw-wrap .bw-footer a { color: #d4a017; }
 
@@ -483,8 +468,8 @@ html:has(#bw-wrap) {
           <input type="url" name="pagina_web" placeholder="https://..."/>
         </div>
         <div class="bw-fg">
-          <label>Logo y manual de marca <span style="font-size:11px;color:#3a3a3a;font-weight:400;">(cuando exista — link)</span></label>
-          <input type="text" name="logo_marca" placeholder="Ej: https://drive.google.com/..."/>
+          <label>Logo y manual de marca <span style="font-size:11px;color:#666;font-weight:400;">(cuando exista — opcional)</span></label>
+          <input type="file" id="bw-logo-file" name="logo_marca_file" accept=".jpg,.jpeg,.png,.svg,.pdf,.ai,.eps" style="cursor:pointer;"/>
         </div>
       </div>
 
@@ -546,6 +531,20 @@ function bwTogglePatrocinio(show) {
   function vv(name){ var el=document.querySelector('#bw-wrap [name="'+name+'"]'); return el ? el.value.trim() : ''; }
   function radio(name){ var el=document.querySelector('#bw-wrap [name="'+name+'"]:checked'); return el ? el.value : ''; }
 
+  var SUPABASE_URL = 'https://pbqmkodwmntujezbokgo.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34';
+
+  async function bwUploadFile(file) {
+    var ruta = 'bar-week/' + Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    var r = await fetch(SUPABASE_URL + '/storage/v1/object/formularios/' + ruta, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'x-upsert': 'true' },
+      body: file
+    });
+    if (!r.ok) throw new Error('Error subiendo archivo');
+    return ruta;
+  }
+
   window.bwEnviar = async function(){
     var sb = getSB();
     if(!sb){ setTimeout(bwEnviar, 150); return; }
@@ -573,6 +572,18 @@ function bwTogglePatrocinio(show) {
     var btn = document.getElementById('bw-submit-btn');
     btn.disabled=true; btn.textContent='Enviando...';
 
+    var logoRuta = null;
+    var logoInput = document.getElementById('bw-logo-file');
+    if (logoInput && logoInput.files.length > 0) {
+      try { logoRuta = await bwUploadFile(logoInput.files[0]); }
+      catch(e) {
+        errEl.textContent = 'Error al subir el logo. Intenta de nuevo.';
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Inscribir mi establecimiento →';
+        return;
+      }
+    }
+
     var payload = {
       acepta_datos: true,
       nombre_establecimiento: vv('nombre_establecimiento'),
@@ -594,7 +605,7 @@ function bwTogglePatrocinio(show) {
       instagram: vv('instagram') || null,
       facebook: vv('facebook') || null,
       pagina_web: vv('pagina_web') || null,
-      logo_marca: vv('logo_marca') || null,
+      logo_marca: logoRuta,
       nombre_contacto: vv('nombre_contacto'),
       telefono_contacto: vv('telefono_contacto'),
       correo_contacto: vv('correo_contacto'),

@@ -44,6 +44,10 @@
 #arm-cap-wrap .ac-radio-row label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; color: #374151; font-weight: 600; }
 #arm-cap-wrap .ac-radio-row input[type="radio"] { width: 18px; height: 18px; accent-color: #2db84b; }
 
+/* Textareas establecimiento */
+#arm-cap-wrap .ac-fg textarea { width: 100%; padding: 13px 15px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-family: inherit; background: white; color: #1a2e1a; transition: border-color 0.15s; resize: vertical; }
+#arm-cap-wrap .ac-fg textarea:focus { outline: none; border-color: #2db84b; }
+
 /* Submit */
 #arm-cap-wrap .ac-submit { width: 100%; padding: 18px; border: none; border-radius: 12px; background: linear-gradient(135deg, #2db84b, #1e7c34); color: white; font-size: 18px; font-weight: 700; cursor: pointer; margin-top: 32px; font-family: inherit; transition: opacity 0.2s; letter-spacing: 0.3px; }
 #arm-cap-wrap .ac-submit:hover { opacity: 0.9; }
@@ -189,6 +193,108 @@
           </div>
         </div>
 
+        <span class="ac-sec" style="margin-top:32px;">DATOS DEL ESTABLECIMIENTO</span>
+
+        <div class="ac-g2">
+          <div class="ac-fg">
+            <label>Nombre comercial</label>
+            <input type="text" name="nombre_comercial" placeholder="Nombre con el que se conoce el establecimiento" />
+          </div>
+          <div class="ac-fg">
+            <label>Razón social</label>
+            <input type="text" name="razon_social" placeholder="Ej: Restaurante XYZ S.A.S." />
+          </div>
+        </div>
+
+        <div class="ac-g3">
+          <div class="ac-fg">
+            <label>NIT</label>
+            <input type="text" name="nit" placeholder="Ej: 900123456-7" />
+          </div>
+          <div class="ac-fg">
+            <label>Barrio</label>
+            <input type="text" name="barrio" placeholder="Ej: Chapinero" />
+          </div>
+          <div class="ac-fg">
+            <label>Localidad</label>
+            <input type="text" name="localidad" placeholder="Ej: Localidad 2 - Chapinero" />
+          </div>
+        </div>
+
+        <div class="ac-g2">
+          <div class="ac-fg">
+            <label>Dirección del establecimiento</label>
+            <input type="text" name="direccion_establecimiento" placeholder="Ej: Cra 13 #60-91" />
+          </div>
+          <div class="ac-fg">
+            <label>Responsable principal del establecimiento</label>
+            <input type="text" name="responsable_principal" placeholder="Nombre completo del responsable" />
+          </div>
+        </div>
+
+        <div class="ac-g2">
+          <div class="ac-fg">
+            <label>Horarios habituales de funcionamiento</label>
+            <input type="text" name="horarios" placeholder="Ej: Lun–Vie 12:00–23:00 · Sáb–Dom 12:00–02:00" />
+          </div>
+          <div class="ac-fg">
+            <label>Capacidad aproximada del establecimiento</label>
+            <input type="text" name="capacidad" placeholder="Ej: 80 personas" />
+          </div>
+        </div>
+
+        <div class="ac-g2">
+          <div class="ac-fg">
+            <label>Concepto gastronómico</label>
+            <input type="text" name="concepto_gastronomico" placeholder="Ej: Cocina fusión mediterránea-colombiana" />
+          </div>
+          <div class="ac-fg">
+            <label>Concepto musical y/o de entretenimiento</label>
+            <input type="text" name="concepto_musical" placeholder="Ej: Jazz en vivo los viernes, DJ los sábados" />
+          </div>
+        </div>
+
+        <div class="ac-g2">
+          <div class="ac-fg">
+            <label>Perfil de público</label>
+            <input type="text" name="perfil_publico" placeholder="Ej: Adultos jóvenes 25-45 años, ejecutivos, turistas" />
+          </div>
+          <div class="ac-fg">
+            <label>Logo y manual de marca <span style="font-size:12px;color:#94a3b8;font-weight:400;">(cuando exista — link)</span></label>
+            <input type="text" name="logo_marca" placeholder="Ej: https://drive.google.com/..." />
+          </div>
+        </div>
+
+        <div class="ac-fg" style="margin-bottom:20px;">
+          <label>Oferta actual de coctelería, cerveza y gastronomía</label>
+          <textarea name="oferta_actual" rows="3" placeholder="Describe brevemente tu oferta actual de productos y servicios..."></textarea>
+        </div>
+
+        <div class="ac-fg" style="margin-bottom:20px;">
+          <label>Marcas de licores nacionales e importados actualmente comercializadas</label>
+          <textarea name="marcas_licores" rows="2" placeholder="Ej: Águila, Club Colombia, Ron Viejo de Caldas, Johnnie Walker..."></textarea>
+        </div>
+
+        <div class="ac-fg" style="margin-bottom:20px;">
+          <label>Acuerdos comerciales o exclusividades vigentes <span style="font-size:12px;color:#94a3b8;font-weight:400;">(licores, cervezas, bebidas u otros patrocinadores)</span></label>
+          <textarea name="acuerdos_comerciales" rows="2" placeholder="Ej: Exclusividad Bavaria / Sin acuerdos vigentes..."></textarea>
+        </div>
+
+        <div class="ac-g3">
+          <div class="ac-fg">
+            <label>Instagram</label>
+            <input type="text" name="instagram" placeholder="@usuario" />
+          </div>
+          <div class="ac-fg">
+            <label>Facebook</label>
+            <input type="text" name="facebook" placeholder="Nombre de la página" />
+          </div>
+          <div class="ac-fg">
+            <label>Página web</label>
+            <input type="url" name="pagina_web" placeholder="https://..." />
+          </div>
+        </div>
+
         <span class="ac-sec" style="margin-top:32px;">CAPACITACIÓN A LA CUAL SE INSCRIBE <span class="ac-req">*</span></span>
         <p style="font-size:14px;color:#64748b;margin-bottom:18px;">Seleccione la(s) capacitación(es) en la cual está interesado en participar.</p>
 
@@ -273,20 +379,42 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Enviando...';
 
+      var est = {
+        nombre_comercial:        (d.nombre_comercial || '').trim() || null,
+        razon_social:            (d.razon_social || '').trim() || null,
+        nit:                     (d.nit || '').trim() || null,
+        barrio:                  (d.barrio || '').trim() || null,
+        localidad:               (d.localidad || '').trim() || null,
+        direccion_establecimiento:(d.direccion_establecimiento || '').trim() || null,
+        responsable_principal:   (d.responsable_principal || '').trim() || null,
+        horarios:                (d.horarios || '').trim() || null,
+        capacidad:               (d.capacidad || '').trim() || null,
+        concepto_gastronomico:   (d.concepto_gastronomico || '').trim() || null,
+        concepto_musical:        (d.concepto_musical || '').trim() || null,
+        perfil_publico:          (d.perfil_publico || '').trim() || null,
+        oferta_actual:           (d.oferta_actual || '').trim() || null,
+        marcas_licores:          (d.marcas_licores || '').trim() || null,
+        acuerdos_comerciales:    (d.acuerdos_comerciales || '').trim() || null,
+        instagram:               (d.instagram || '').trim() || null,
+        facebook:                (d.facebook || '').trim() || null,
+        pagina_web:              (d.pagina_web || '').trim() || null,
+        logo_marca:              (d.logo_marca || '').trim() || null,
+      };
       var result = await db.from('inscripciones_armenia_cap').insert({
-        nombre:                (d.nombre || '').trim() || null,
-        apellidos:             d.apellidos.trim(),
-        tipo_identificacion:   d.tipo_identificacion,
-        numero_identificacion: d.numero_identificacion.trim(),
-        genero:                d.genero || null,
-        departamento:          d.departamento,
-        ciudad:                d.ciudad.trim(),
-        cargo:                 d.cargo,
-        email:                 d.email.trim().toLowerCase(),
-        telefono:              d.telefono,
-        capacitaciones:        caps.join(' | '),
-        acepta_datos:          true,
-        estado:                'inscrito'
+        nombre:                  (d.nombre || '').trim() || null,
+        apellidos:               d.apellidos.trim(),
+        tipo_identificacion:     d.tipo_identificacion,
+        numero_identificacion:   d.numero_identificacion.trim(),
+        genero:                  d.genero || null,
+        departamento:            d.departamento,
+        ciudad:                  d.ciudad.trim(),
+        cargo:                   d.cargo,
+        email:                   d.email.trim().toLowerCase(),
+        telefono:                d.telefono,
+        capacitaciones:          caps.join(' | '),
+        acepta_datos:            true,
+        estado:                  'inscrito',
+        datos_establecimiento:   est,
       });
 
       if (result.error) {

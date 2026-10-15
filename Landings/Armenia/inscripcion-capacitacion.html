@@ -30,7 +30,7 @@
 #arm-cap-wrap .ac-req { color: #2db84b; }
 
 /* Checkboxes capacitaciones */
-#arm-cap-wrap .ac-caps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px; }
+#arm-cap-wrap .ac-caps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 4px; }
 #arm-cap-wrap .ac-cap-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
 #arm-cap-wrap .ac-cap-item:has(input:checked) { border-color: #2db84b; background: #f0f9f4; }
 #arm-cap-wrap .ac-cap-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #2db84b; flex-shrink: 0; margin-top: 3px; cursor: pointer; }
@@ -193,28 +193,26 @@
         <p style="font-size:14px;color:#64748b;margin-bottom:18px;">Seleccione la(s) capacitación(es) en la cual está interesado en participar.</p>
 
         <div class="ac-caps-grid">
-          <label class="ac-cap-item" style="flex-direction:column; align-items:stretch; padding:0; overflow:hidden; display:none;">
-            <img src="https://asobares.org/wp-content/uploads/2026/08/WhatsApp-Image-2026-08-21-at-1.45.54-PM.jpeg" alt="Renacer y Reactivar su Negocio" style="width:100%; display:block; border-radius:10px 10px 0 0;" />
+          <label class="ac-cap-item" style="flex-direction:column; align-items:stretch; padding:0; overflow:hidden;">
+            <img src="https://asobares.org/wp-content/uploads/2026/10/Felipe-Calderon.jpg" alt="Felipe Calderón" style="width:100%; display:block; border-radius:10px 10px 0 0; object-fit:cover; max-height:220px;" />
             <div style="display:flex; align-items:flex-start; gap:12px; padding:14px 16px;">
-              <input type="checkbox" name="capacitaciones" value="Cap 3: Renacer y Reactivar su Negocio — Alejandro Zapata — 27/08/2026" style="width:18px;height:18px;accent-color:#2db84b;flex-shrink:0;margin-top:3px;cursor:pointer;" />
-              <span><strong>Cap 3 · </strong>Renacer y Reactivar su Negocio: Cuidado financiero y estratégico<br><em style="font-size:12px;color:#64748b;">Alejandro Zapata — Consultor Empresarial</em><span class="ac-cap-date">27 de agosto de 2026 · 10:00 a.m. · Virtual</span></span>
+              <input type="checkbox" name="capacitaciones" value="Ingeniería del Menú: Descubriendo el potencial del negocio — Felipe Calderón — 22/10/2026" style="width:18px;height:18px;accent-color:#2db84b;flex-shrink:0;margin-top:3px;cursor:pointer;" />
+              <span><strong>Ingeniería del Menú:</strong> Descubriendo el potencial del negocio<br><em style="font-size:12px;color:#64748b;">Felipe Calderón — Consultor Gastronómico</em><span class="ac-cap-date">22 de octubre de 2026 · 10:00 a.m. · Canal Exclusivo Asobares</span></span>
             </div>
           </label>
-          <label class="ac-cap-item">
-            <input type="checkbox" name="capacitaciones" value="Cap 4: Activando el negocio: Plan de nivelación y eficiencia del negocio — 09/09/2026" />
-            <span><strong>Cap 4 · </strong>Activando el negocio: Plan de nivelación y eficiencia del negocio<span class="ac-cap-date">9 de septiembre de 2026 · 10:00 a.m.</span></span>
+          <label class="ac-cap-item" style="flex-direction:column; align-items:stretch; padding:0; overflow:hidden;">
+            <img src="https://asobares.org/wp-content/uploads/2026/10/Alejandro-Zapata.jpg" alt="Alejandro Zapata" style="width:100%; display:block; border-radius:10px 10px 0 0; object-fit:cover; max-height:220px;" />
+            <div style="display:flex; align-items:flex-start; gap:12px; padding:14px 16px;">
+              <input type="checkbox" name="capacitaciones" value="El poder del plan: Cómo transformar la contingencia en crecimiento del negocio — Alejandro Zapata — 04/11/2026" style="width:18px;height:18px;accent-color:#2db84b;flex-shrink:0;margin-top:3px;cursor:pointer;" />
+              <span><strong>El poder del plan:</strong> Cómo transformar la contingencia en crecimiento del negocio<br><em style="font-size:12px;color:#64748b;">Alejandro Zapata — Consultor Empresarial</em><span class="ac-cap-date">4 de noviembre de 2026 · 10:00 a.m. · Salón Pyme Cámara de Comercio de Armenia</span></span>
+            </div>
           </label>
-          <label class="ac-cap-item" style="display:none;">
-            <input type="checkbox" name="capacitaciones" value="Cap 4: Eventos de talla internacional, la música como producto turístico — 3/09/2026" />
-            <span><strong>Cap 4 · </strong>Eventos de talla internacional, la música como producto turístico<span class="ac-cap-date">3 de septiembre de 2026</span></span>
-          </label>
-          <label class="ac-cap-item" style="display:none;">
-            <input type="checkbox" name="capacitaciones" value="Cap 5: IA: Economía de la experiencia y cultura regional — 08/09/2026" />
-            <span><strong>Cap 5 · </strong>IA: Economía de la experiencia y cultura regional<span class="ac-cap-date">8 de septiembre de 2026</span></span>
-          </label>
-          <label class="ac-cap-item" style="display:none;">
-            <input type="checkbox" name="capacitaciones" value="Cap 6: Ingeniería del Menú, descubriendo el potencial del negocio — 15/09/2026" />
-            <span><strong>Cap 6 · </strong>Ingeniería del Menú, descubriendo el potencial del negocio<span class="ac-cap-date">15 de septiembre de 2026</span></span>
+          <label class="ac-cap-item" style="flex-direction:column; align-items:stretch; padding:0; overflow:hidden;">
+            <img src="https://asobares.org/wp-content/uploads/2026/10/Eduardo-Montoya.jpg" alt="Eduardo Montoya" style="width:100%; display:block; border-radius:10px 10px 0 0; object-fit:cover; max-height:220px;" />
+            <div style="display:flex; align-items:flex-start; gap:12px; padding:14px 16px;">
+              <input type="checkbox" name="capacitaciones" value="Prepare su establecimiento y potencie su operación con calidad — Eduardo Montoya — 04/11/2026" style="width:18px;height:18px;accent-color:#2db84b;flex-shrink:0;margin-top:3px;cursor:pointer;" />
+              <span><strong>Prepare su establecimiento</strong> y potencie su operación con calidad<br><em style="font-size:12px;color:#64748b;">Eduardo Montoya — Director Ejecutivo Asobares</em><span class="ac-cap-date">4 de noviembre de 2026 · 11:30 a.m. · Salón Pyme Cámara de Comercio de Armenia</span></span>
+            </div>
           </label>
         </div>
 
@@ -307,10 +305,10 @@
         body: JSON.stringify({
           email: d.email.trim().toLowerCase(),
           nombre: ((d.nombre || '') + ' ' + d.apellidos).trim(),
-          evento: 'Activando el negocio — Capacitación Armenia 24',
-          fecha: '9 de septiembre de 2026',
-          hora: '10:00 a.m.',
-          lugar: 'Virtual — Canal Exclusivo Asobares',
+          evento: caps.join(' | '),
+          fecha: 'Oct 22 / Nov 4 de 2026',
+          hora: 'Ver detalle en el correo',
+          lugar: 'Canal Exclusivo Asobares / Salón Pyme Cámara de Comercio de Armenia',
           direccion: '',
         })
       });

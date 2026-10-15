@@ -213,6 +213,21 @@ html:has(#bw-wrap) {
 /* patrocinios condicional */
 #bw-wrap .bw-patrocinio-cual { display: none; margin-top: 14px; }
 
+#bw-wrap .bw-fg textarea {
+  width: 100%;
+  padding: 13px 15px;
+  border: 2px solid #2a2a2a;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #111;
+  color: #f1f5f9;
+  resize: vertical;
+  transition: border-color 0.15s;
+  min-height: 90px;
+}
+#bw-wrap .bw-fg textarea:focus { outline: none; border-color: #d4a017; }
+
 #bw-wrap .bw-submit {
   width: 100%;
   padding: 18px;
@@ -350,6 +365,17 @@ html:has(#bw-wrap) {
 
       <div class="bw-g2">
         <div class="bw-fg">
+          <label>Razón social</label>
+          <input type="text" name="razon_social" placeholder="Ej: Bar XYZ S.A.S."/>
+        </div>
+        <div class="bw-fg">
+          <label>NIT</label>
+          <input type="text" name="nit" placeholder="Ej: 900123456-7"/>
+        </div>
+      </div>
+
+      <div class="bw-g2">
+        <div class="bw-fg">
           <label>Dirección <span class="bw-req">*</span></label>
           <input type="text" name="direccion" required placeholder="Calle / Carrera / Número"/>
         </div>
@@ -391,9 +417,41 @@ html:has(#bw-wrap) {
         </div>
       </div>
 
+      <div class="bw-g2">
+        <div class="bw-fg">
+          <label>Horarios habituales de funcionamiento</label>
+          <input type="text" name="horarios" placeholder="Ej: Lun–Vie 18:00–02:00 · Sáb–Dom 12:00–03:00"/>
+        </div>
+        <div class="bw-fg">
+          <label>Capacidad aproximada del establecimiento</label>
+          <input type="text" name="capacidad" placeholder="Ej: 120 personas"/>
+        </div>
+      </div>
+
+      <div class="bw-g2">
+        <div class="bw-fg">
+          <label>Concepto gastronómico</label>
+          <input type="text" name="concepto_gastronomico" placeholder="Ej: Fusión colombo-mediterránea, tapas, coctelería"/>
+        </div>
+        <div class="bw-fg">
+          <label>Concepto Musical <span class="bw-req">*</span></label>
+          <input type="text" name="concepto_musical" required placeholder="Ej: Jazz, Electrónica, Salsa, Vallenato, Variado..."/>
+        </div>
+      </div>
+
       <div class="bw-fg">
-        <label>Concepto Musical <span class="bw-req">*</span></label>
-        <input type="text" name="concepto_musical" required placeholder="Ej: Jazz, Electrónica, Salsa, Vallenato, Variado..."/>
+        <label>Perfil de público</label>
+        <input type="text" name="perfil_publico" placeholder="Ej: Adultos 25–45, ejecutivos, turistas, ambiente familiar"/>
+      </div>
+
+      <div class="bw-fg">
+        <label>Oferta actual de coctelería, cerveza y gastronomía</label>
+        <textarea name="oferta_actual" placeholder="Describe brevemente los productos y experiencias que ofreces..."></textarea>
+      </div>
+
+      <div class="bw-fg">
+        <label>Marcas de licores nacionales e importados actualmente comercializadas</label>
+        <textarea name="marcas_licores" placeholder="Ej: Águila, Club Colombia, Ron Viejo de Caldas, Johnnie Walker, Bacardí..."></textarea>
       </div>
 
       <div class="bw-fg">
@@ -408,9 +466,26 @@ html:has(#bw-wrap) {
         </div>
       </div>
 
-      <div class="bw-fg">
-        <label>Instagram</label>
-        <input type="text" name="instagram" placeholder="@tu_establecimiento"/>
+      <div class="bw-g2">
+        <div class="bw-fg">
+          <label>Instagram</label>
+          <input type="text" name="instagram" placeholder="@tu_establecimiento"/>
+        </div>
+        <div class="bw-fg">
+          <label>Facebook</label>
+          <input type="text" name="facebook" placeholder="Nombre de la página"/>
+        </div>
+      </div>
+
+      <div class="bw-g2">
+        <div class="bw-fg">
+          <label>Página web</label>
+          <input type="url" name="pagina_web" placeholder="https://..."/>
+        </div>
+        <div class="bw-fg">
+          <label>Logo y manual de marca <span style="font-size:11px;color:#3a3a3a;font-weight:400;">(cuando exista — link)</span></label>
+          <input type="text" name="logo_marca" placeholder="Ej: https://drive.google.com/..."/>
+        </div>
       </div>
 
       <!-- PERSONA DE CONTACTO -->
@@ -501,14 +576,25 @@ function bwTogglePatrocinio(show) {
     var payload = {
       acepta_datos: true,
       nombre_establecimiento: vv('nombre_establecimiento'),
+      razon_social: vv('razon_social') || null,
+      nit: vv('nit') || null,
       direccion: vv('direccion'),
       barrio: vv('barrio'),
       localidad: vv('localidad'),
       telefono_reservas: vv('telefono_reservas'),
+      horarios: vv('horarios') || null,
+      capacidad: vv('capacidad') || null,
+      concepto_gastronomico: vv('concepto_gastronomico') || null,
       concepto_musical: vv('concepto_musical'),
+      perfil_publico: vv('perfil_publico') || null,
+      oferta_actual: vv('oferta_actual') || null,
+      marcas_licores: vv('marcas_licores') || null,
       tiene_patrocinios: patrocinio,
       cuales_patrocinios: patrocinio === 'Sí' ? vv('cuales_patrocinios') : '',
-      instagram: vv('instagram'),
+      instagram: vv('instagram') || null,
+      facebook: vv('facebook') || null,
+      pagina_web: vv('pagina_web') || null,
+      logo_marca: vv('logo_marca') || null,
       nombre_contacto: vv('nombre_contacto'),
       telefono_contacto: vv('telefono_contacto'),
       correo_contacto: vv('correo_contacto'),

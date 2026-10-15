@@ -4179,37 +4179,7 @@
                             ))}
                           </div>
                         </div>
-                        {r.datos_establecimiento && (() => {
-                          const e = r.datos_establecimiento;
-                          return (
-                            <React.Fragment>
-                              <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
-                                {sec('DATOS DEL ESTABLECIMIENTO')}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
-                                  {cell('Nombre comercial', e.nombre_comercial)}
-                                  {cell('Razón social', e.razon_social)}
-                                  {cell('NIT', e.nit)}
-                                  {cell('Barrio', e.barrio)}
-                                  {cell('Localidad', e.localidad)}
-                                  {cell('Dirección', e.direccion_establecimiento)}
-                                  {cell('Responsable principal', e.responsable_principal)}
-                                  {cell('Horarios', e.horarios)}
-                                  {cell('Capacidad', e.capacidad)}
-                                  {cell('Concepto gastronómico', e.concepto_gastronomico)}
-                                  {cell('Concepto musical / entretenimiento', e.concepto_musical)}
-                                  {cell('Perfil de público', e.perfil_publico)}
-                                  {cell('Instagram', e.instagram)}
-                                  {cell('Facebook', e.facebook)}
-                                  {cell('Página web', e.pagina_web)}
-                                  {cell('Logo / Manual de marca', e.logo_marca)}
-                                </div>
-                                {e.oferta_actual && <div style={{ marginTop: 10 }}>{cell('Oferta actual (coctelería, cerveza, gastronomía)', e.oferta_actual)}</div>}
-                                {e.marcas_licores && <div style={{ marginTop: 10 }}>{cell('Marcas de licores comercializadas', e.marcas_licores)}</div>}
-                                {e.acuerdos_comerciales && <div style={{ marginTop: 10 }}>{cell('Acuerdos comerciales / exclusividades', e.acuerdos_comerciales)}</div>}
-                              </div>
-                            </React.Fragment>
-                          );
-                        })()}
+
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                         <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>

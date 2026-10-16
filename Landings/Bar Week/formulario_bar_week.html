@@ -269,6 +269,97 @@ html:has(#bw-wrap) {
 }
 #bw-wrap .bw-footer a { color: #d4a017; }
 
+/* políticas */
+#bw-wrap .bw-politica-container {
+  background: #0f0f0f;
+  border: 1.5px solid #2a2a2a;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+#bw-wrap .bw-politica-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  background: #111;
+  gap: 12px;
+}
+#bw-wrap .bw-politica-header .bw-ph-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c0cfe0;
+}
+#bw-wrap .bw-politica-header .bw-ph-toggle {
+  font-size: 12px;
+  color: #d4a017;
+  white-space: nowrap;
+  font-weight: 600;
+}
+#bw-wrap .bw-politica-body {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 22px 24px;
+  display: none;
+  border-top: 1px solid #222;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a2a #0f0f0f;
+}
+#bw-wrap .bw-politica-body.open { display: block; }
+#bw-wrap .bw-politica-body h3 {
+  font-size: 11px;
+  font-weight: 800;
+  color: #d4a017;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 20px 0 8px;
+}
+#bw-wrap .bw-politica-body h3:first-child { margin-top: 0; }
+#bw-wrap .bw-politica-body p {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.75;
+  margin-bottom: 8px;
+}
+#bw-wrap .bw-politica-body ul {
+  padding-left: 18px;
+  margin-bottom: 10px;
+}
+#bw-wrap .bw-politica-body li {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.7;
+  margin-bottom: 3px;
+}
+#bw-wrap .bw-acepta-politica {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #111;
+  border: 1.5px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+#bw-wrap .bw-acepta-politica:hover { border-color: #d4a017; }
+#bw-wrap .bw-acepta-politica input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  accent-color: #d4a017;
+  margin-top: 2px;
+  cursor: pointer;
+}
+#bw-wrap .bw-acepta-politica span {
+  font-size: 14px;
+  color: #c0cfe0;
+  line-height: 1.65;
+}
+
 @media (max-width: 640px) {
   #bw-wrap .bw-g2 { grid-template-columns: 1fr; }
   #bw-wrap .bw-card { padding: 28px 20px; }
@@ -492,6 +583,140 @@ html:has(#bw-wrap) {
         <input type="email" name="correo_contacto" required placeholder="correo@ejemplo.com"/>
       </div>
 
+      <!-- CONDICIONES DE VINCULACIÓN -->
+      <span class="bw-sec">Condiciones de Vinculación y Participación</span>
+
+      <div class="bw-politica-container">
+        <div class="bw-politica-header" onclick="bwTogglePolitica()">
+          <span class="bw-ph-title">BAR WEEK COLOMBIA 2026 — Condiciones de Vinculación y Participación de Establecimientos</span>
+          <span class="bw-ph-toggle" id="bw-ph-toggle-txt">▼ Leer condiciones</span>
+        </div>
+        <div class="bw-politica-body" id="bw-politica-body">
+
+          <h3>1. Objeto y alcance</h3>
+          <p>BAR WEEK COLOMBIA es una estrategia liderada por Asobares Colombia que articula establecimientos, gastronomía, coctelería, marcas, talento y consumidores alrededor de una programación común. La participación de cada establecimiento supone la aceptación de estándares mínimos de operación, calidad, servicio, comunicación y cumplimiento normativo. Estas condiciones regulan la vinculación de los establecimientos participantes en Bogotá, del 28 de noviembre al 7 de diciembre de 2026.</p>
+          <p>La participación se formaliza mediante la aceptación de estas condiciones y de la ficha de participación del establecimiento. Asobares desarrolla las actividades de articulación, promoción y coordinación expresamente asumidas. Cada establecimiento conserva la dirección de su operación, contrata y remunera a su personal, factura sus ventas y responde por los productos y servicios que suministra.</p>
+          <p>La vinculación no constituye sociedad, mandato, representación ni relación laboral entre las partes. Las condiciones de participación son obligatorias y son establecidas por Asobares. Su aceptación integral es requisito de vinculación y permanencia.</p>
+
+          <h3>2. Caracterización completa del establecimiento</h3>
+          <ul>
+            <li>Nombre comercial y razón social. NIT, dirección, barrio y localidad.</li>
+            <li>Datos de contacto y responsable principal.</li>
+            <li>Horarios habituales de funcionamiento. Aforo máximo permitido y soporte disponible.</li>
+            <li>Concepto gastronómico. Concepto musical y/o de entretenimiento. Perfil de público.</li>
+            <li>Oferta actual de coctelería, cerveza y gastronomía.</li>
+            <li>Marcas de licores nacionales e importados actualmente comercializadas.</li>
+            <li>Acuerdos comerciales o exclusividades vigentes con compañías de licores, cervezas, bebidas y otros patrocinadores.</li>
+            <li>Redes sociales, página web y canales de comunicación. Logo y manual de marca, cuando exista.</li>
+          </ul>
+          <p>La información sobre exclusividades y los contratos o compromisos comerciales relevantes será tratada de manera confidencial.</p>
+
+          <h3>3. Cumplimiento normativo</h3>
+          <p>Cada establecimiento deberá declarar que opera cumpliendo las obligaciones legales aplicables a su actividad y será responsable de mantenerlas vigentes durante todo el periodo de BAR WEEK, incluyendo: matrícula mercantil vigente, condiciones sanitarias, seguridad humana, aforo autorizado, normas de ruido, derechos de autor, disposiciones sobre bebidas alcohólicas, protección de menores de edad, normas de protección al consumidor e información visible de precios.</p>
+          <p><strong style="color:#c0cfe0;">Cláusula esencial:</strong> la participación en BAR WEEK no sustituye, modifica ni convalida las obligaciones legales propias de cada establecimiento.</p>
+
+          <h3>4. Oferta oficial BAR WEEK</h3>
+          <ul>
+            <li>Cinco cócteles, bebidas o producto oficial BAR WEEK.</li>
+            <li>Una entrada, tapa, snack o acompañamiento gastronómico por cada coctel o bebidas vendidas.</li>
+            <li>Precio previamente acordado de $35.000 incluyendo ICO para coctel + snack o tapa.</li>
+            <li>Disponibilidad durante todos los días de participación.</li>
+          </ul>
+          <p>No podrá modificarse unilateralmente la receta, presentación, porción, producto patrocinador o precio después de publicada oficialmente la oferta.</p>
+
+          <h3>5. Formación obligatoria del equipo</h3>
+          <p>El bartender jefe o responsable de barra y el chef, jefe de cocina o responsable gastronómico deberán participar en las jornadas de capacitación y construcción de producto convocadas por BAR WEEK. La ausencia reiterada a las capacitaciones podrá afectar la permanencia del establecimiento dentro de la programación.</p>
+
+          <h3>6. Responsable BAR WEEK por establecimiento</h3>
+          <p>Cada venue deberá designar un coordinador BAR WEEK, quien será el interlocutor oficial con Asobares. Deberá existir además un contacto alterno para situaciones operativas urgentes.</p>
+
+          <h3>7. Días mínimos de operación</h3>
+          <p>Periodo oficial Bogotá: sábado 28 de noviembre al lunes 7 de diciembre de 2026. El establecimiento deberá permanecer abierto durante todos los días publicados como parte de BAR WEEK, salvo fuerza mayor debidamente informada y justificada ante la organización.</p>
+
+          <h3>8. Horario mínimo BAR WEEK</h3>
+          <p>Disponibilidad mínima obligatoria de la experiencia BAR WEEK: 4:00 p. m. a 1:00 a. m., dentro del horario legalmente permitido para cada establecimiento. Toda franja diferente deberá ser aprobada previamente y por escrito por Asobares.</p>
+
+          <h3>9. Disponibilidad de producto e inventario</h3>
+          <p>El establecimiento garantizará el inventario correspondiente a las cantidades anunciadas. El agotamiento deberá sustentarse con registros de inventario e informarse inmediatamente a Asobares. No se realizarán sustituciones sin información y aceptación del consumidor, ni se exigirán pagos adicionales para cumplir la oferta adquirida.</p>
+
+          <h3>10. Precio único y transparencia</h3>
+          <p>La experiencia BAR WEEK deberá respetar exactamente el precio comunicado en la campaña de $35.000 incluido ICO. El precio anunciado será el precio total al público. La propina será voluntaria.</p>
+
+          <h3>11. Uso de marca e imagen</h3>
+          <p>Cada establecimiento autoriza a Asobares y BAR WEEK para utilizar nombre comercial, logo, fotografías del establecimiento y de sus productos, imágenes tomadas durante las activaciones y contenido audiovisual relacionado con BAR WEEK, con fines de comunicación, promoción, prensa, publicidad y memoria institucional.</p>
+
+          <h3>12. Compromiso de comunicación del venue</h3>
+          <p>Cada venue deberá participar activamente desde sus propios canales con publicaciones de lanzamiento, historias durante la campaña, repost de contenidos oficiales y etiquetado de BAR WEEK, Asobares y marcas participantes.</p>
+
+          <h3>13. Identificación del establecimiento</h3>
+          <p>Los venues deberán exhibir el identificador de establecimiento participante, código QR cuando aplique, menú BAR WEEK, material de patrocinadores autorizado y señalización o material POP oficial.</p>
+
+          <h3>14. Servicio responsable de alcohol</h3>
+          <ul>
+            <li>No suministrar alcohol a menores de edad.</li>
+            <li>Aplicar protocolos de verificación de edad.</li>
+            <li>Evitar prácticas de consumo irresponsable.</li>
+            <li>Capacitar al personal para identificar consumidores en evidente estado de intoxicación.</li>
+            <li>Facilitar alternativas de transporte seguro a través de los aliados de Asobares.</li>
+          </ul>
+
+          <h3>15. Seguridad, convivencia y entorno</h3>
+          <p>Cada venue será responsable de sus protocolos ordinarios de seguridad y deberá informar inmediatamente cualquier incidente relevante. Deberá adoptar acciones para disminuir impactos relacionados con ruido exterior, filas, ocupación del espacio público, residuos y movilidad.</p>
+
+          <h3>16. Sostenibilidad</h3>
+          <ul>
+            <li>Manejo adecuado de residuos. Separación cuando exista infraestructura.</li>
+            <li>Reducción de plásticos de un solo uso. Manejo responsable de vidrio.</li>
+            <li>Disposición correcta de aceites y residuos gastronómicos.</li>
+          </ul>
+
+          <h3>17. Información y medición</h3>
+          <p>Los venues deberán proporcionar información básica que permita medir resultados: número de experiencias vendidas, cócteles y productos gastronómicos vendidos, ventas asociadas, activaciones realizadas, alcance digital cuando sea posible, fotografías y videos. Asobares tratará la información comercial individual de manera confidencial.</p>
+
+          <h3>18. Experiencia mínima de servicio</h3>
+          <p>La experiencia deberá servirse con la receta establecida, en la cristalería definida, con presentación uniforme, dentro de tiempos razonables y con el acompañamiento gastronómico establecido. Todo el personal de servicio deberá estar en capacidad de explicar qué es BAR WEEK.</p>
+
+          <h3>19. Programación musical y artística</h3>
+          <p>Informar previamente artista o DJ, horario, formato, necesidades técnicas y patrocinadores involucrados. No anunciar artistas como parte oficial de BAR WEEK sin autorización previa cuando se utilice la marca del evento.</p>
+
+          <h3>20. Exclusividades comerciales</h3>
+          <p>Antes de asignar activaciones o marcas, Asobares debe conocer los contratos o compromisos comerciales relevantes del venue. La participación en BAR WEEK no autoriza ni obliga al establecimiento a incumplir contratos vigentes.</p>
+
+          <h3>21. Prohibición de modificaciones no autorizadas</h3>
+          <p>Una vez publicada oficialmente la programación, ningún venue podrá cambiar sin autorización: producto, precio, marca asociada, horarios publicados, mecánica promocional, beneficios ni programación anunciada. Todo cambio requerirá autorización previa y escrita de Asobares.</p>
+
+          <h3>22. Tratamiento de datos personales</h3>
+          <p>Antes de implementar QR, registros, reservas o concursos que recolecten datos personales, deberán identificarse el responsable del tratamiento, las finalidades, la política aplicable y los canales para ejercer los derechos de los titulares. Los establecimientos no utilizarán datos obtenidos a través de BAR WEEK para fines distintos de los autorizados.</p>
+
+          <h3>23. Derecho de seguimiento</h3>
+          <p>Asobares podrá realizar visitas de seguimiento antes y durante la estrategia para verificar producto, precio, material POP, comunicación, disponibilidad, servicio y correcta utilización de marcas. Las visitas tienen alcance contractual y operativo; no constituyen inspección oficial ni certificación técnica.</p>
+
+          <h3>24. Régimen de incumplimientos</h3>
+          <p>Ante incumplimientos menores, Asobares comunicará la observación y solicitará corrección inmediata. Asobares podrá suspender preventivamente la participación ante elementos verificables de riesgo grave o una orden de autoridad que impida operar. La gravedad y reiteración del incumplimiento serán criterios para decidir la suspensión o retiro definitivo.</p>
+
+          <h3>25. Declaración de compromiso</h3>
+          <p>El establecimiento declara conocer y aceptar las políticas de participación de BAR WEEK COLOMBIA – Bogotá 2026 y se compromete a trabajar coordinadamente con Asobares, Mix & Shake, Círculo Gastro, las marcas participantes y los demás aliados de la estrategia para garantizar una experiencia segura, responsable, transparente y de alta calidad para los consumidores.</p>
+
+          <h3>26. Admisión y permanencia</h3>
+          <p>El ingreso estará sujeto al aforo permitido, a las restricciones legales de edad y a condiciones objetivas de seguridad y convivencia previamente informadas. Las medidas serán proporcionales, respetuosas y no discriminatorias.</p>
+
+          <h3>27. Responsabilidad y atención de reclamaciones</h3>
+          <p>Cada parte responderá por los daños y perjuicios que le sean imputables por incumplimiento de sus obligaciones. El establecimiento atenderá las reclamaciones relativas a su operación, productos, servicios y cobros.</p>
+
+          <h3>28. Condiciones económicas, suministros y entregables</h3>
+          <p>Asobares establecerá las condiciones de participación relativas a aportes económicos o en especie, impuestos, fechas de pago y entregables promocionales que resulten aplicables y las comunicará antes de la vinculación. La sola participación no obliga a Asobares a financiar inventarios, contratar artistas, suministrar personal o asumir gastos del establecimiento.</p>
+
+          <h3>29. Aceptación y comunicaciones</h3>
+          <p>La firma del representante legal o de quien acredite facultades suficientes expresa la aceptación integral de estas condiciones y de la ficha aprobada por Asobares. Ninguna modificación propuesta por el establecimiento o por terceros tendrá efecto sin autorización previa y escrita de Asobares. Las comunicaciones se remitirán a los correos designados por las partes en la ficha.</p>
+
+        </div>
+      </div>
+
+      <label class="bw-acepta-politica" for="bw-acepta-cond">
+        <input type="checkbox" id="bw-acepta-cond"/>
+        <span>He leído y acepto las <strong style="color:#d4a017">Condiciones de Vinculación y Participación</strong> de Bar Week Colombia 2026 – Bogotá, del 28 de noviembre al 7 de diciembre de 2026. <span class="bw-req">*</span></span>
+      </label>
+
       <div class="bw-err" id="bw-err-msg"></div>
       <button class="bw-submit" id="bw-submit-btn" type="button" onclick="bwEnviar()">
         Inscribir mi establecimiento →
@@ -509,6 +734,13 @@ html:has(#bw-wrap) {
 </div>
 
 <script>
+function bwTogglePolitica() {
+  var body = document.getElementById('bw-politica-body');
+  var txt = document.getElementById('bw-ph-toggle-txt');
+  var open = body.classList.toggle('open');
+  txt.textContent = open ? '▲ Cerrar' : '▼ Leer condiciones';
+}
+
 function bwTogglePatrocinio(show) {
   document.getElementById('bw-cual-wrap').style.display = show ? 'block' : 'none';
   if (!show) document.getElementById('bw-cuales').value = '';
@@ -568,6 +800,7 @@ function bwTogglePatrocinio(show) {
     var telCon = vv('telefono_contacto');
     if(!telCon || telCon.length < 7){ errEl.textContent='El teléfono de contacto no es válido.'; errEl.style.display='block'; return; }
     if(!vv('correo_contacto')){ errEl.textContent='El correo electrónico de contacto es obligatorio.'; errEl.style.display='block'; return; }
+    if(!document.getElementById('bw-acepta-cond').checked){ errEl.textContent='Debes leer y aceptar las Condiciones de Vinculación y Participación para continuar.'; errEl.style.display='block'; document.getElementById('bw-acepta-cond').scrollIntoView({behavior:'smooth',block:'center'}); return; }
 
     var btn = document.getElementById('bw-submit-btn');
     btn.disabled=true; btn.textContent='Enviando...';

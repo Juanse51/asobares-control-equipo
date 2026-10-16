@@ -993,6 +993,11 @@
       const [espaciosCorpDetalle, setEspaciosCorpDetalle] = useState(null);
       const [espaciosCorpNotasEdit, setEspaciosCorpNotasEdit] = useState('');
 
+      const [ecosistemaDjData, setEcosistemaDjData] = useState([]);
+      const [ecosistemaDjLoading, setEcosistemaDjLoading] = useState(false);
+      const [ecosistemaDjSearch, setEcosistemaDjSearch] = useState('');
+      const [ecosistemaDjFiltroEstado, setEcosistemaDjFiltroEstado] = useState('all');
+
       const [certPlantillas, setCertPlantillas] = useState([]);
       const [certLotes, setCertLotes] = useState([]);
       const [certPersonas, setCertPersonas] = useState([]);
@@ -1038,6 +1043,7 @@
       useEffect(() => { if (view === 'crm' || view === 'crm-armenia-postgastro') { setArmeniaPostGastroDetalle(null); loadArmeniaPostGastro(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-bar-week') { setBarWeekDetalle(null); loadBarWeek(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-espacios-corp') { setEspaciosCorpDetalle(null); loadEspaciosCorp(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-ecosistema-dj') { loadEcosistemaDj(); } }, [view]);
       useEffect(() => { if (view === 'conecta') loadConecta(); }, [view]);
 
       useEffect(() => {
@@ -1802,6 +1808,39 @@
       };
       const exportEspaciosCorpExcel = () => exportDynamicExcel(getEspaciosCorpFiltered(), 'Espacios Corporativos', 'espacios_corporativos');
 
+      const loadEcosistemaDj = async () => {
+        setEcosistemaDjLoading(true);
+        const { data } = await supabase.from('ecosistema_dj').select('*').order('id', { ascending: true });
+        setEcosistemaDjData(data || []);
+        setEcosistemaDjLoading(false);
+      };
+      const getEcosistemaDjFiltered = () => {
+        const q = ecosistemaDjSearch.toLowerCase();
+        return ecosistemaDjData.filter(r => {
+          if (ecosistemaDjFiltroEstado !== 'all' && r.estado_entrada !== ecosistemaDjFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellido, r.email, r.empresa, r.cargo, r.numero_identificacion, r.ticket_id, r.empresa_actual].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportEcosistemaDjExcel = () => {
+        const filtered = getEcosistemaDjFiltered();
+        const headers = ['TicketID','ID Boleto','ID Pedido','Nombre','Apellido','Email','Teléfono','Estado Entrada','Tipo Entrada','Variación','Empresa','Designación','Estado Pedido','Método Pago','Fecha Pedido','Precio Entrada','Precio Pagado','Tipo ID','Nº ID','Rango Edad','Género','Zona Residencia','Grupo Étnico','Discapacidad','Víctima Conflicto','Empresa Actual','NIT Empresa','Cargo','Acepta Datos','Día 1','Registrado Día 1','Comprado Día 1','Registrado por Día 1','Confirmado por Día 1'];
+        const rows = filtered.map(r => [
+          r.ticket_id, r.id_boleto, r.id_pedido, r.nombre, r.apellido, r.email, r.telefono,
+          r.estado_entrada, r.tipo_entrada, r.variacion, r.empresa, r.designacion,
+          r.estado_pedido, r.metodo_pago, r.fecha_pedido, r.precio_entrada, r.precio_pagado,
+          r.tipo_identificacion, r.numero_identificacion, r.rango_edad, r.genero,
+          r.zona_residencia, r.grupo_etnico, r.discapacidad, r.victima_conflicto,
+          r.empresa_actual, r.nit_empresa, r.cargo, r.acepta_datos,
+          r.dia1, r.registrado_dia1, r.comprado_dia1, r.registrado_por_dia1, r.confirmado_por_dia1
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Ecosistema DJ');
+        XLSX.writeFile(wb, 'ecosistema_dj_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+
       const downloadArchivosZip = async (data, nameKey, fileMapping, zipName) => {
         const withFiles = data.filter(r => fileMapping.some(f => r[f.key]));
         if (!withFiles.length) { showNotif('No hay archivos adjuntos en los registros filtrados', 'error'); return; }
@@ -2359,7 +2398,7 @@
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
               <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
               <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2-open" style={{fontSize:18,marginRight:8}}></i>Documentación</button>
-              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('certificaciones')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'certificaciones' ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'transparent', color: view === 'certificaciones' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'certificaciones' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-mortarboard" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Certificaciones</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('conecta')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'conecta' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'conecta' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'conecta' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-handshake" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Conecta</button>}
               {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: 'bi-people', label: 'Gestión de Equipo' }, { id: 'analytics', icon: 'bi-graph-up', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><i className={'bi '+item.icon} style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>{item.label}</button>))}</>)}
@@ -2372,7 +2411,7 @@
 
           <main style={{ flex: 1, marginLeft: isMobile ? 0 : 260, padding: isMobile ? '16px 12px 80px' : '32px 32px 80px', minWidth: 0 }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 20 : 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'crm-ecosistema-dj' && 'El Ecosistema DJ'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
               <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'center', flexShrink: 0 }}>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}><i className="bi bi-bell"></i>{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
@@ -2579,7 +2618,7 @@
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20, marginTop: 8 }}>
                   {[
-                    { id: 'crm-aev-folder', icon: 'bi-music-note-beamed', title: 'Área en Vivo', desc: 'Formularios y postulados del programa Área en Vivo. Artistas, capacitaciones y eventos.', count: crmData.length + aevLabData.length + aevBoot2Data.length + aevSegData.length, loading: crmLoading || aevLabLoading || aevBoot2Loading || aevSegLoading, color: '#E84338', bg: '#fee2e2' },
+                    { id: 'crm-aev-folder', icon: 'bi-music-note-beamed', title: 'Área en Vivo', desc: 'Formularios y postulados del programa Área en Vivo. Artistas, capacitaciones y eventos.', count: crmData.length + aevLabData.length + aevBoot2Data.length + aevSegData.length + ecosistemaDjData.length, loading: crmLoading || aevLabLoading || aevBoot2Loading || aevSegLoading || ecosistemaDjLoading, color: '#E84338', bg: '#fee2e2' },
                     { id: 'fontur', icon: 'bi-clipboard-check', title: 'Formulario FONTUR', desc: 'Inscripciones al programa NTC 6496:2020 financiado por FONTUR. Solo consulta y exportación.', count: fonturData.length, loading: fonturLoading, color: '#1e3a5f', bg: '#dbeafe' },
                     { id: 'registros', icon: 'bi-building', title: 'Registros de Formularios', desc: 'Envíos del formulario de afiliación de asobares.org. Establecimientos, datos de empresa y documentos adjuntos.', count: registrosData.length, loading: registrosLoading, color: '#059669', bg: '#d1fae5' },
                     { id: 'crm-gastro', icon: 'bi-cup-hot', title: 'Postulados Gastromarketing Day', desc: 'Postulaciones al Gastromarketing Day — Catedral de Sal, 24-25 sep 2026. Gestiona estados y notas internas.', count: gastroData.length, loading: gastroLoading, color: '#f59e0b', bg: '#fef3c7' },
@@ -2614,7 +2653,8 @@
                     { id: 'crm-aev', icon: 'bi-mic', title: 'Postulados Área en Vivo', desc: 'Artistas y DJs postulados al programa Área en Vivo. Gestiona estados, edita y exporta.', count: crmData.length, loading: crmLoading, color: '#E84338', bg: '#fee2e2' },
                     { id: 'crm-aev-lab', icon: 'bi-headphones', title: 'Capacitación OCTAVA — Sonido, Video y Performance DJ', desc: 'Inscripciones al evento del 12 de agosto en Octava Club, Chapinero. Gestiona asistencia y estados.', count: aevLabData.length, loading: aevLabLoading, color: '#7c3aed', bg: '#ede9fe' },
                     { id: 'crm-aev-bootcamp2', icon: 'bi-music-note-list', title: 'Bootcamp 2 — Music Business e Industria Musical', desc: 'Inscripciones al evento del 19 de agosto en Auditorio EMMAT. EMMAT + Creartech + ALQUMIA.', count: aevBoot2Data.length, loading: aevBoot2Loading, color: '#7c3aed', bg: '#ede9fe' },
-                    { id: 'crm-aev-seguridad', icon: 'bi-shield-check', title: 'Bootcamp 3 — La Seguridad También se Planifica', desc: 'Inscripciones al evento del 26 de agosto. Virtual — Canal Exclusivo Asobares. Operar, Prevenir y Cuidar.', count: aevSegData.length, loading: aevSegLoading, color: '#7c3aed', bg: '#ede9fe' }
+                    { id: 'crm-aev-seguridad', icon: 'bi-shield-check', title: 'Bootcamp 3 — La Seguridad También se Planifica', desc: 'Inscripciones al evento del 26 de agosto. Virtual — Canal Exclusivo Asobares. Operar, Prevenir y Cuidar.', count: aevSegData.length, loading: aevSegLoading, color: '#7c3aed', bg: '#ede9fe' },
+                    { id: 'crm-ecosistema-dj', icon: 'bi-disc', title: 'El Ecosistema DJ', desc: 'Base de datos de asistentes al evento El Ecosistema DJ. Datos de registro, check-in y perfil del asistente.', count: ecosistemaDjData.length, loading: ecosistemaDjLoading, color: '#0f766e', bg: '#ccfbf1' }
                   ].map(card => (
                     <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -4093,6 +4133,90 @@
                           <div><p style={{ fontSize: 13 }}>{r.profesion}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
                           {badge(r.estado)}
                           <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-ecosistema-dj' && (() => {
+              const estadosEntrada = { 'Not Checked In': { label: 'No registrado', color: '#f59e0b', bg: '#fef3c7' }, 'Checked In': { label: 'Registrado', color: '#10b981', bg: '#d1fae5' } };
+              const filtered = getEcosistemaDjFiltered();
+              const badge = (estado) => {
+                const e = estadosEntrada[estado];
+                if (!e) return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: '#f1f5f9', color: '#64748b' }}>{estado || '—'}</span>;
+                return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>;
+              };
+              const badgePedido = (estado) => {
+                if (estado === 'Processing') return <span style={{ padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, background: '#d1fae5', color: '#10b981' }}>Pagado</span>;
+                if (estado === 'Unpaid') return <span style={{ padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, background: '#fee2e2', color: '#E84338' }}>Impago</span>;
+                return <span style={{ padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, background: '#f1f5f9', color: '#64748b' }}>{estado || '—'}</span>;
+              };
+              const totalCheckedIn = ecosistemaDjData.filter(r => r.estado_entrada === 'Checked In').length;
+              const totalNot = ecosistemaDjData.filter(r => r.estado_entrada === 'Not Checked In').length;
+              const totalPagado = ecosistemaDjData.filter(r => r.estado_pedido === 'Processing').length;
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <button onClick={() => setView('crm-aev-folder')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Área en Vivo</button>
+                    <div style={{ flex: 1 }} />
+                    <button onClick={loadEcosistemaDj} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
+                    <button onClick={exportEcosistemaDjExcel} disabled={filtered.length === 0} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: filtered.length === 0 ? '#e5e7eb' : 'linear-gradient(135deg, #0f766e, #0d9488)', color: filtered.length === 0 ? '#94a3b8' : 'white', fontWeight: 700, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    {[['Total', ecosistemaDjData.length, '#0f766e'], ['Registrados', totalCheckedIn, '#10b981'], ['Sin registrar', totalNot, '#f59e0b'], ['Pagados', totalPagado, '#3b82f6']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '12px 20px', minWidth: 100 }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>{lbl}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{ecosistemaDjLoading ? '…' : val}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, email, empresa, ID, cargo..." value={ecosistemaDjSearch} onChange={e => setEcosistemaDjSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={ecosistemaDjFiltroEstado} onChange={e => setEcosistemaDjFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      <option value="Checked In">Registrado (Checked In)</option>
+                      <option value="Not Checked In">Sin registrar</option>
+                    </select>
+                  </div>
+                  {ecosistemaDjLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando datos...</p></div>
+                  ) : ecosistemaDjData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin datos aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Importa el CSV de El Ecosistema DJ a la tabla <code>ecosistema_dj</code> en Supabase.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map((r, i) => (
+                        <div key={r.id || i} style={{ background: 'white', borderRadius: 14, padding: 16, border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellido}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.empresa || r.empresa_actual || '—'} · {r.cargo || '—'}</p></div>
+                            {badge(r.estado_entrada)}
+                          </div>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email}</p>
+                            {badgePedido(r.estado_pedido)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>Ticket: {r.ticket_id} · {r.tipo_entrada || '—'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '110px minmax(0,1.4fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,0.9fr) 110px 90px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['TICKET ID','NOMBRE','EMAIL','EMPRESA / CARGO','TIPO ENTRADA','CHECK-IN','PEDIDO'].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map((r, i) => (
+                        <div key={r.id || i} style={{ display: 'grid', gridTemplateColumns: '110px minmax(0,1.4fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,0.9fr) 110px 90px', padding: '13px 16px', gap: 8, borderTop: '1px solid #f8f9fa', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#f0fdfa'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.ticket_id}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellido}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion || r.telefono || ''}</p></div>
+                          <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 12 }}>{r.empresa || r.empresa_actual || '—'}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.cargo || r.designacion || '—'}</p></div>
+                          <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.tipo_entrada || '—'}</span>
+                          {badge(r.estado_entrada)}
+                          {badgePedido(r.estado_pedido)}
                         </div>
                       ))}
                     </div>

@@ -1005,6 +1005,13 @@
       const [mixShakeDetalle, setMixShakeDetalle] = useState(null);
       const [mixShakeNotasEdit, setMixShakeNotasEdit] = useState('');
 
+const [circuloGastroData, setCirculoGastroData] = useState([]);
+const [circuloGastroLoading, setCirculoGastroLoading] = useState(false);
+const [circuloGastroSearch, setCirculoGastroSearch] = useState('');
+const [circuloGastroFiltroEstado, setCirculoGastroFiltroEstado] = useState('all');
+const [circuloGastroDetalle, setCirculoGastroDetalle] = useState(null);
+const [circuloGastroNotasEdit, setCirculoGastroNotasEdit] = useState('');
+
       const [certPlantillas, setCertPlantillas] = useState([]);
       const [certLotes, setCertLotes] = useState([]);
       const [certPersonas, setCertPersonas] = useState([]);
@@ -1052,6 +1059,7 @@
       useEffect(() => { if (view === 'crm' || view === 'crm-espacios-corp') { setEspaciosCorpDetalle(null); loadEspaciosCorp(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-ecosistema-dj') { loadEcosistemaDj(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-mix-shake') { setMixShakeDetalle(null); loadMixShake(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-circulo-gastro') { setCirculoGastroDetalle(null); loadCirculoGastro(); } }, [view]);
       useEffect(() => { if (view === 'conecta') loadConecta(); }, [view]);
 
       useEffect(() => {
@@ -1863,6 +1871,56 @@
           return true;
         });
       };
+      const loadCirculoGastro = async () => {
+        setCirculoGastroLoading(true);
+        const { data } = await supabase.from('inscripciones_circulo_gastro').select('*').order('created_at', { ascending: false });
+        setCirculoGastroData(data || []);
+        setCirculoGastroLoading(false);
+      };
+      const updateCirculoGastroEstado = async (id, estado) => {
+        await supabase.from('inscripciones_circulo_gastro').update({ estado }).eq('id', id);
+        setCirculoGastroData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setCirculoGastroDetalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveCirculoGastroNotas = async (id, notas) => {
+        await supabase.from('inscripciones_circulo_gastro').update({ notas }).eq('id', id);
+        setCirculoGastroData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setCirculoGastroDetalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteCirculoGastro = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_circulo_gastro').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setCirculoGastroData(prev => prev.filter(r => r.id !== id));
+        setCirculoGastroDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getCirculoGastroFiltered = () => {
+        const q = circuloGastroSearch.toLowerCase();
+        return circuloGastroData.filter(r => {
+          if (circuloGastroFiltroEstado !== 'all' && r.estado !== circuloGastroFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.profesion, r.ciudad, r.departamento, r.empresa_nombre, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportCirculoGastroExcel = () => {
+        const filtered = getCirculoGastroFiltered();
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
+          r.genero, r.departamento || '', r.ciudad, r.profesion, r.empresa_nombre || '', r.empresa_nit || '',
+          r.empresa_direccion || '', r.empresa_telefono || '', r.empresa_representante || '',
+          r.empresa_cedula_rep || '', r.empresa_email || '', r.estado || '', r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Círculo Gastro');
+        XLSX.writeFile(wb, 'circulo_gastro_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+
       const exportMixShakeExcel = () => {
         const filtered = getMixShakeFiltered();
         const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
@@ -2456,7 +2514,7 @@
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
               <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
               <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2-open" style={{fontSize:18,marginRight:8}}></i>Documentación</button>
-              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('certificaciones')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'certificaciones' ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'transparent', color: view === 'certificaciones' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'certificaciones' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-mortarboard" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Certificaciones</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('conecta')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'conecta' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'conecta' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'conecta' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-handshake" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Conecta</button>}
               {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: 'bi-people', label: 'Gestión de Equipo' }, { id: 'analytics', icon: 'bi-graph-up', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><i className={'bi '+item.icon} style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>{item.label}</button>))}</>)}
@@ -2469,7 +2527,8 @@
 
           <main style={{ flex: 1, marginLeft: isMobile ? 0 : 260, padding: isMobile ? '16px 12px 80px' : '32px 32px 80px', minWidth: 0 }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 20 : 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'crm-ecosistema-dj' && 'El Ecosistema DJ'}{view === 'crm-mix-shake' && 'Mix And Shake'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'crm-ecosistema-dj' && 'El Ecosistema DJ'}{view === 'crm-mix-shake' && 'Mix And Shake'}
+                {view === 'crm-circulo-gastro' && 'Círculo Gastro'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
               <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'center', flexShrink: 0 }}>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}><i className="bi bi-bell"></i>{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
@@ -2683,7 +2742,8 @@
                     { id: 'crm-armenia-folder', icon: 'bi-buildings', title: 'Armenia 24', desc: 'Formularios del programa de Fortalecimiento Empresarial en Armenia, Quindío — Alcaldía de Armenia · Asobares · Quindío Convention Bureau.', count: armeniaCapData.length + armeniaDiagData.length + armeniaAsistData.length + armeniaGuiaData.length + armeniaPostGastroData.length, loading: armeniaCapLoading || armeniaDiagLoading || armeniaAsistLoading || armeniaGuiaLoading || armeniaPostGastroLoading, color: '#2db84b', bg: '#f0f9f4' },
                     { id: 'crm-bar-week', icon: 'bi-cup-straw', title: 'Bar Week Bogotá', desc: 'Establecimientos registrados en Bar Week Bogotá 2026 — Cóctel + Tapa por $35.000 · 27 nov al 7 dic · Asobares · IDT.', count: barWeekData.length, loading: barWeekLoading, color: '#d4a017', bg: '#fffde7' },
                     { id: 'crm-espacios-corp', icon: 'bi-building-check', title: 'Espacios Corporativos', desc: 'Establecimientos registrados para el directorio de espacios para eventos corporativos — Iniciativa ASOBARES + ANATO Capítulo Central.', count: espaciosCorpData.length, loading: espaciosCorpLoading, color: '#1d4ed8', bg: '#eff6ff' },
-                    { id: 'crm-mix-shake', icon: 'bi-cup-straw-fill', title: 'Mix And Shake', desc: 'Comunidad de bartending de Asobares Colombia — Inscripciones de talento de barra, establecimientos, marcas y proveedores.', count: mixShakeData.length, loading: mixShakeLoading, color: '#8B2BE8', bg: '#f3e8ff' }
+                    { id: 'crm-mix-shake', icon: 'bi-cup-straw-fill', title: 'Mix And Shake', desc: 'Comunidad de bartending de Asobares Colombia — Inscripciones de talento de barra, establecimientos, marcas y proveedores.', count: mixShakeData.length, loading: mixShakeLoading, color: '#8B2BE8', bg: '#f3e8ff' },
+                          { id: 'crm-circulo-gastro', icon: 'bi-fork-knife', title: 'Círculo Gastro', desc: 'Comunidad gastronómica de circulogastro.com — Inscripciones de profesionales, establecimientos, marcas y proveedores.', count: circuloGastroData.length, loading: circuloGastroLoading, color: '#e67e22', bg: '#fef3e2' }
                   ].map(card => (
                     <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -5133,6 +5193,127 @@
                       </div>
                       {filtered.map(r => (
                         <div key={r.id} onClick={() => { setMixShakeDetalle(r); setMixShakeNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#faf5ff'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 13 }}>{r.profesion}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
+                          {badge(r.estado)}
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-circulo-gastro' && (() => {
+              const cgEstados = { inscrito: { label: 'Inscrito', color: '#e67e22', bg: '#fef3e2' }, confirmado: { label: 'Confirmado', color: '#10b981', bg: '#d1fae5' }, activo: { label: 'Activo', color: '#3b82f6', bg: '#eff6ff' }, inactivo: { label: 'Inactivo', color: '#94a3b8', bg: '#f1f5f9' } };
+              const filtered = getCirculoGastroFiltered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = cgEstados[estado] || cgEstados.inscrito; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+              if (circuloGastroDetalle) {
+                const r = circuloGastroDetalle;
+                return (
+                  <div>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setCirculoGastroDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Inscritos</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.profesion} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteCirculoGastro(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN Y PROFESIÓN')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo ID', r.tipo_identificacion)}{cell('Nº ID', r.numero_identificacion)}{cell('Profesión', r.profesion)}
+                          </div>
+                        </div>
+                        {(r.empresa_nombre || r.empresa_nit) && (
+                          <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                            {sec('EMPRESA / ESTABLECIMIENTO')}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                              {cell('Empresa', r.empresa_nombre)}{cell('NIT', r.empresa_nit)}{cell('Dirección', r.empresa_direccion)}{cell('Tel. Empresa', r.empresa_telefono)}{cell('Representante', r.empresa_representante)}{cell('Cédula Rep.', r.empresa_cedula_rep)}{cell('Email Empresa', r.empresa_email)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>ESTADO</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {Object.entries(cgEstados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateCirculoGastroEstado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid', borderColor: r.estado === key ? e.color : '#e5e7eb', background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>{e.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>NOTAS INTERNAS</p>
+                          <textarea value={circuloGastroNotasEdit !== '' ? circuloGastroNotasEdit : (r.notas || '')} onChange={e => setCirculoGastroNotasEdit(e.target.value)} onFocus={() => setCirculoGastroNotasEdit(r.notas || '')} rows={5} placeholder="Agrega notas internas..." style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          <button onClick={() => { saveCirculoGastroNotas(r.id, circuloGastroNotasEdit !== '' ? circuloGastroNotasEdit : (r.notas || '')); setCirculoGastroNotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #e67e22, #d35400)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              const counts = { inscrito: 0, confirmado: 0, activo: 0, inactivo: 0 };
+              circuloGastroData.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    {[['Total', circuloGastroData.length, '#e67e22'], ['Inscrito', counts.inscrito, '#e67e22'], ['Confirmado', counts.confirmado, '#10b981'], ['Activo', counts.activo, '#3b82f6'], ['Inactivo', counts.inactivo, '#94a3b8']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '12px 20px', minWidth: 100 }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>{lbl}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{circuloGastroLoading ? '…' : val}</p>
+                      </div>
+                    ))}
+                    <button onClick={exportCirculoGastroExcel} disabled={filtered.length === 0} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, ID, email, profesión, ciudad o empresa..." value={circuloGastroSearch} onChange={e => setCirculoGastroSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={circuloGastroFiltroEstado} onChange={e => setCirculoGastroFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(cgEstados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                  </div>
+                  {circuloGastroLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : circuloGastroData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin inscripciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los registros del formulario de Círculo Gastro.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setCirculoGastroDetalle(r); setCirculoGastroNotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.profesion} · {r.ciudad}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMAIL','PROFESIÓN / CIUDAD','ESTADO',''].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setCirculoGastroDetalle(r); setCirculoGastroNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#fff7ed'} onMouseLeave={e => e.currentTarget.style.background='white'}>
                           <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
                           <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
                           <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>

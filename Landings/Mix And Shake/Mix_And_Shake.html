@@ -1,0 +1,1247 @@
+<!-- ============================================================
+     MIX & SHAKE by Asobares Colombia — Landing
+     Módulo HTML único para Elementor (widget HTML)
+     Prefijo CSS: mxs-  |  JS envuelto en IIFE  |  Full-bleed
+     ============================================================ -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="mxs-root" id="mxs-root">
+
+<style>
+/* ---------- TOKENS ---------- */
+.mxs-root{
+  --mxs-noche:#100320;
+  --mxs-uva:#1E0838;
+  --mxs-uva-2:#2B0C52;
+  --mxs-neon:#8B2BE8;
+  --mxs-neon-soft:rgba(139,43,232,.35);
+  --mxs-magenta:#FF3D9A;
+  --mxs-citrico:#FFB03A;
+  --mxs-humo:#EFE7FB;
+  --mxs-humo-70:rgba(239,231,251,.72);
+  --mxs-humo-45:rgba(239,231,251,.45);
+  --mxs-linea:rgba(239,231,251,.16);
+  --mxs-display:'Bebas Neue',Impact,sans-serif;
+  --mxs-texto:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mxs-max:1180px;
+}
+
+/* ---------- FULL BLEED + RESET LOCAL ---------- */
+.mxs-root{
+  position:relative !important;
+  width:var(--mxs-vw,100vw) !important;
+  left:50% !important;
+  right:50% !important;
+  margin-left:calc(var(--mxs-vw,100vw) / -2) !important;
+  margin-right:calc(var(--mxs-vw,100vw) / -2) !important;
+  background:var(--mxs-noche) !important;
+  color:var(--mxs-humo) !important;
+  font-family:var(--mxs-texto) !important;
+  font-size:16px !important;
+  line-height:1.65 !important;
+  overflow-x:hidden !important;
+  -webkit-font-smoothing:antialiased;
+}
+.mxs-root *,
+.mxs-root *::before,
+.mxs-root *::after{box-sizing:border-box !important;}
+.mxs-root p,
+.mxs-root h1,.mxs-root h2,.mxs-root h3,.mxs-root h4,
+.mxs-root ul,.mxs-root li,.mxs-root figure{margin:0 !important;padding:0 !important;}
+.mxs-root ul{list-style:none !important;}
+.mxs-root img{max-width:100% !important;height:auto !important;display:block !important;border-radius:0;}
+.mxs-root a{text-decoration:none !important;color:inherit !important;}
+.mxs-root a:focus-visible,
+.mxs-root button:focus-visible{
+  outline:2px solid var(--mxs-citrico) !important;
+  outline-offset:3px !important;
+}
+
+.mxs-wrap{
+  max-width:var(--mxs-max) !important;
+  margin:0 auto !important;
+  padding:0 24px !important;
+}
+.mxs-section{padding:96px 0 !important;position:relative;}
+
+/* ---------- TIPOGRAFÍA ---------- */
+.mxs-root .mxs-h2{
+  font-family:var(--mxs-display) !important;
+  font-size:clamp(38px,5.4vw,72px) !important;
+  line-height:.94 !important;
+  letter-spacing:.01em !important;
+  color:var(--mxs-humo) !important;
+  font-weight:400 !important;
+}
+.mxs-root .mxs-h3{
+  font-family:var(--mxs-display) !important;
+  font-size:clamp(24px,2.6vw,32px) !important;
+  line-height:1.02 !important;
+  color:var(--mxs-humo) !important;
+  font-weight:400 !important;
+}
+.mxs-root .mxs-lead{
+  font-size:clamp(17px,1.6vw,20px) !important;
+  color:var(--mxs-humo-70) !important;
+  max-width:62ch !important;
+  font-weight:300 !important;
+}
+.mxs-root .mxs-body{
+  color:var(--mxs-humo-70) !important;
+  font-size:15.5px !important;
+  font-weight:300 !important;
+  max-width:60ch !important;
+}
+.mxs-rule{
+  width:64px;height:3px;
+  background:linear-gradient(90deg,var(--mxs-magenta),var(--mxs-neon));
+  border-radius:2px;
+  margin-bottom:22px !important;
+  box-shadow:0 0 18px var(--mxs-neon-soft);
+}
+
+/* ---------- BOTONES ---------- */
+.mxs-root .mxs-btn{
+  display:inline-flex !important;
+  align-items:center;justify-content:center;
+  font-family:var(--mxs-texto) !important;
+  font-size:13.5px !important;
+  font-weight:700 !important;
+  letter-spacing:.09em !important;
+  padding:16px 30px !important;
+  border-radius:999px !important;
+  border:1.5px solid transparent !important;
+  cursor:pointer;
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease !important;
+  text-align:center;
+}
+.mxs-root .mxs-btn--solid{
+  background:linear-gradient(100deg,var(--mxs-magenta),var(--mxs-neon)) !important;
+  color:#fff !important;
+  box-shadow:0 10px 34px rgba(139,43,232,.45) !important;
+}
+.mxs-root .mxs-btn--solid:hover{transform:translateY(-2px);box-shadow:0 14px 42px rgba(255,61,154,.5) !important;}
+.mxs-root .mxs-btn--ghost{
+  background:transparent !important;
+  color:var(--mxs-humo) !important;
+  border-color:rgba(239,231,251,.38) !important;
+}
+.mxs-root .mxs-btn--ghost:hover{
+  border-color:var(--mxs-citrico) !important;
+  color:var(--mxs-citrico) !important;
+  transform:translateY(-2px);
+}
+
+/* ---------- NAV STICKY ---------- */
+.mxs-nav{
+  position:sticky !important;top:0;z-index:40;
+  background:rgba(16,3,32,.86) !important;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--mxs-linea) !important;
+}
+.mxs-nav__in{
+  max-width:var(--mxs-max);margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  height:66px;
+}
+.mxs-nav__logo{display:flex;align-items:center;}
+.mxs-nav__mark{
+  font-family:var(--mxs-display) !important;
+  font-size:27px !important;
+  line-height:1 !important;
+  letter-spacing:.02em !important;
+  color:var(--mxs-humo) !important;
+  opacity:0;
+  transform:translateY(5px);
+  transition:opacity .3s ease,transform .3s ease;
+  pointer-events:none;
+}
+.mxs-nav.mxs-scrolled .mxs-nav__mark{opacity:1;transform:none;pointer-events:auto;}
+.mxs-nav__links{display:flex;gap:26px;align-items:center;}
+.mxs-nav__links a{
+  font-size:13px !important;font-weight:500 !important;
+  color:var(--mxs-humo-45) !important;
+  padding:6px 0 !important;
+  border-bottom:2px solid transparent !important;
+  transition:color .18s ease,border-color .18s ease;
+}
+.mxs-nav__links a:hover{color:var(--mxs-humo) !important;}
+.mxs-nav__links a.mxs-is-active{color:var(--mxs-humo) !important;border-bottom-color:var(--mxs-magenta) !important;}
+.mxs-nav__cta{padding:11px 22px !important;font-size:12px !important;}
+.mxs-nav__toggle{
+  display:none;background:transparent !important;border:1px solid var(--mxs-linea) !important;
+  border-radius:10px !important;width:42px;height:38px;color:var(--mxs-humo) !important;
+  align-items:center;justify-content:center;cursor:pointer;
+}
+.mxs-nav__toggle span{display:block;width:18px;height:2px;background:currentColor;position:relative;}
+.mxs-nav__toggle span::before,.mxs-nav__toggle span::after{
+  content:"";position:absolute;left:0;width:18px;height:2px;background:currentColor;
+}
+.mxs-nav__toggle span::before{top:-6px;}
+.mxs-nav__toggle span::after{top:6px;}
+
+/* ---------- HERO ---------- */
+.mxs-hero{
+  position:relative;
+  padding:104px 0 108px !important;
+  overflow:hidden;
+  background:
+    radial-gradient(900px 520px at 78% 12%,rgba(139,43,232,.55),transparent 62%),
+    radial-gradient(700px 460px at 12% 78%,rgba(255,61,154,.28),transparent 60%),
+    linear-gradient(180deg,#1B0636 0%,var(--mxs-noche) 100%) !important;
+}
+.mxs-hero__rings{
+  position:absolute;inset:0;pointer-events:none;opacity:.5;
+}
+.mxs-hero__grid{
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;
+}
+.mxs-hero__logo{max-width:360px !important;margin-bottom:30px !important;}
+.mxs-hero__claim{
+  font-family:var(--mxs-display) !important;
+  font-size:clamp(44px,6.2vw,86px) !important;
+  line-height:.92 !important;
+  margin-bottom:22px !important;
+  color:#fff !important;
+  text-shadow:0 0 42px rgba(139,43,232,.55);
+}
+.mxs-hero__sub{
+  font-size:clamp(16px,1.7vw,19px) !important;
+  color:var(--mxs-humo-70) !important;
+  max-width:48ch !important;font-weight:300 !important;
+  margin-bottom:34px !important;
+}
+.mxs-hero__ctas{display:flex;flex-wrap:wrap;gap:14px;}
+.mxs-hero__media{position:relative;}
+.mxs-hero__ph{
+  position:relative;
+  border-radius:18px !important;
+  overflow:hidden;
+  border:1px solid rgba(239,231,251,.18);
+  box-shadow:0 26px 70px rgba(0,0,0,.55);
+}
+.mxs-hero__ph img{width:100% !important;object-fit:cover !important;}
+.mxs-hero__ph--a{aspect-ratio:4/5;}
+.mxs-hero__ph--b{
+  position:absolute;right:-14px;bottom:-34px;width:56%;aspect-ratio:4/3;
+  border:1px solid rgba(255,61,154,.4);
+  box-shadow:0 22px 54px rgba(139,43,232,.42);
+}
+
+/* ---------- MANIFIESTO ---------- */
+.mxs-manifiesto{
+  background:linear-gradient(180deg,var(--mxs-noche),var(--mxs-uva)) !important;
+  border-top:1px solid var(--mxs-linea) !important;
+}
+.mxs-manifiesto__grid{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start;}
+.mxs-manifiesto p + p{margin-top:18px !important;}
+.mxs-mosaico{
+  display:grid;grid-template-columns:1.32fr 1fr;gap:22px;margin-top:60px !important;
+}
+.mxs-mosaico figure{
+  position:relative;overflow:hidden;border-radius:16px !important;
+  border:1px solid rgba(239,231,251,.16);
+  box-shadow:0 22px 56px rgba(0,0,0,.5);
+}
+.mxs-mosaico figure img{width:100% !important;height:100% !important;object-fit:cover !important;}
+.mxs-mosaico figure:first-child{aspect-ratio:16/10;}
+.mxs-mosaico figure:last-child{aspect-ratio:4/3;transform:translateY(30px);border-color:rgba(255,61,154,.35);}
+
+/* ---------- PÚBLICOS ---------- */
+.mxs-publicos{background:var(--mxs-uva) !important;}
+.mxs-publicos__grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:46px !important;
+  border-top:1px solid var(--mxs-linea);
+}
+.mxs-pub{
+  padding:34px 26px 34px 0 !important;
+  border-right:1px solid var(--mxs-linea);
+  position:relative;
+}
+.mxs-pub:not(:first-child){padding-left:26px !important;}
+.mxs-pub:last-child{border-right:0;}
+.mxs-pub::before{
+  content:"";position:absolute;top:-1px;left:0;width:38%;height:2px;
+  background:var(--mxs-magenta);box-shadow:0 0 14px var(--mxs-magenta);
+}
+.mxs-pub:nth-child(2)::before{background:var(--mxs-neon);box-shadow:0 0 14px var(--mxs-neon);}
+.mxs-pub:nth-child(3)::before{background:var(--mxs-citrico);box-shadow:0 0 14px var(--mxs-citrico);}
+.mxs-pub:nth-child(4)::before{background:#3FD6C8;box-shadow:0 0 14px #3FD6C8;}
+.mxs-pub h3{margin-bottom:12px !important;}
+
+/* ---------- QUÉ HACEMOS (carta de barra) ---------- */
+.mxs-hacemos{
+  background:
+    radial-gradient(760px 420px at 88% 8%,rgba(255,61,154,.16),transparent 60%),
+    var(--mxs-noche) !important;
+}
+.mxs-carta{margin-top:48px !important;border-top:1px solid var(--mxs-linea);}
+.mxs-carta__item{
+  display:grid;grid-template-columns:.42fr .58fr;gap:34px;
+  padding:30px 0 !important;
+  border-bottom:1px solid var(--mxs-linea);
+  align-items:baseline;
+}
+.mxs-carta__t{
+  display:flex;align-items:baseline;gap:14px;
+}
+.mxs-carta__t .mxs-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--mxs-citrico);
+  box-shadow:0 0 12px var(--mxs-citrico);flex:0 0 8px;transform:translateY(-4px);
+}
+.mxs-carta__item:nth-child(2n) .mxs-dot{background:var(--mxs-magenta);box-shadow:0 0 12px var(--mxs-magenta);}
+.mxs-carta__item:nth-child(3n) .mxs-dot{background:var(--mxs-neon);box-shadow:0 0 12px var(--mxs-neon);}
+
+/* ---------- OBJETIVOS ---------- */
+.mxs-objetivos{
+  background:var(--mxs-uva) !important;
+  position:relative;
+  isolation:isolate;
+}
+.mxs-objetivos::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:
+    linear-gradient(180deg,rgba(30,8,56,.93),rgba(30,8,56,.97)),
+    url('https://asobares.org/wp-content/uploads/2026/09/Captura-de-Pantalla-2026-09-14-a-las-7.35.31.jpg') center/cover no-repeat;
+}
+.mxs-obj__grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:44px !important;
+  background:var(--mxs-linea);
+  border:1px solid var(--mxs-linea);
+}
+.mxs-obj__i{
+  background:rgba(30,8,56,.74);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  padding:26px 28px !important;
+  display:flex;gap:16px;align-items:flex-start;
+  font-size:15.5px !important;color:var(--mxs-humo) !important;font-weight:300 !important;
+}
+.mxs-obj__i svg{flex:0 0 20px;margin-top:3px;}
+
+/* ---------- BENEFICIOS ---------- */
+.mxs-beneficios{
+  background:linear-gradient(180deg,var(--mxs-uva),#150429) !important;
+}
+.mxs-ben__grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center;}
+.mxs-ben__list{margin-top:8px !important;}
+.mxs-ben__list li{
+  display:flex;gap:14px;align-items:flex-start;
+  padding:15px 0 !important;
+  border-bottom:1px dashed var(--mxs-linea);
+  color:var(--mxs-humo) !important;font-weight:300 !important;font-size:15.5px !important;
+}
+.mxs-ben__list li:last-child{border-bottom:0;}
+.mxs-ben__bullet{
+  flex:0 0 22px;height:22px;border-radius:50%;
+  border:1.5px solid var(--mxs-magenta);
+  display:flex;align-items:center;justify-content:center;
+  margin-top:1px;
+}
+.mxs-ben__bullet::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--mxs-magenta);box-shadow:0 0 10px var(--mxs-magenta);}
+.mxs-ben__cta{margin-top:34px !important;}
+.mxs-ben__foto{
+  margin-top:38px !important;
+  border-radius:16px !important;overflow:hidden;
+  border:1px solid rgba(239,231,251,.16);
+  box-shadow:0 22px 56px rgba(0,0,0,.5);
+  aspect-ratio:16/9;
+}
+.mxs-ben__foto img{width:100% !important;height:100% !important;object-fit:cover !important;}
+.mxs-aliados__foto{
+  margin-top:30px !important;
+  border-radius:16px !important;overflow:hidden;
+  border:1px solid rgba(255,61,154,.3);
+  box-shadow:0 22px 56px rgba(0,0,0,.5);
+  aspect-ratio:16/10;
+}
+.mxs-aliados__foto img{width:100% !important;height:100% !important;object-fit:cover !important;}
+
+/* ---------- LIDERAZGO ---------- */
+.mxs-lider{
+  background:
+    radial-gradient(720px 480px at 22% 42%,rgba(139,43,232,.42),transparent 62%),
+    var(--mxs-noche) !important;
+}
+.mxs-lider__grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:56px;align-items:center;}
+.mxs-lider__ph{
+  position:relative;border-radius:18px !important;overflow:hidden;
+  border:1px solid rgba(239,231,251,.2);
+  box-shadow:0 28px 70px rgba(0,0,0,.6);
+  aspect-ratio:3/4;
+}
+.mxs-lider__ph img{width:100% !important;height:100% !important;object-fit:cover !important;}
+.mxs-lider__rol{
+  font-size:13px !important;letter-spacing:.06em !important;
+  color:var(--mxs-citrico) !important;font-weight:600 !important;
+  margin-bottom:16px !important;
+}
+.mxs-lider h3{font-size:clamp(34px,4vw,52px) !important;margin-bottom:10px !important;}
+.mxs-lider__ig{
+  display:inline-flex !important;align-items:center;gap:9px;
+  margin-top:24px !important;font-weight:600 !important;font-size:14.5px !important;
+  color:var(--mxs-humo) !important;
+  border-bottom:1.5px solid var(--mxs-magenta) !important;
+  padding-bottom:3px !important;
+}
+.mxs-lider__ig:hover{color:var(--mxs-magenta) !important;}
+
+/* ---------- NOTICIAS ---------- */
+.mxs-noticias{background:var(--mxs-uva) !important;}
+.mxs-noticias__head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap;}
+.mxs-news{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:46px !important;}
+.mxs-news__c{
+  background:var(--mxs-uva-2) !important;
+  border:1px solid var(--mxs-linea) !important;
+  border-radius:14px !important;
+  overflow:hidden;display:flex;flex-direction:column;
+  transition:border-color .2s ease,transform .2s ease;
+}
+.mxs-news__c:hover{border-color:rgba(255,61,154,.55) !important;transform:translateY(-3px);}
+.mxs-news__img{aspect-ratio:16/10;overflow:hidden;background:#2A0A4A;}
+.mxs-news__img img{width:100% !important;height:100% !important;object-fit:cover !important;}
+.mxs-news__b{padding:20px 22px 24px !important;display:flex;flex-direction:column;gap:10px;flex:1;}
+.mxs-chip{
+  align-self:flex-start;
+  font-size:11px !important;font-weight:700 !important;letter-spacing:.08em !important;
+  padding:5px 11px !important;border-radius:999px !important;
+  background:rgba(255,61,154,.16) !important;color:#FF7CBB !important;
+  border:1px solid rgba(255,61,154,.35) !important;
+}
+.mxs-chip--neon{background:rgba(139,43,232,.18) !important;color:#BE8CF6 !important;border-color:rgba(139,43,232,.4) !important;}
+.mxs-chip--cit{background:rgba(255,176,58,.15) !important;color:var(--mxs-citrico) !important;border-color:rgba(255,176,58,.38) !important;}
+.mxs-news__t{font-size:18px !important;font-weight:600 !important;line-height:1.28 !important;color:var(--mxs-humo) !important;}
+.mxs-news__x{font-size:14px !important;color:var(--mxs-humo-45) !important;font-weight:300 !important;}
+
+/* ---------- BAR WEEK ---------- */
+.mxs-barweek{
+  margin-top:56px !important;
+  border:1px solid rgba(255,176,58,.32) !important;
+  border-radius:18px !important;
+  background:
+    linear-gradient(120deg,rgba(255,176,58,.10),rgba(139,43,232,.14)) !important;
+  padding:40px 42px !important;
+  display:grid;grid-template-columns:1fr .8fr;gap:44px;align-items:center;
+}
+.mxs-barweek h3{margin-bottom:16px !important;}
+.mxs-barweek p + p{margin-top:14px !important;}
+.mxs-barweek__brinda{
+  font-family:var(--mxs-display) !important;
+  font-size:clamp(22px,2.4vw,30px) !important;
+  color:var(--mxs-citrico) !important;
+  margin-top:20px !important;
+}
+.mxs-barweek__links{display:flex;flex-direction:column;gap:14px;}
+.mxs-barweek__link{
+  display:flex !important;align-items:center;justify-content:space-between;gap:16px;
+  padding:18px 22px !important;
+  border:1px solid var(--mxs-linea) !important;border-radius:12px !important;
+  background:rgba(16,3,32,.5) !important;
+  font-size:14.5px !important;font-weight:500 !important;
+  transition:border-color .18s ease,background .18s ease;
+}
+.mxs-barweek__link:hover{border-color:var(--mxs-citrico) !important;background:rgba(255,176,58,.08) !important;}
+.mxs-barweek__link b{color:var(--mxs-citrico) !important;font-weight:700 !important;white-space:nowrap;}
+
+/* ---------- ALIADOS ---------- */
+.mxs-aliados{
+  background:
+    radial-gradient(800px 440px at 20% 20%,rgba(255,61,154,.22),transparent 62%),
+    linear-gradient(180deg,#150429,var(--mxs-noche)) !important;
+}
+.mxs-aliados__in{
+  border:1px solid var(--mxs-linea) !important;
+  border-radius:20px !important;
+  background:rgba(43,12,82,.5) !important;
+  padding:54px 52px !important;
+  display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;
+}
+
+/* ---------- FORMULARIO DE INSCRIPCIÓN ---------- */
+.mxs-form-wrap{
+  max-width:780px !important;
+  margin:48px auto 0 !important;
+  background:rgba(43,12,82,.55) !important;
+  border:1px solid rgba(239,231,251,.18) !important;
+  border-radius:20px !important;
+  padding:48px !important;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.mxs-form-sec{
+  font-size:10px !important;
+  font-weight:700 !important;
+  color:var(--mxs-magenta) !important;
+  letter-spacing:2.5px !important;
+  text-transform:uppercase !important;
+  margin-bottom:16px !important;
+  margin-top:28px !important;
+  padding-bottom:10px !important;
+  border-bottom:1px solid var(--mxs-linea) !important;
+  display:block !important;
+}
+.mxs-form-sec:first-child{margin-top:0 !important;}
+.mxs-form-g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px !important;}
+.mxs-form-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px !important;}
+.mxs-form-fg label{
+  display:block !important;font-size:12px !important;font-weight:600 !important;
+  color:var(--mxs-humo-45) !important;margin-bottom:5px !important;
+}
+.mxs-form-fg input,
+.mxs-form-fg select{
+  width:100% !important;padding:12px 14px !important;
+  border:1.5px solid rgba(139,43,232,.35) !important;
+  border-radius:10px !important;font-size:14px !important;font-family:var(--mxs-texto) !important;
+  background:rgba(16,3,32,.7) !important;color:var(--mxs-humo) !important;
+  transition:border-color .15s !important;
+  -webkit-appearance:auto;appearance:auto;
+}
+.mxs-form-fg input::placeholder{color:rgba(239,231,251,.25) !important;}
+.mxs-form-fg input:focus,
+.mxs-form-fg select:focus{outline:none !important;border-color:var(--mxs-magenta) !important;}
+.mxs-form-fg select option{background:#1E0838;color:var(--mxs-humo);}
+.mxs-form-req{color:var(--mxs-magenta) !important;}
+.mxs-form-submit{
+  width:100% !important;padding:18px !important;border:none !important;border-radius:999px !important;
+  background:linear-gradient(100deg,var(--mxs-magenta),var(--mxs-neon)) !important;
+  color:#fff !important;font-size:15px !important;font-weight:700 !important;
+  letter-spacing:.08em !important;cursor:pointer !important;margin-top:28px !important;
+  font-family:var(--mxs-texto) !important;text-transform:uppercase !important;
+  box-shadow:0 10px 34px rgba(139,43,232,.45) !important;
+  transition:transform .18s ease,box-shadow .18s ease !important;
+}
+.mxs-form-submit:hover{transform:translateY(-2px) !important;box-shadow:0 14px 42px rgba(255,61,154,.5) !important;}
+.mxs-form-submit:disabled{opacity:.5 !important;cursor:default !important;transform:none !important;}
+.mxs-form-legal{
+  text-align:center !important;font-size:12px !important;
+  color:var(--mxs-humo-45) !important;margin-top:14px !important;
+}
+.mxs-form-err{
+  display:none;
+  background:rgba(255,61,154,.12) !important;
+  color:#FF7CBB !important;
+  border:1px solid rgba(255,61,154,.35) !important;
+  padding:12px 16px !important;border-radius:10px !important;
+  font-size:13px !important;margin-top:14px !important;
+}
+.mxs-form-success{
+  display:none;
+  text-align:center !important;
+  padding:60px 20px !important;
+}
+.mxs-form-check{
+  width:84px;height:84px;
+  background:linear-gradient(135deg,var(--mxs-magenta),var(--mxs-neon)) !important;
+  border-radius:50% !important;
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;color:#fff;margin:0 auto 24px !important;
+  box-shadow:0 0 40px rgba(139,43,232,.5);
+}
+.mxs-form-success h3{
+  font-family:var(--mxs-display) !important;
+  font-size:clamp(30px,4vw,48px) !important;
+  color:var(--mxs-humo) !important;
+  margin-bottom:14px !important;
+}
+.mxs-form-success p{
+  font-size:15px !important;color:var(--mxs-humo-70) !important;
+  line-height:1.6 !important;margin-bottom:8px !important;max-width:50ch;margin-left:auto !important;margin-right:auto !important;
+}
+
+/* ---------- CIERRE ---------- */
+.mxs-cierre{
+  background:linear-gradient(180deg,var(--mxs-noche),#22073F) !important;
+  text-align:center;
+  border-top:1px solid var(--mxs-linea) !important;
+}
+.mxs-cierre .mxs-rule{margin:0 auto 22px !important;}
+.mxs-cierre .mxs-lead{margin:0 auto !important;}
+.mxs-cierre__frase{
+  font-family:var(--mxs-display) !important;
+  font-size:clamp(28px,4vw,52px) !important;
+  line-height:1.02 !important;
+  margin:34px auto 34px !important;
+  max-width:20ch !important;
+  color:#fff !important;
+  text-shadow:0 0 40px rgba(139,43,232,.6);
+}
+.mxs-cierre__logo{max-width:210px !important;margin:0 auto 30px !important;opacity:.9;}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:1024px){
+  .mxs-section{padding:76px 0 !important;}
+  .mxs-hero__grid,
+  .mxs-manifiesto__grid,
+  .mxs-ben__grid,
+  .mxs-lider__grid,
+  .mxs-barweek,
+  .mxs-aliados__in{grid-template-columns:1fr !important;gap:38px !important;}
+  .mxs-mosaico{grid-template-columns:1fr !important;gap:18px !important;margin-top:42px !important;}
+  .mxs-mosaico figure:last-child{transform:none !important;}
+  .mxs-publicos__grid{grid-template-columns:1fr 1fr !important;}
+  .mxs-pub{border-right:0;border-bottom:1px solid var(--mxs-linea);padding-left:0 !important;}
+  .mxs-pub:nth-child(2),.mxs-pub:nth-child(4){padding-left:26px !important;border-left:1px solid var(--mxs-linea);}
+  .mxs-news{grid-template-columns:1fr 1fr !important;}
+  .mxs-hero__ph--b{position:static;width:100%;margin-top:16px;}
+  .mxs-nav__links{display:none;}
+  .mxs-nav__toggle{display:flex;}
+  .mxs-nav.mxs-open .mxs-nav__links{
+    display:flex;flex-direction:column;gap:0;
+    position:absolute;left:0;right:0;top:66px;
+    background:rgba(16,3,32,.98);
+    border-bottom:1px solid var(--mxs-linea);
+    padding:10px 24px 18px;
+  }
+  .mxs-nav.mxs-open .mxs-nav__links a{padding:13px 0 !important;border-bottom:1px solid var(--mxs-linea) !important;}
+  .mxs-form-wrap{padding:32px 24px !important;}
+}
+@media (max-width:680px){
+  .mxs-section{padding:62px 0 !important;}
+  .mxs-wrap{padding:0 20px !important;}
+  .mxs-publicos__grid{grid-template-columns:1fr !important;}
+  .mxs-pub,
+  .mxs-pub:nth-child(2),.mxs-pub:nth-child(4){padding-left:0 !important;border-left:0 !important;}
+  .mxs-carta__item{grid-template-columns:1fr !important;gap:10px !important;}
+  .mxs-obj__grid{grid-template-columns:1fr !important;}
+  .mxs-news{grid-template-columns:1fr !important;}
+  .mxs-barweek,.mxs-aliados__in{padding:32px 24px !important;}
+  .mxs-hero__ctas .mxs-btn{width:100% !important;}
+  .mxs-nav__cta{display:none;}
+  .mxs-form-g2,.mxs-form-g3{grid-template-columns:1fr !important;}
+  .mxs-form-wrap{padding:28px 18px !important;}
+}
+@media (prefers-reduced-motion:reduce){
+  .mxs-root *{animation:none !important;transition:none !important;}
+}
+</style>
+
+<!-- ======================= NAV ======================= -->
+<nav class="mxs-nav" id="mxs-nav">
+  <div class="mxs-nav__in">
+    <a class="mxs-nav__logo" href="#mxs-top" aria-label="MIX &amp; SHAKE">
+      <span class="mxs-nav__mark">MIX &amp; SHAKE</span>
+    </a>
+    <div class="mxs-nav__links" id="mxs-navlinks">
+      <a href="#mxs-ecosistema">Ecosistema</a>
+      <a href="#mxs-publicos">A quiénes</a>
+      <a href="#mxs-hacemos">Qué hacemos</a>
+      <a href="#mxs-liderazgo">Liderazgo</a>
+      <a href="#mxs-noticias">Noticias</a>
+      <a href="#mxs-aliados">Aliados</a>
+    </div>
+    <a href="#mxs-inscribete" class="mxs-btn mxs-btn--solid mxs-nav__cta">QUIERO SER PARTE</a>
+    <button class="mxs-nav__toggle" id="mxs-toggle" aria-label="Abrir menú" aria-expanded="false"><span></span></button>
+  </div>
+</nav>
+
+<!-- ======================= HERO ======================= -->
+<header class="mxs-hero" id="mxs-top">
+  <svg class="mxs-hero__rings" viewBox="0 0 1440 760" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g fill="none" stroke-width="2">
+      <circle cx="1140" cy="180" r="150" stroke="rgba(255,61,154,.55)"/>
+      <circle cx="1250" cy="330" r="90" stroke="rgba(139,43,232,.6)"/>
+      <circle cx="980" cy="470" r="120" stroke="rgba(255,176,58,.35)"/>
+      <circle cx="180" cy="620" r="110" stroke="rgba(139,43,232,.45)"/>
+      <circle cx="90" cy="180" r="70" stroke="rgba(255,61,154,.3)"/>
+      <path d="M300 90 q120 60 60 170" stroke="rgba(239,231,251,.18)"/>
+      <path d="M1340 600 q-120 -70 -40 -180" stroke="rgba(239,231,251,.14)"/>
+    </g>
+  </svg>
+
+  <div class="mxs-wrap">
+    <div class="mxs-hero__grid">
+      <div>
+        <img class="mxs-hero__logo" src="https://asobares.org/wp-content/uploads/2026/07/Logo-Blanco.png" alt="MIX &amp; SHAKE by Asobares Colombia">
+        <h1 class="mxs-hero__claim">Talento que mezcla.<br>Industria que crece.</h1>
+        <p class="mxs-hero__sub">La plataforma de Asobares Colombia que conecta, profesionaliza y proyecta a quienes hacen posible la experiencia detrás de cada barra.</p>
+        <div class="mxs-hero__ctas">
+          <a href="#mxs-inscribete" class="mxs-btn mxs-btn--solid">QUIERO SER PARTE</a>
+          <a href="#mxs-aliados" class="mxs-btn mxs-btn--ghost">QUIERO SER ALIADO</a>
+        </div>
+      </div>
+      <div class="mxs-hero__media">
+        <figure class="mxs-hero__ph mxs-hero__ph--a">
+          <img src="https://asobares.org/wp-content/uploads/2026/09/Captura-de-Pantalla-2026-09-14-a-las-7.29.55.jpg" alt="Bartender preparando un cóctel durante una activación de MIX &amp; SHAKE" loading="lazy">
+        </figure>
+        <figure class="mxs-hero__ph mxs-hero__ph--b">
+          <img src="https://asobares.org/wp-content/uploads/2026/09/Captura-de-Pantalla-2026-09-14-a-las-7.32.34.jpg" alt="Masterclass de MIX &amp; SHAKE frente a público" loading="lazy">
+        </figure>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ======================= MANIFIESTO ======================= -->
+<section class="mxs-section mxs-manifiesto" id="mxs-ecosistema">
+  <div class="mxs-wrap">
+    <div class="mxs-manifiesto__grid">
+      <div>
+        <div class="mxs-rule"></div>
+        <h2 class="mxs-h2">El punto de encuentro de la cultura de barra</h2>
+      </div>
+      <div>
+        <p class="mxs-lead">MIX &amp; SHAKE reúne en un mismo ecosistema a bartenders, mixólogos, asistentes de barra, bar managers, sommeliers, empresarios, marcas, distribuidores y proveedores especializados.</p>
+        <p class="mxs-lead">Creamos conexiones, conocimiento y oportunidades para transformar el trabajo detrás de la barra en una profesión reconocida, competitiva, responsable y con proyección nacional e internacional.</p>
+      </div>
+    </div>
+
+    <div class="mxs-mosaico">
+      <figure><img src="https://asobares.org/wp-content/uploads/2026/09/Captura-de-Pantalla-2026-09-14-a-las-7.37.10.jpg" alt="Comunidad MIX &amp; SHAKE en una activación de barra" loading="lazy"></figure>
+      <figure><img src="https://asobares.org/wp-content/uploads/2026/09/Captura-de-Pantalla-2026-09-14-a-las-7.36.53.jpg" alt="Encuentro de talento de barra de MIX &amp; SHAKE" loading="lazy"></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= PÚBLICOS ======================= -->
+<section class="mxs-section mxs-publicos" id="mxs-publicos">
+  <div class="mxs-wrap">
+    <div class="mxs-rule"></div>
+    <h2 class="mxs-h2">¿A quiénes nos dirigimos?</h2>
+
+    <div class="mxs-publicos__grid">
+      <article class="mxs-pub">
+        <h3 class="mxs-h3">Talento de barra</h3>
+        <p class="mxs-body">Bartenders, mixólogos, asistentes de barra, sommeliers, baristas y estudiantes que quieren fortalecer sus conocimientos, visibilizar su trabajo y crecer profesionalmente.</p>
+      </article>
+      <article class="mxs-pub">
+        <h3 class="mxs-h3">Establecimientos</h3>
+        <p class="mxs-body">Bares, gastrobares, restaurantes, hoteles, discotecas y demás negocios que buscan equipos mejor preparados y experiencias de bebidas con mayor calidad.</p>
+      </article>
+      <article class="mxs-pub">
+        <h3 class="mxs-h3">Marcas y proveedores</h3>
+        <p class="mxs-body">Productores, importadores, distribuidores y empresas de licores, bebidas, cristalería, hielo, insumos, equipos, tecnología y soluciones para la operación de barras.</p>
+      </article>
+      <article class="mxs-pub">
+        <h3 class="mxs-h3">Academias y expertos</h3>
+        <p class="mxs-body">Escuelas, formadores, consultores y referentes nacionales e internacionales interesados en compartir conocimiento y aportar al desarrollo del sector.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= QUÉ HACEMOS ======================= -->
+<section class="mxs-section mxs-hacemos" id="mxs-hacemos">
+  <div class="mxs-wrap">
+    <div class="mxs-rule"></div>
+    <h2 class="mxs-h2">¿Qué hacemos?</h2>
+
+    <div class="mxs-carta">
+      <div class="mxs-carta__item">
+        <div class="mxs-carta__t"><span class="mxs-dot"></span><h3 class="mxs-h3">Formación y actualización</h3></div>
+        <p class="mxs-body">Masterclasses, talleres, certificaciones y espacios prácticos sobre técnicas de barra, mixología, servicio, tendencias, innovación, rentabilidad y consumo responsable.</p>
+      </div>
+      <div class="mxs-carta__item">
+        <div class="mxs-carta__t"><span class="mxs-dot"></span><h3 class="mxs-h3">Conexión con la industria</h3></div>
+        <p class="mxs-body">Encuentros entre talento, establecimientos, marcas y proveedores para construir alianzas y generar nuevas oportunidades profesionales y comerciales.</p>
+      </div>
+      <div class="mxs-carta__item">
+        <div class="mxs-carta__t"><span class="mxs-dot"></span><h3 class="mxs-h3">Activación y experiencias</h3></div>
+        <p class="mxs-body">Competencias, demostraciones, barras invitadas, lanzamientos, rutas, degustaciones y experiencias dentro de EXPOBAR y otros escenarios nacionales.</p>
+      </div>
+      <div class="mxs-carta__item">
+        <div class="mxs-carta__t"><span class="mxs-dot"></span><h3 class="mxs-h3">Visibilidad del talento</h3></div>
+        <p class="mxs-body">Historias, entrevistas y contenidos que reconocen a quienes están transformando la cultura de barra en Colombia.</p>
+      </div>
+      <div class="mxs-carta__item">
+        <div class="mxs-carta__t"><span class="mxs-dot"></span><h3 class="mxs-h3">Oportunidades</h3></div>
+        <p class="mxs-body">Difusión de convocatorias, empleos, concursos, becas, intercambios, eventos y posibilidades de crecimiento dentro de la industria.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= OBJETIVOS ======================= -->
+<section class="mxs-section mxs-objetivos">
+  <div class="mxs-wrap">
+    <div class="mxs-rule"></div>
+    <h2 class="mxs-h2">Nuestros objetivos</h2>
+
+    <div class="mxs-obj__grid">
+      <div class="mxs-obj__i"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="#FF3D9A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Profesionalizar y dignificar los oficios relacionados con la barra.</span></div>
+      <div class="mxs-obj__i"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="#8B2BE8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Promover mejores prácticas de servicio, operación y consumo responsable.</span></div>
+      <div class="mxs-obj__i"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="#FFB03A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Conectar el talento humano con establecimientos, marcas y proveedores.</span></div>
+      <div class="mxs-obj__i"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="#3FD6C8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Impulsar la innovación, el uso de ingredientes locales y la identidad de la coctelería colombiana.</span></div>
+      <div class="mxs-obj__i"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="#FF3D9A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Generar oportunidades de formación, empleo, emprendimiento y proyección internacional.</span></div>
+      <div class="mxs-obj__i"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="#8B2BE8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Consolidar una comunidad nacional que represente y fortalezca al sector.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= BENEFICIOS ======================= -->
+<section class="mxs-section mxs-beneficios">
+  <div class="mxs-wrap">
+    <div class="mxs-ben__grid">
+      <div>
+        <div class="mxs-rule"></div>
+        <h2 class="mxs-h2">¿Por qué ser parte de MIX &amp; SHAKE?</h2>
+        <p class="mxs-lead" style="margin-top:22px !important;">Porque detrás de una gran experiencia existe talento, conocimiento y trabajo en equipo.</p>
+        <p class="mxs-body" style="margin-top:14px !important;">Al vincularte podrás acceder a:</p>
+        <div class="mxs-ben__cta">
+          <a href="#mxs-inscribete" class="mxs-btn mxs-btn--solid">ÚNETE A LA COMUNIDAD MIX &amp; SHAKE</a>
+        </div>
+        <figure class="mxs-ben__foto">
+          <img src="https://asobares.org/wp-content/uploads/2026/09/Captura-de-Pantalla-2026-09-14-a-las-7.36.01.jpg" alt="Bartenders de la comunidad MIX &amp; SHAKE" loading="lazy">
+        </figure>
+      </div>
+      <ul class="mxs-ben__list">
+        <li><span class="mxs-ben__bullet"></span><span>Capacitaciones y experiencias especializadas.</span></li>
+        <li><span class="mxs-ben__bullet"></span><span>Convocatorias y oportunidades laborales.</span></li>
+        <li><span class="mxs-ben__bullet"></span><span>Contacto con marcas y referentes de la industria.</span></li>
+        <li><span class="mxs-ben__bullet"></span><span>Participación en competencias y activaciones.</span></li>
+        <li><span class="mxs-ben__bullet"></span><span>Visibilidad para tu talento, establecimiento o producto.</span></li>
+        <li><span class="mxs-ben__bullet"></span><span>Contenidos sobre técnicas, tendencias y gestión de barras.</span></li>
+        <li><span class="mxs-ben__bullet"></span><span>Una comunidad que comparte tu pasión y entiende tu profesión.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= LIDERAZGO ======================= -->
+<section class="mxs-section mxs-lider" id="mxs-liderazgo">
+  <div class="mxs-wrap">
+    <div class="mxs-lider__grid">
+      <figure class="mxs-lider__ph">
+        <img src="https://asobares.org/wp-content/uploads/2026/02/JHONNATAN-MEJIAS-1.jpg.jpeg" alt="Jonathan Mejías, Director de MIX &amp; SHAKE" loading="lazy">
+      </figure>
+      <div>
+        <div class="mxs-rule"></div>
+        <p class="mxs-lider__rol">Liderazgo</p>
+        <h3 class="mxs-h2">Jonathan Mejías</h3>
+        <p class="mxs-lead" style="font-weight:500 !important;color:var(--mxs-humo) !important;margin-bottom:20px !important;">Director de MIX &amp; SHAKE – Clúster de Bartending de Asobares Colombia</p>
+        <p class="mxs-body" style="max-width:66ch !important;">Venezolano de nacimiento, colombiano de corazón y ciudadano del mundo. Jonathan Mejías es un profesional apasionado por la cultura de barra y por la transformación del bartending en una profesión de alto nivel. Su experiencia internacional, el trabajo con ingredientes locales y su conocimiento de las técnicas profesionales lo han convertido en referente e inspiración para nuevas generaciones. Desde MIX &amp; SHAKE lidera la construcción de una comunidad más preparada, conectada y visible.</p>
+        <a class="mxs-lider__ig" href="https://www.instagram.com/jmcocktails/" target="_blank" rel="noopener">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.9"/><circle cx="17.4" cy="6.6" r="1.2" fill="currentColor"/></svg>
+          Instagram: @jmcocktails
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= NOTICIAS Y AGENDA ======================= -->
+<section class="mxs-section mxs-noticias" id="mxs-noticias">
+  <div class="mxs-wrap">
+    <div class="mxs-noticias__head">
+      <div>
+        <div class="mxs-rule"></div>
+        <p class="mxs-lider__rol" style="color:var(--mxs-humo-45) !important;">Noticias y agenda</p>
+        <h2 class="mxs-h2">Lo que está pasando<br>detrás de la barra</h2>
+        <p class="mxs-lead" style="margin-top:20px !important;">Conoce las últimas noticias, convocatorias, competencias, capacitaciones, lanzamientos y protagonistas de la comunidad MIX &amp; SHAKE.</p>
+      </div>
+      <a href="#" class="mxs-btn mxs-btn--ghost">VER TODAS LAS NOTICIAS</a>
+    </div>
+
+    <div class="mxs-news">
+      <article class="mxs-news__c">
+        <a href="#">
+          <div class="mxs-news__img"><img src="https://asobares.org/wp-content/uploads/2026/09/Captura-de-Pantalla-2026-09-14-a-las-7.35.22.jpg" alt="" loading="lazy"></div>
+          <div class="mxs-news__b">
+            <span class="mxs-chip mxs-chip--neon">FORMACIÓN</span>
+            <h3 class="mxs-news__t">Título de la masterclass o taller más reciente</h3>
+            <p class="mxs-news__x">Entradilla breve de la publicación — se alimenta desde el blog de Asobares.</p>
+          </div>
+        </a>
+      </article>
+      <article class="mxs-news__c">
+        <a href="#">
+          <div class="mxs-news__img"><img src="https://asobares.org/wp-content/uploads/2026/09/Captura-de-Pantalla-2026-09-14-a-las-7.29.55.jpg" alt="" loading="lazy"></div>
+          <div class="mxs-news__b">
+            <span class="mxs-chip">CONVOCATORIAS</span>
+            <h3 class="mxs-news__t">Título de la convocatoria, competencia o empleo</h3>
+            <p class="mxs-news__x">Entradilla breve de la publicación — se alimenta desde el blog de Asobares.</p>
+          </div>
+        </a>
+      </article>
+      <article class="mxs-news__c">
+        <a href="#">
+          <div class="mxs-news__img"><img src="https://asobares.org/wp-content/uploads/2026/02/JHONNATAN-MEJIAS-1.jpg.jpeg" alt="" loading="lazy"></div>
+          <div class="mxs-news__b">
+            <span class="mxs-chip mxs-chip--cit">PROTAGONISTAS</span>
+            <h3 class="mxs-news__t">Perfil o historia del talento de barra destacado</h3>
+            <p class="mxs-news__x">Entradilla breve de la publicación — se alimenta desde el blog de Asobares.</p>
+          </div>
+        </a>
+      </article>
+    </div>
+
+    <!-- ---------- BAR WEEK ---------- -->
+    <div class="mxs-barweek">
+      <div>
+        <span class="mxs-chip mxs-chip--cit">AGENDA</span>
+        <h3 class="mxs-h2" style="margin-top:14px !important;">BAR WEEK Bogotá</h3>
+        <p class="mxs-body" style="max-width:64ch !important;">BAR WEEK Bogotá será una semana para celebrar, recorrer y apoyar la cultura de bares de la ciudad, conectando coctelería, gastronomía, música y experiencias en los establecimientos participantes.</p>
+        <p class="mxs-body" style="max-width:64ch !important;">Durante Bar Week, por un precio especial de $30.000, los asistentes podrán disfrutar de una experiencia creada para la ocasión: un cóctel de autor + un pasaboca acompañante, eligiendo entre las propuestas de las barras participantes.</p>
+        <p class="mxs-body" style="max-width:64ch !important;">Y esta edición tendrá un propósito especial: en el marco de EXPOBAR, parte de la movilización de Bar Week estará orientada a apoyar la recuperación de las barras y negocios afectados por el terremoto, uniendo consumidores, empresarios y marcas alrededor de nuestro sector.</p>
+        <p class="mxs-barweek__brinda">Brinda. Saborea. Baila. Celebra… y apoya.</p>
+      </div>
+      <div class="mxs-barweek__links">
+        <a class="mxs-barweek__link" href="#"><span>¿Quieres ser Host Bartender?</span><b>Inscríbete aquí</b></a>
+        <a class="mxs-barweek__link" href="#"><span>¿Tu sitio quiere ser parte del Bar Week?</span><b>Inscríbelo aquí</b></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ALIADOS ======================= -->
+<section class="mxs-section mxs-aliados" id="mxs-aliados">
+  <div class="mxs-wrap">
+    <div class="mxs-aliados__in">
+      <div>
+        <div class="mxs-rule"></div>
+        <h2 class="mxs-h2">¿Eres una marca o proveedor?</h2>
+        <figure class="mxs-aliados__foto">
+          <img src="https://asobares.org/wp-content/uploads/2026/09/Captura-de-Pantalla-2026-09-14-a-las-7.36.19.jpg" alt="Activación de marca en una barra de MIX &amp; SHAKE" loading="lazy">
+        </figure>
+      </div>
+      <div>
+        <p class="mxs-body" style="max-width:56ch !important;">Conecta tu empresa con una comunidad especializada, participa en experiencias de alto impacto y contribuye a la profesionalización de la cultura de barra en Colombia.</p>
+        <p class="mxs-body" style="max-width:56ch !important;margin-top:14px !important;">MIX &amp; SHAKE ofrece oportunidades para desarrollar formación, lanzamientos, retos, contenidos, exhibiciones, investigaciones y activaciones comerciales con propósito.</p>
+        <a href="#mxs-inscribete" class="mxs-btn mxs-btn--solid" style="margin-top:26px !important;">QUIERO SER ALIADO</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= CIERRE + FORMULARIO ======================= -->
+<section class="mxs-section mxs-cierre" id="mxs-inscribete">
+  <div class="mxs-wrap">
+    <img class="mxs-cierre__logo" src="https://asobares.org/wp-content/uploads/2026/07/Logo-Blanco.png" alt="MIX &amp; SHAKE">
+    <div class="mxs-rule"></div>
+    <h2 class="mxs-h2">Sé parte de MIX &amp; SHAKE</h2>
+    <p class="mxs-lead" style="margin-top:22px !important;">Si trabajas detrás de una barra, administras un establecimiento, representas una marca o tienes una solución para esta industria, este ecosistema también es para ti.</p>
+    <p class="mxs-cierre__frase">La barra nos conecta. El conocimiento nos eleva. MIX &amp; SHAKE nos reúne.</p>
+
+    <!-- FORMULARIO -->
+    <div class="mxs-form-wrap" id="mxsFormWrap">
+
+      <!-- ÉXITO -->
+      <div class="mxs-form-success" id="mxsSuccess">
+        <div class="mxs-form-check">✓</div>
+        <h3>¡Bienvenido a MIX &amp; SHAKE!</h3>
+        <p>Tu registro fue recibido correctamente.</p>
+        <p>Revisa tu correo — te enviamos la confirmación de vinculación a la comunidad.</p>
+      </div>
+
+      <!-- CARD DEL FORM -->
+      <div id="mxsCard">
+        <form id="mxsForm" autocomplete="off">
+
+          <span class="mxs-form-sec">Datos personales</span>
+          <div class="mxs-form-g3">
+            <div class="mxs-form-fg">
+              <label>Tipo ID <span class="mxs-form-req">*</span></label>
+              <select name="tipo_identificacion" required>
+                <option value="">Selecciona...</option>
+                <option>CÉDULA</option>
+                <option>CÉDULA DE EXTRANJERÍA</option>
+                <option>PASAPORTE</option>
+              </select>
+            </div>
+            <div class="mxs-form-fg">
+              <label>Nº Identificación <span class="mxs-form-req">*</span></label>
+              <input type="text" name="numero_identificacion" required placeholder="Ej: 1234567890" />
+            </div>
+            <div class="mxs-form-fg">
+              <label>Género <span class="mxs-form-req">*</span></label>
+              <select name="genero" required>
+                <option value="">Selecciona...</option>
+                <option>MASCULINO</option>
+                <option>FEMENINO</option>
+                <option>OTRO</option>
+                <option>NO SUMINISTRA</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mxs-form-g2">
+            <div class="mxs-form-fg">
+              <label>Nombre <span class="mxs-form-req">*</span></label>
+              <input type="text" name="nombre" required placeholder="Tu nombre" />
+            </div>
+            <div class="mxs-form-fg">
+              <label>Apellidos <span class="mxs-form-req">*</span></label>
+              <input type="text" name="apellidos" required placeholder="Tus apellidos" />
+            </div>
+          </div>
+
+          <div class="mxs-form-g2">
+            <div class="mxs-form-fg">
+              <label>Departamento <span class="mxs-form-req">*</span></label>
+              <select name="departamento" required>
+                <option value="">Selecciona...</option>
+                <option>Amazonas</option><option>Antioquia</option><option>Arauca</option>
+                <option>Atlántico</option><option>Bolívar</option><option>Boyacá</option>
+                <option>Bogotá D.C.</option><option>Caldas</option><option>Caquetá</option>
+                <option>Casanare</option><option>Cauca</option><option>Cesar</option>
+                <option>Chocó</option><option>Córdoba</option><option>Cundinamarca</option>
+                <option>Guainía</option><option>Guaviare</option><option>Huila</option>
+                <option>La Guajira</option><option>Magdalena</option><option>Meta</option>
+                <option>Nariño</option><option>Norte de Santander</option><option>Putumayo</option>
+                <option>Quindío</option><option>Risaralda</option>
+                <option>San Andrés, Providencia y Santa Catalina</option>
+                <option>Santander</option><option>Sucre</option><option>Tolima</option>
+                <option>Valle del Cauca</option><option>Vaupés</option><option>Vichada</option>
+                <option>Internacional</option>
+              </select>
+            </div>
+            <div class="mxs-form-fg">
+              <label>Ciudad <span class="mxs-form-req">*</span></label>
+              <input type="text" name="ciudad" required placeholder="Ej: Bogotá" />
+            </div>
+          </div>
+
+          <div class="mxs-form-g2">
+            <div class="mxs-form-fg">
+              <label>Teléfono Celular <span class="mxs-form-req">*</span></label>
+              <input type="tel" name="telefono" required placeholder="3001234567" maxlength="10" />
+            </div>
+            <div class="mxs-form-fg">
+              <label>Correo Electrónico <span class="mxs-form-req">*</span></label>
+              <input type="email" name="email" required placeholder="tu@correo.com" />
+            </div>
+          </div>
+
+          <div class="mxs-form-fg" style="margin-bottom:0;">
+            <label>Profesión u Oficio <span class="mxs-form-req">*</span></label>
+            <select name="profesion" required>
+              <option value="">Selecciona...</option>
+              <option>ABOGADO(A)</option><option>ADMINISTRADOR</option><option>AGENTE TURÍSTICO</option>
+              <option>ANALISTA CARRERAS AFINES</option><option>ARQUITECTO(A)</option><option>ARTISTA</option>
+              <option>ASESOR(A)</option><option>ASISTENTE</option><option>BARISTA</option>
+              <option>BARTENDER</option><option>CAJERO(A)</option><option>CEO</option>
+              <option>CHEF</option><option>COCINERO(A)</option><option>CONSULTOR(A)</option>
+              <option>CONTADOR(A)</option><option>COORDINADOR(A)</option><option>DIRECTOR(A)</option>
+              <option>DISEÑADOR(A)</option><option>DJ</option><option>DOCENTE CARRERAS AFINES</option>
+              <option>EMPRESARIO(A)</option><option>ENTIDAD-GOBIERNO</option>
+              <option>ESTUDIANTE CARRERAS AFINES</option><option>GERENTE</option>
+              <option>GERENTE DE MARCA</option><option>GREMIO</option><option>INGENIERO(A)</option>
+              <option>INGENIERO(A) DE SONIDO</option><option>JEFE DE COMPRAS</option>
+              <option>MANAGER</option><option>MARKETING</option><option>MESERO(A)</option>
+              <option>MÚSICO</option><option>OPERADOR(A) LOGÍSTICO</option>
+              <option>ORGANIZADOR(A) DE EVENTOS</option><option>PERIODISTA</option>
+              <option>PRODUCTOR(A)</option><option>PROPIETARIO(A)</option><option>PROVEEDOR(A)</option>
+              <option>RECURSOS HUMANOS</option><option>RELACIONES PÚBLICAS</option>
+              <option>REPRESENTANTE LEGAL</option><option>SOMMELIER</option>
+              <option>TÉCNICO CARRERAS AFINES</option><option>TRADUCTOR</option>
+              <option>OTRO</option><option>NO SUMINISTRA</option>
+            </select>
+          </div>
+
+          <span class="mxs-form-sec">Empresa / Establecimiento <span style="font-weight:400;color:var(--mxs-humo-45);font-size:10px;">(OPCIONAL)</span></span>
+
+          <div class="mxs-form-g2">
+            <div class="mxs-form-fg">
+              <label>Nombre o Razón Social</label>
+              <input type="text" name="empresa_nombre" placeholder="Nombre de la empresa" />
+            </div>
+            <div class="mxs-form-fg">
+              <label>NIT</label>
+              <input type="text" name="empresa_nit" placeholder="NIT empresa" />
+            </div>
+          </div>
+          <div class="mxs-form-g2">
+            <div class="mxs-form-fg">
+              <label>Dirección</label>
+              <input type="text" name="empresa_direccion" placeholder="Dirección empresa" />
+            </div>
+            <div class="mxs-form-fg">
+              <label>Teléfono Empresa</label>
+              <input type="tel" name="empresa_telefono" placeholder="Teléfono empresa" />
+            </div>
+          </div>
+          <div class="mxs-form-g3">
+            <div class="mxs-form-fg">
+              <label>Representante Legal</label>
+              <input type="text" name="empresa_representante" placeholder="Nombre representante" />
+            </div>
+            <div class="mxs-form-fg">
+              <label>Cédula Representante</label>
+              <input type="text" name="empresa_cedula_rep" placeholder="Cédula" />
+            </div>
+            <div class="mxs-form-fg">
+              <label>Correo Empresa</label>
+              <input type="email" name="empresa_email" placeholder="correo@empresa.com" />
+            </div>
+          </div>
+
+          <div class="mxs-form-err" id="mxsErr"></div>
+
+          <button type="submit" class="mxs-form-submit" id="mxsSubmit">
+            Unirme a MIX &amp; SHAKE →
+          </button>
+          <p class="mxs-form-legal">Al registrarte autorizas el uso de tus datos para gestionar tu vinculación a la comunidad MIX &amp; SHAKE de Asobares Colombia.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /.mxs-root -->
+
+<script>
+(function(){
+  'use strict';
+  var root = document.getElementById('mxs-root');
+  if(!root) return;
+
+  /* --- Ancho real del viewport --- */
+  function mxsVW(){
+    var vw = document.documentElement.clientWidth || window.innerWidth;
+    root.style.setProperty('--mxs-vw', vw + 'px');
+  }
+  mxsVW();
+  window.addEventListener('resize', mxsVW);
+  window.addEventListener('orientationchange', mxsVW);
+
+  /* --- Menú móvil --- */
+  var nav = document.getElementById('mxs-nav');
+  var toggle = document.getElementById('mxs-toggle');
+  if(toggle && nav){
+    toggle.addEventListener('click', function(){
+      var open = nav.classList.toggle('mxs-open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+
+  /* --- Wordmark del nav --- */
+  var hero = document.getElementById('mxs-top');
+  if(hero && nav){
+    if('IntersectionObserver' in window){
+      var heroIO = new IntersectionObserver(function(entries){
+        nav.classList.toggle('mxs-scrolled', !entries[0].isIntersecting);
+      }, { rootMargin:'-70px 0px 0px 0px', threshold:0 });
+      heroIO.observe(hero);
+    } else {
+      nav.classList.add('mxs-scrolled');
+    }
+  }
+
+  /* --- Scroll suave --- */
+  var links = root.querySelectorAll('a[href^="#mxs-"]');
+  Array.prototype.forEach.call(links, function(a){
+    a.addEventListener('click', function(e){
+      var id = a.getAttribute('href');
+      var target = document.querySelector(id);
+      if(!target) return;
+      e.preventDefault();
+      var offset = nav ? nav.offsetHeight : 0;
+      var y = target.getBoundingClientRect().top + window.pageYOffset - offset + 1;
+      window.scrollTo({ top:y, behavior:'smooth' });
+      if(nav){ nav.classList.remove('mxs-open'); }
+      if(toggle){ toggle.setAttribute('aria-expanded','false'); }
+    });
+  });
+
+  /* --- Link activo en el nav --- */
+  var navLinks = root.querySelectorAll('#mxs-navlinks a');
+  var sections = [];
+  Array.prototype.forEach.call(navLinks, function(a){
+    var s = document.querySelector(a.getAttribute('href'));
+    if(s) sections.push({ link:a, el:s });
+  });
+  if('IntersectionObserver' in window && sections.length){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          sections.forEach(function(s){ s.link.classList.remove('mxs-is-active'); });
+          var match = sections.filter(function(s){ return s.el === en.target; })[0];
+          if(match) match.link.classList.add('mxs-is-active');
+        }
+      });
+    }, { rootMargin:'-45% 0px -50% 0px', threshold:0 });
+    sections.forEach(function(s){ io.observe(s.el); });
+  }
+
+  /* --- Formulario de inscripción --- */
+  function initMxsForm(){
+    if(typeof window.supabase === 'undefined'){ setTimeout(initMxsForm, 100); return; }
+    var SUPABASE_URL = 'https://pbqmkodwmntujezbokgo.supabase.co';
+    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    var form     = document.getElementById('mxsForm');
+    var card     = document.getElementById('mxsCard');
+    var success  = document.getElementById('mxsSuccess');
+    var submitBtn= document.getElementById('mxsSubmit');
+    var errBox   = document.getElementById('mxsErr');
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      errBox.style.display = 'none';
+      var fd = new FormData(form);
+      var d  = Object.fromEntries(fd.entries());
+
+      if(!/^\d{10}$/.test(d.telefono)){
+        errBox.textContent = 'El teléfono debe ser un número celular colombiano de 10 dígitos (ej: 3001234567).';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+
+      var payload = {
+        tipo_identificacion:   d.tipo_identificacion,
+        numero_identificacion: d.numero_identificacion,
+        nombre:                d.nombre.trim(),
+        apellidos:             d.apellidos.trim(),
+        genero:                d.genero,
+        departamento:          d.departamento,
+        ciudad:                d.ciudad,
+        profesion:             d.profesion,
+        telefono:              d.telefono,
+        email:                 d.email.trim().toLowerCase(),
+        empresa_nombre:        d.empresa_nombre        || null,
+        empresa_nit:           d.empresa_nit           || null,
+        empresa_direccion:     d.empresa_direccion     || null,
+        empresa_telefono:      d.empresa_telefono      || null,
+        empresa_representante: d.empresa_representante || null,
+        empresa_cedula_rep:    d.empresa_cedula_rep    || null,
+        empresa_email:         d.empresa_email         || null,
+        estado: 'inscrito'
+      };
+
+      var result = await db.from('inscripciones_mix_and_shake').insert(payload);
+
+      if(result.error){
+        errBox.textContent = 'Ocurrió un error al enviar tu registro. Por favor intenta de nuevo.';
+        errBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Unirme a MIX & SHAKE →';
+        return;
+      }
+
+      fetch(SUPABASE_URL + '/functions/v1/send-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+        },
+        body: JSON.stringify({
+          email:      payload.email,
+          nombre:     payload.nombre + (payload.apellidos ? ' ' + payload.apellidos : ''),
+          evento:     'MIX & SHAKE — Comunidad de Bartending de Asobares Colombia',
+          fecha:      '',
+          hora:       '',
+          lugar:      'Comunidad digital y presencial — Asobares Colombia',
+          direccion:  '',
+          link:       'https://www.instagram.com/mixandshakeco/',
+          link_label: 'Síguenos en Instagram →',
+        })
+      });
+
+      card.style.display    = 'none';
+      success.style.display = 'block';
+      document.getElementById('mxsFormWrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+  initMxsForm();
+})();
+</script>

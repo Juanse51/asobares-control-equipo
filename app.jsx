@@ -798,6 +798,11 @@
       );
     }
 
+    // Componentes de modal de Conecta definidos fuera de App para evitar re-montaje en cada render
+    const CModalWrap = ({children,onClose}) => <div onClick={e=>e.target===e.currentTarget&&onClose()} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:3000,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>{children}</div>;
+    const CModalBox = ({title,onClose,children}) => <CModalWrap onClose={onClose}><div style={{background:'white',borderRadius:20,width:'100%',maxWidth:700,maxHeight:'90vh',display:'flex',flexDirection:'column',overflow:'hidden',boxShadow:'0 25px 60px rgba(0,0,0,0.3)'}}><div style={{padding:'18px 28px',borderBottom:'1px solid #f1f5f9',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}><h2 style={{fontSize:18,fontWeight:700,margin:0,color:'#1a1a2e'}}>{title}</h2><button onClick={onClose} style={{width:36,height:36,borderRadius:8,border:'none',background:'#f1f5f9',cursor:'pointer',fontSize:18,lineHeight:1}}>×</button></div><div style={{padding:'20px 28px',overflowY:'auto',flex:1}}>{children}</div></div></CModalWrap>;
+    const CModalBtns = ({onCancel,onSave,saveLabel}) => <div style={{display:'flex',gap:10,marginTop:20,justifyContent:'flex-end'}}><button onClick={onCancel} style={{padding:'10px 24px',borderRadius:10,border:'2px solid #e5e7eb',background:'white',fontWeight:600,cursor:'pointer'}}>Cancelar</button><button onClick={onSave} style={{padding:'10px 28px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:700,cursor:'pointer'}}>{saveLabel||'Guardar'}</button></div>;
+
     function App() {
       const [currentUser, setCurrentUser] = useState(null);
       const [users, setUsers] = useState([]);
@@ -5830,9 +5835,6 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
               const cUserOptions = users.filter(u=>u.role!=='invitado').map(u=><option key={u.id} value={u.name}>{u.name}</option>);
               const cPlatOptions = CONECTA_PLATFORMS.map(p=><option key={p} value={p}>{p}</option>);
               const cAllyOptions = <>{<option value="">Sin aliado</option>}{conectaAliados.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</>;
-              const CModalWrap = ({children,onClose}) => <div onClick={e=>e.target===e.currentTarget&&onClose()} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:3000,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>{children}</div>;
-              const CModalBox = ({title,onClose,children}) => <CModalWrap onClose={onClose}><div style={{background:'white',borderRadius:20,width:'100%',maxWidth:700,maxHeight:'90vh',display:'flex',flexDirection:'column',overflow:'hidden',boxShadow:'0 25px 60px rgba(0,0,0,0.3)'}}><div style={{padding:'18px 28px',borderBottom:'1px solid #f1f5f9',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}><h2 style={{fontSize:18,fontWeight:700,margin:0,color:'#1a1a2e'}}>{title}</h2><button onClick={onClose} style={{width:36,height:36,borderRadius:8,border:'none',background:'#f1f5f9',cursor:'pointer',fontSize:18,lineHeight:1}}>×</button></div><div style={{padding:'20px 28px',overflowY:'auto',flex:1}}>{children}</div></div></CModalWrap>;
-              const CModalBtns = ({onCancel,onSave}) => <div style={{display:'flex',gap:10,marginTop:20,justifyContent:'flex-end'}}><button onClick={onCancel} style={{padding:'10px 24px',borderRadius:10,border:'2px solid #e5e7eb',background:'white',fontWeight:600,cursor:'pointer'}}>Cancelar</button><button onClick={onSave} style={{padding:'10px 28px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:700,cursor:'pointer'}}>Guardar</button></div>;
 
               return (
                 <>

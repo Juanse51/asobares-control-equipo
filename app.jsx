@@ -1,0 +1,6546 @@
+
+    const { useState, useEffect, useRef } = React;
+
+    const SUPABASE_URL = 'https://pbqmkodwmntujezbokgo.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const playSound = () => {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.5);
+      } catch (e) {}
+    };
+
+    const AsobaresLogo = ({ width = 280 }) => (<img src="/asobares_original.png" alt="Asobares" style={{ width, height: 'auto' }} />);
+    const AsobaresLogoSmall = ({ width = 150 }) => (<img src="/asobares_blanco.png" alt="Asobares" style={{ width, height: 'auto' }} />);
+
+    const cargos = ['Dirección Ejecutiva', 'Dirección de Proyectos', 'Dirección Clúster DJ', 'Dirección Círculo Gastro', 'Dirección Contable', 'Soporte Organizacional Afiliados', 'Diseño Web', 'Community Manager & Graf', 'Dirección Jurídica', 'Presidente encargado', 'Camilo Ospina Admin'];
+    const ejesEstrategicos = ['Asobares', 'Proyectos', 'Cluster DJ', 'Círculo Gastro', 'Mi destino tu noche', 'Fontur', 'Alianza OSA', 'Asobares Medellín', 'Formación', 'Comunicaciones', 'Otro'];
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const statusLabels = {
+      'planeado': { label: 'Planeado', color: '#3b82f6', bg: '#dbeafe' },
+      'en-curso': { label: 'En Curso', color: '#f59e0b', bg: '#fef3c7' },
+      'completado': { label: 'Completado', color: '#10b981', bg: '#d1fae5' },
+      'retrasado': { label: 'Retrasado', color: '#ef4444', bg: '#fee2e2' },
+    };
+
+    const crmEstados = {
+      'nuevo': { label: 'Nuevo', color: '#3b82f6', bg: '#dbeafe' },
+      'en-revision': { label: 'En revisión', color: '#f59e0b', bg: '#fef3c7' },
+      'aceptado': { label: 'Aceptado', color: '#10b981', bg: '#d1fae5' },
+      'rechazado': { label: 'Rechazado', color: '#ef4444', bg: '#fee2e2' },
+      'showcase-programado': { label: 'Showcase programado', color: '#8b5cf6', bg: '#ede9fe' },
+    };
+
+    const docCategories = [
+      { id: 'juridica', label: 'Jurídica', color: '#E84338', bg: '#fee2e2',
+        iconPath: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
+      { id: 'cartera', label: 'Cartera', color: '#3b82f6', bg: '#dbeafe',
+        iconPath: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" },
+      { id: 'proyectos', label: 'Proyectos', color: '#f59e0b', bg: '#fef3c7',
+        iconPath: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" },
+      { id: 'logos', label: 'Logos', color: '#8b5cf6', bg: '#ede9fe',
+        iconPath: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" },
+      { id: 'alianza', label: 'Alianza', color: '#10b981', bg: '#d1fae5',
+        iconPath: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" },
+      { id: 'aliados', label: 'Aliados', color: '#0ea5e9', bg: '#e0f2fe',
+        iconPath: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" },
+      { id: 'presentaciones', label: 'Presentaciones', color: '#f43f5e', bg: '#ffe4e6',
+        iconPath: "M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" },
+    ];
+    const getDriveType = (url) => {
+      if (!url) return 'link';
+      if (url.includes('/spreadsheets/')) return 'spreadsheet';
+      if (url.includes('/file/')) return 'file';
+      if (url.includes('/folders/')) return 'folder';
+      if (url.includes('/document/')) return 'doc';
+      if (url.includes('/presentation/')) return 'slides';
+      return 'link';
+    };
+    const getDriveIcon = (tipo) => ({ folder: 'bi-folder', spreadsheet: 'bi-file-spreadsheet', file: 'bi-file-text', doc: 'bi-file-word', slides: 'bi-file-slides', link: 'bi-link-45deg' }[tipo] || 'bi-link-45deg');
+    const getDriveLabel = (tipo) => ({ folder: 'Carpeta', spreadsheet: 'Hoja de cálculo', file: 'Archivo', doc: 'Documento', slides: 'Presentación', link: 'Enlace' }[tipo] || 'Enlace');
+    const getDriveFileId = (url) => { const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/); return m ? m[1] : null; };
+    const getDrivePreviewUrl = (url) => {
+      if (!url || url.includes('/folders/')) return null;
+      const id = getDriveFileId(url);
+      if (!id) return null;
+      if (url.includes('/file/d/')) return `https://drive.google.com/file/d/${id}/preview`;
+      if (url.includes('/spreadsheets/')) return `https://docs.google.com/spreadsheets/d/${id}/preview`;
+      if (url.includes('/document/')) return `https://docs.google.com/document/d/${id}/preview`;
+      if (url.includes('/presentation/')) return `https://docs.google.com/presentation/d/${id}/preview`;
+      return null;
+    };
+    const getDriveDownloadUrl = (doc) => {
+      if (doc.tipo === 'folder') return null;
+      if (doc.url && doc.url.includes('supabase.co/storage')) return doc.url;
+      if (doc.tipo === 'file') { const id = getDriveFileId(doc.url); return id ? `https://drive.google.com/uc?export=download&id=${id}` : null; }
+      return doc.url;
+    };
+
+    // FUNCIONES PARA MANEJAR ARRAY DE RESPONSABLES
+    const getResponsables = (task) => {
+      if (!task || task.responsable == null) return [];
+      const r = task.responsable;
+      if (Array.isArray(r)) return r.map(Number).filter(n => !isNaN(n));
+      if (typeof r === 'number') return [r];
+      if (typeof r === 'string') {
+        const cleaned = r.replace(/[{}]/g, '');
+        return cleaned ? cleaned.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n)) : [];
+      }
+      return [];
+    };
+    const isUserResponsable = (task, userId) => getResponsables(task).includes(userId);
+
+    // Componente para mostrar múltiples responsables
+    const ResponsablesDisplay = ({ task, users, compact }) => {
+      const ids = getResponsables(task);
+      const respUsers = ids.map(id => users.find(u => u.id === id)).filter(Boolean);
+      if (compact) {
+        return <div style={{ display: 'flex' }}>{respUsers.slice(0,3).map((u,i) => <span key={u.id} style={{ marginLeft: i ? -8 : 0, fontSize: 18 }} title={u.name}>{u.avatar}</span>)}{respUsers.length > 3 && <span style={{ marginLeft: 4, fontSize: 10, color: '#64748b' }}>+{respUsers.length-3}</span>}</div>;
+      }
+      if (!respUsers.length) return <span style={{ color: '#94a3b8', fontSize: 12 }}>Sin asignar</span>;
+      return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>{respUsers.map(u => <span key={u.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: '#f1f5f9', borderRadius: 20, fontSize: 12 }}>{u.avatar} {u.name}</span>)}</div>;
+    };
+
+    function CertImgPreview({ imagePath }) {
+      const [url, setUrl] = React.useState(null);
+      React.useEffect(() => {
+        if (!imagePath) return;
+        const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(imagePath);
+        setUrl(publicUrl);
+      }, [imagePath]);
+      const isPdf = imagePath && imagePath.toLowerCase().endsWith('.pdf');
+      if (isPdf) return (
+        <div style={{ height: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)', borderRadius: '12px 12px 0 0', gap: 6 }}>
+          <span style={{ fontSize: 40 }}>📄</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#0284c7' }}>Carta PDF</span>
+        </div>
+      );
+      return url
+        ? <img src={url} alt="Plantilla" style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: '12px 12px 0 0', display: 'block' }} />
+        : <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', borderRadius: '12px 12px 0 0' }}><i className="bi bi-image" style={{fontSize:40}}></i></div>;
+    }
+
+    function PlantillaModal({ onSave, onClose }) {
+      const [nombre, setNombre] = React.useState('');
+      const [descripcion, setDescripcion] = React.useState('');
+      const [tipo, setTipo] = React.useState('imagen');
+      const [imageFile, setImageFile] = React.useState(null);
+      const [campos, setCampos] = React.useState(JSON.stringify([
+        {"key":"nombre_completo","label":"Nombre completo","x":50,"y":37,"fontSize":20,"fontStyle":"bold","align":"center","color":"#1a1a2e"},
+        {"key":"empresa","label":"Empresa","x":40,"y":46.5,"fontSize":12,"fontStyle":"normal","align":"left","color":"#1a1a2e"},
+        {"key":"documento","label":"Documento","x":79,"y":46.5,"fontSize":12,"fontStyle":"normal","align":"left","color":"#1a1a2e"},
+        {"key":"nombre_lote","label":"Nombre del curso","x":50,"y":53,"fontSize":12,"fontStyle":"normal","align":"center","color":"#1a1a2e"},
+        {"key":"horas","label":"Horas","x":30,"y":62,"fontSize":12,"fontStyle":"bold","align":"left","color":"#1a1a2e"},
+        {"key":"ciudad","label":"Ciudad","x":62,"y":62,"fontSize":12,"fontStyle":"normal","align":"left","color":"#1a1a2e"},
+        {"key":"dia","label":"Día","x":26,"y":68,"fontSize":12,"fontStyle":"normal","align":"left","color":"#1a1a2e"},
+        {"key":"mes","label":"Mes","x":36,"y":68,"fontSize":12,"fontStyle":"normal","align":"left","color":"#1a1a2e"},
+        {"key":"anio","label":"Año","x":46,"y":68,"fontSize":12,"fontStyle":"normal","align":"left","color":"#1a1a2e"}
+      ], null, 2));
+      const [pdfCampos, setPdfCampos] = React.useState([{ key: 'nombre_completo', x_mm: 25, y_mm: 120, fontSize: 11, fontStyle: 'normal', color: '#000000' }]);
+      const [saving, setSaving] = React.useState(false);
+      const [err, setErr] = React.useState('');
+      const st = { width: '100%', padding: '10px 12px', borderRadius: 8, border: '2px solid #e5e7eb', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' };
+      const updPdfCampo = (idx, prop, val) => setPdfCampos(prev => prev.map((c, i) => i === idx ? { ...c, [prop]: val } : c));
+      const handleSave = async () => {
+        if (!nombre.trim()) { setErr('El nombre es requerido'); return; }
+        if (!imageFile) { setErr(tipo === 'pdf' ? 'Debes seleccionar el archivo PDF' : 'Debes seleccionar una imagen'); return; }
+        let parsedCampos;
+        if (tipo === 'pdf') {
+          parsedCampos = pdfCampos;
+        } else {
+          try { parsedCampos = JSON.parse(campos); } catch { setErr('El JSON de campos no es válido'); return; }
+        }
+        setSaving(true); await onSave({ nombre: nombre.trim(), descripcion, imageFile, campos: parsedCampos }); setSaving(false);
+      };
+      const fieldKeys = ['nombre_completo','nombre','apellidos','empresa','documento','ciudad','horas','nombre_lote','dia','mes','anio'];
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, overflowY: 'auto' }}>
+          <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 640, maxHeight: '90vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', borderRadius: '20px 20px 0 0', position: 'sticky', top: 0, zIndex: 1 }}>
+              <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}>Nueva Plantilla</h2>
+              <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {err && <p style={{ color: '#E84338', fontSize: 13, background: '#fee2e2', padding: '10px 14px', borderRadius: 8 }}>{err}</p>}
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 8 }}>TIPO DE PLANTILLA</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {[['imagen','Certificado (imagen)'],['pdf','📄 Carta (PDF)']].map(([val, lbl]) => (
+                    <button key={val} onClick={() => { setTipo(val); setImageFile(null); setErr(''); }} style={{ flex: 1, padding: '10px 8px', borderRadius: 10, border: `2px solid ${tipo === val ? '#7c3aed' : '#e5e7eb'}`, background: tipo === val ? '#ede9fe' : 'white', color: tipo === val ? '#7c3aed' : '#64748b', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                  ))}
+                </div>
+              </div>
+              <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>NOMBRE *</label><input value={nombre} onChange={e => setNombre(e.target.value)} style={st} placeholder={tipo === 'pdf' ? 'ej. Carta Bienvenida Círculo Gastro' : 'ej. Certificado de Participación NTC 6496'} /></div>
+              <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>DESCRIPCIÓN</label><input value={descripcion} onChange={e => setDescripcion(e.target.value)} style={st} /></div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>{tipo === 'pdf' ? 'ARCHIVO PDF *' : 'IMAGEN DE PLANTILLA (JPG / PNG) *'}</label>
+                <input type="file" accept={tipo === 'pdf' ? '.pdf,application/pdf' : 'image/*'} onChange={e => { setImageFile(e.target.files[0]); setErr(''); }} style={{ width: '100%', fontSize: 13 }} />
+                {imageFile && <p style={{ fontSize: 12, color: '#10b981', marginTop: 6 }}>✓ {imageFile.name}</p>}
+              </div>
+              {tipo === 'imagen' && (
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4 }}>POSICIÓN DE CAMPOS (JSON)</label>
+                  <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>x e y son % del ancho/alto del certificado (0–100). Claves: nombre_completo, nombre, apellidos, empresa, documento, ciudad, horas, nombre_lote, dia, mes, anio.</p>
+                  <textarea value={campos} onChange={e => setCampos(e.target.value)} rows={10} style={{ ...st, resize: 'vertical', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.5 }} />
+                </div>
+              )}
+              {tipo === 'pdf' && (
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 8 }}>CAMPOS DE TEXTO EN EL PDF</label>
+                  <div style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd', borderRadius: 10, padding: '10px 14px', marginBottom: 10 }}>
+                    <p style={{ fontSize: 11, color: '#0369a1' }}>Página A4 vertical: <strong>210mm ancho × 297mm alto</strong>. X se mide desde la izquierda, Y desde arriba. Puedes afinar las coordenadas desde el editor después de crear la plantilla.</p>
+                  </div>
+                  {pdfCampos.map((c, idx) => (
+                    <div key={idx} style={{ background: 'white', border: '1.5px solid #e5e7eb', borderRadius: 10, padding: 14, marginBottom: 10 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                        <select value={c.key} onChange={e => updPdfCampo(idx, 'key', e.target.value)} style={{ padding: '6px 10px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13, fontWeight: 600 }}>
+                          {fieldKeys.map(k => <option key={k} value={k}>{k}</option>)}
+                        </select>
+                        {pdfCampos.length > 1 && <button onClick={() => setPdfCampos(prev => prev.filter((_, i) => i !== idx))} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: '#fee2e2', color: '#ef4444', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>× Quitar</button>}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+                        {[['x_mm','X (mm)',0,200],['y_mm','Y (mm)',0,290],['fontSize','Tamaño pt',6,60]].map(([prop, lbl, min, max]) => (
+                          <div key={prop}><label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 3 }}>{lbl}</label><input type="number" min={min} max={max} value={c[prop]} onChange={e => updPdfCampo(idx, prop, prop === 'fontSize' ? parseInt(e.target.value)||11 : parseFloat(e.target.value)||0)} style={{ width: '100%', padding: '6px 8px', border: '1.5px solid #e5e7eb', borderRadius: 6, fontSize: 12 }} /></div>
+                        ))}
+                        <div><label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 3 }}>Color</label><input type="color" value={c.color || '#000000'} onChange={e => updPdfCampo(idx, 'color', e.target.value)} style={{ width: '100%', height: 32, border: '1.5px solid #e5e7eb', borderRadius: 6, padding: 2, cursor: 'pointer' }} /></div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                        {['normal','bold'].map(fs => <button key={fs} onClick={() => updPdfCampo(idx, 'fontStyle', fs)} style={{ padding: '4px 12px', borderRadius: 6, border: `1.5px solid ${c.fontStyle===fs?'#7c3aed':'#e5e7eb'}`, background: c.fontStyle===fs?'#ede9fe':'white', color: c.fontStyle===fs?'#7c3aed':'#64748b', fontSize: 12, fontWeight: fs==='bold'?700:400, cursor: 'pointer' }}>{fs==='bold'?'Negrita':'Normal'}</button>)}
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={() => setPdfCampos(prev => [...prev, { key: 'empresa', x_mm: 25, y_mm: 130, fontSize: 11, fontStyle: 'normal', color: '#000000' }])} style={{ width: '100%', padding: '8px', borderRadius: 8, border: '1.5px dashed #7c3aed', background: 'transparent', color: '#7c3aed', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>+ Agregar otro campo</button>
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 4 }}>
+                <button onClick={onClose} style={{ padding: '11px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                <button onClick={handleSave} disabled={saving} style={{ padding: '11px 32px', borderRadius: 10, border: 'none', background: saving ? '#e5e7eb' : 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: saving ? '#94a3b8' : 'white', fontWeight: 700, cursor: saving ? 'default' : 'pointer' }}>{saving ? 'Guardando...' : 'Crear plantilla'}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function LoteModal({ plantillas, onSave, onClose }) {
+      const [nombre, setNombre] = React.useState('');
+      const [plantillaId, setPlantillaId] = React.useState(plantillas[0]?.id || '');
+      const [ciudad, setCiudad] = React.useState('');
+      const [fecha, setFecha] = React.useState('');
+      const [horas, setHoras] = React.useState('');
+      const [descripcion, setDescripcion] = React.useState('');
+      const st = { width: '100%', padding: '10px 12px', borderRadius: 8, border: '2px solid #e5e7eb', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' };
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 520 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', borderRadius: '20px 20px 0 0' }}>
+              <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}>Nuevo Lote de Certificados</h2>
+              <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>NOMBRE DEL EVENTO / CURSO *</label><input value={nombre} onChange={e => setNombre(e.target.value)} style={st} placeholder="ej. Capacitación NTC 6496 · Bogotá" /></div>
+              <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>PLANTILLA *</label>
+                <select value={plantillaId} onChange={e => setPlantillaId(e.target.value)} style={st}>{plantillas.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>CIUDAD</label><input value={ciudad} onChange={e => setCiudad(e.target.value)} style={st} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>FECHA</label><input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={st} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>HORAS</label><input type="number" min="1" value={horas} onChange={e => setHoras(e.target.value)} style={st} /></div>
+              </div>
+              <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>DESCRIPCIÓN</label><textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} rows={2} style={{ ...st, resize: 'vertical' }} /></div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 4 }}>
+                <button onClick={onClose} style={{ padding: '11px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                <button onClick={() => { if (nombre.trim() && plantillaId) onSave({ nombre: nombre.trim(), plantilla_id: plantillaId, ciudad, fecha: fecha || null, horas: horas ? parseInt(horas) : null, descripcion, estado: 'borrador' }); }} style={{ padding: '11px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Crear lote</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function EditLoteModal({ lote, plantillas, onSave, onClose }) {
+      const [nombre, setNombre] = React.useState(lote.nombre || '');
+      const [plantillaId, setPlantillaId] = React.useState(lote.plantilla_id || '');
+      const [ciudad, setCiudad] = React.useState(lote.ciudad || '');
+      const [fecha, setFecha] = React.useState(lote.fecha || '');
+      const [horas, setHoras] = React.useState(lote.horas != null ? String(lote.horas) : '');
+      const [descripcion, setDescripcion] = React.useState(lote.descripcion || '');
+      const st = { width: '100%', padding: '10px 12px', borderRadius: 8, border: '2px solid #e5e7eb', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' };
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 520 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', borderRadius: '20px 20px 0 0' }}>
+              <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}><i className="bi bi-pencil-square"></i> Editar Lote</h2>
+              <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>NOMBRE DEL EVENTO / CURSO *</label><input value={nombre} onChange={e => setNombre(e.target.value)} style={st} /></div>
+              <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>PLANTILLA</label><select value={plantillaId} onChange={e => setPlantillaId(e.target.value)} style={st}>{plantillas.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select></div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>CIUDAD</label><input value={ciudad} onChange={e => setCiudad(e.target.value)} style={st} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>FECHA</label><input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={st} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>HORAS</label><input type="number" min="1" value={horas} onChange={e => setHoras(e.target.value)} style={st} /></div>
+              </div>
+              <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>DESCRIPCIÓN</label><textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} rows={2} style={{ ...st, resize: 'vertical' }} /></div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 4 }}>
+                <button onClick={onClose} style={{ padding: '11px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                <button onClick={() => { if (nombre.trim()) onSave({ nombre: nombre.trim(), plantilla_id: plantillaId || null, ciudad: ciudad || null, fecha: fecha || null, horas: horas ? parseInt(horas) : null, descripcion: descripcion || null }); }} style={{ padding: '11px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function PersonaModal({ loteId, onSave, onClose }) {
+      const [nombre, setNombre] = React.useState('');
+      const [apellidos, setApellidos] = React.useState('');
+      const [empresa, setEmpresa] = React.useState('');
+      const [documento, setDocumento] = React.useState('');
+      const [email, setEmail] = React.useState('');
+      const st = { width: '100%', padding: '10px 12px', borderRadius: 8, border: '2px solid #e5e7eb', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' };
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 480 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', borderRadius: '20px 20px 0 0' }}>
+              <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}>Agregar Participante</h2>
+              <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>NOMBRE *</label><input value={nombre} onChange={e => setNombre(e.target.value)} style={st} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>APELLIDOS</label><input value={apellidos} onChange={e => setApellidos(e.target.value)} style={st} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>EMPRESA</label><input value={empresa} onChange={e => setEmpresa(e.target.value)} style={st} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>DOCUMENTO</label><input value={documento} onChange={e => setDocumento(e.target.value)} style={st} /></div>
+                <div style={{ gridColumn: '1/-1' }}><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>EMAIL *</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} style={st} /></div>
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8 }}>
+                <button onClick={onClose} style={{ padding: '11px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                <button onClick={() => { if (nombre.trim() && email.trim()) onSave({ lote_id: loteId, nombre: nombre.trim(), apellidos, empresa, documento, email: email.trim().toLowerCase(), estado: 'pendiente' }); }} style={{ padding: '11px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Agregar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function CertPreviewModal({ persona, lote, plantilla, onDownload, onSaveToPlantilla, onGenerarTodos, batchPersonas, onClose }) {
+      const [campos, setCampos] = React.useState(() => JSON.parse(JSON.stringify(plantilla.campos || [])));
+      const [selKey, setSelKey] = React.useState(null);
+      const [containerW, setContainerW] = React.useState(700);
+      const [downloading, setDownloading] = React.useState(false);
+      const [savingPlantilla, setSavingPlantilla] = React.useState(false);
+      const [pdfRendered, setPdfRendered] = React.useState(false);
+      const imgRef = React.useRef(null);
+      const dragging = React.useRef(null);
+      const pdfCanvasRef = React.useRef(null);
+
+      const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(plantilla.imagen_path);
+      const isPdfTipo = plantilla.imagen_path && plantilla.imagen_path.toLowerCase().endsWith('.pdf');
+
+      const fechaObj = lote.fecha ? new Date(lote.fecha + 'T12:00:00') : null;
+      const realVals = {
+        nombre_completo: [persona.nombre, persona.apellidos].filter(Boolean).join(' '),
+        nombre: persona.nombre || '',
+        apellidos: persona.apellidos || '',
+        empresa: persona.empresa || '',
+        documento: persona.documento || '',
+        nombre_lote: lote.nombre || '',
+        horas: lote.horas != null ? String(lote.horas) : '',
+        ciudad: lote.ciudad || '',
+        dia: fechaObj ? String(fechaObj.getDate()) : '',
+        mes: fechaObj ? fechaObj.toLocaleString('es-CO', { month: 'long' }) : '',
+        anio: fechaObj ? String(fechaObj.getFullYear()) : '',
+      };
+      const fieldLabels = { nombre_completo: 'Nombre completo', nombre: 'Nombre', apellidos: 'Apellidos', empresa: 'Empresa', documento: 'Documento', nombre_lote: 'Nombre del lote', horas: 'Horas', ciudad: 'Ciudad', dia: 'Día', mes: 'Mes', anio: 'Año' };
+
+      React.useEffect(() => {
+        if (isPdfTipo || !imgRef.current) return;
+        const obs = new ResizeObserver(entries => setContainerW(entries[0].contentRect.width));
+        obs.observe(imgRef.current);
+        return () => obs.disconnect();
+      }, [isPdfTipo]);
+
+      React.useEffect(() => {
+        if (!isPdfTipo || !window.pdfjsLib) return;
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        (async () => {
+          try {
+            const pdf = await window.pdfjsLib.getDocument(publicUrl + '?t=' + Date.now()).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 2 });
+            const canvas = pdfCanvasRef.current;
+            if (!canvas) return;
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+            setPdfRendered(true);
+          } catch(e) { console.error('PDF preview error:', e); }
+        })();
+      }, [isPdfTipo, publicUrl]);
+
+      const ptToPx = pt => pt * (25.4 / 72) * (containerW / 297);
+      const ptToPxPdf = pt => pt * (25.4 / 72) * (imgRef.current ? imgRef.current.getBoundingClientRect().width / 210 : 3);
+      const alignOffset = align => align === 'center' ? '-50%, -50%' : align === 'right' ? '-100%, -50%' : '0, -50%';
+
+      const moveCampo = (clientX, clientY) => {
+        if (!dragging.current || !imgRef.current) return;
+        const rect = imgRef.current.getBoundingClientRect();
+        if (isPdfTipo) {
+          const x_mm = Math.round(Math.max(0, Math.min(210, ((clientX - rect.left) / rect.width) * 210)) * 10) / 10;
+          const y_mm = Math.round(Math.max(0, Math.min(297, ((clientY - rect.top) / rect.height) * 297)) * 10) / 10;
+          setCampos(prev => prev.map(c => c.key === dragging.current ? { ...c, x_mm, y_mm } : c));
+        } else {
+          const x = Math.round(Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100)) * 10) / 10;
+          const y = Math.round(Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100)) * 10) / 10;
+          setCampos(prev => prev.map(c => c.key === dragging.current ? { ...c, x, y } : c));
+        }
+      };
+      const upd = (key, prop, val) => setCampos(prev => prev.map(c => c.key === key ? { ...c, [prop]: val } : c));
+
+      const posProps = isPdfTipo
+        ? [['x_mm','X — desde izq. (mm)',0,200],['y_mm','Y — desde arriba (mm)',0,290]]
+        : [['x','X — horizontal',0,100],['y','Y — vertical',0,100]];
+
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,10,20,0.92)', zIndex: 300, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 20px', background: '#0f0f1a', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ color: 'white', fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{batchPersonas ? `Previsualización del lote — ${lote.nombre}` : `Vista previa — ${realVals.nombre_completo}`}</p>
+              <p style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>{batchPersonas ? `Muestra: ${realVals.nombre_completo}. Ajusta posiciones y tamaños — se aplicarán a los ${batchPersonas.length} documentos al generar.` : 'Arrastra los textos o usa los controles para ajustar. Los cambios no afectan la plantilla salvo que uses "Guardar en plantilla".'}</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+              <button onClick={async () => { setSavingPlantilla(true); await onSaveToPlantilla(campos); setSavingPlantilla(false); }} style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(124,58,237,0.2)', color: '#c4b5fd', border: '1px solid rgba(124,58,237,0.4)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>{savingPlantilla ? 'Guardando...' : 'Guardar en plantilla'}</button>
+              {batchPersonas ? (
+                <button onClick={async () => { setDownloading(true); await onGenerarTodos(campos); setDownloading(false); onClose(); }} style={{ padding: '8px 18px', borderRadius: 8, background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: downloading ? 'default' : 'pointer', opacity: downloading ? 0.7 : 1 }}>{downloading ? 'Iniciando...' : `⚡ Generar todos (${batchPersonas.length})`}</button>
+              ) : (
+                <button onClick={async () => { setDownloading(true); await onDownload(campos); setDownloading(false); }} style={{ padding: '8px 18px', borderRadius: 8, background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: downloading ? 'default' : 'pointer', opacity: downloading ? 0.7 : 1 }}>{downloading ? 'Generando...' : '📥 Descargar PDF'}</button>
+              )}
+              <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.08)', color: '#94a3b8', fontSize: 22, cursor: 'pointer', lineHeight: 1, flexShrink: 0 }}>×</button>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, overflow: 'auto', padding: '14px 16px', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+            <div style={{ flex: '1 1 500px', minWidth: 0 }}>
+              <div ref={imgRef}
+                style={{ position: 'relative', userSelect: 'none', borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', cursor: 'default', touchAction: 'none', ...(isPdfTipo ? { aspectRatio: '210/297', background: '#e2e8f0' } : {}) }}
+                onMouseMove={e => moveCampo(e.clientX, e.clientY)}
+                onMouseUp={() => { dragging.current = null; }}
+                onMouseLeave={() => { dragging.current = null; }}
+                onTouchMove={e => { e.preventDefault(); moveCampo(e.touches[0].clientX, e.touches[0].clientY); }}
+                onTouchEnd={() => { dragging.current = null; }}
+              >
+                {isPdfTipo ? (
+                  <>
+                    {!pdfRendered && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#64748b', fontSize: 13 }}>Cargando vista previa...</p></div>}
+                    <canvas ref={pdfCanvasRef} style={{ width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }} />
+                  </>
+                ) : (
+                  <img src={publicUrl} alt="Certificado" style={{ width: '100%', display: 'block', pointerEvents: 'none' }} />
+                )}
+                {campos.map(c => {
+                  const val = realVals[c.key];
+                  if (!val) return null;
+                  const fsPx = isPdfTipo ? ptToPxPdf(c.fontSize || 11) : ptToPx(c.fontSize || 12);
+                  const isSel = selKey === c.key;
+                  const posStyle = isPdfTipo
+                    ? { left: `${(c.x_mm||0)/210*100}%`, top: `${(c.y_mm||0)/297*100}%`, transform: 'translate(0,-50%)' }
+                    : { left: `${c.x}%`, top: `${c.y}%`, transform: `translate(${alignOffset(c.align)})` };
+                  return (
+                    <div key={c.key}
+                      onMouseDown={e => { e.preventDefault(); e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }}
+                      onTouchStart={e => { e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }}
+                      onClick={() => setSelKey(k => k === c.key ? null : c.key)}
+                      style={{ position: 'absolute', ...posStyle, cursor: 'grab', zIndex: 10, touchAction: 'none', lineHeight: 1 }}
+                    >
+                      <span style={{ display: 'block', fontSize: `${fsPx}px`, fontWeight: c.fontStyle==='bold'?700:400, color: c.color||'#000', fontFamily: 'Helvetica, Arial, sans-serif', whiteSpace: 'nowrap', outline: isSel?'2px solid #7c3aed':'1.5px dashed rgba(124,58,237,0.3)', outlineOffset: 2, borderRadius: 2, padding: '0 2px', background: isSel?'rgba(124,58,237,0.07)': isPdfTipo?'rgba(255,255,255,0.7)':'transparent' }}>
+                        {String(val).toUpperCase()}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ flex: '0 0 256px', minWidth: 200 }}>
+              <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.09)' }}>
+                <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Campos — haz clic para editar</p>
+                </div>
+                <div style={{ maxHeight: 'calc(90vh - 130px)', overflowY: 'auto' }}>
+                  {campos.map(c => {
+                    const hasVal = !!realVals[c.key];
+                    const coord = isPdfTipo ? `${c.x_mm||0}mm,${c.y_mm||0}mm` : `${c.x||0},${c.y||0}`;
+                    return (
+                      <div key={c.key} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: selKey===c.key?'rgba(124,58,237,0.12)':'transparent' }}>
+                        <div onClick={() => setSelKey(k => k===c.key?null:c.key)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 14px', cursor: 'pointer' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                            <div style={{ width: 7, height: 7, borderRadius: '50%', background: selKey===c.key?'#a78bfa':hasVal?'rgba(124,58,237,0.6)':'#334155', flexShrink: 0 }} />
+                            <span style={{ fontSize: 12, fontWeight: 600, color: hasVal?'#e2e8f0':'#475569' }}>{fieldLabels[c.key]||c.key}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <span style={{ fontSize: 10, color: '#475569', fontFamily: 'monospace' }}>{coord}</span>
+                            <button onClick={e => { e.stopPropagation(); setCampos(prev => prev.filter(f=>f.key!==c.key)); if(selKey===c.key) setSelKey(null); }} style={{ width: 18, height: 18, borderRadius: 4, border: 'none', background: 'rgba(239,68,68,0.18)', color: '#f87171', fontSize: 13, lineHeight: 1, cursor: 'pointer', flexShrink: 0, padding: 0 }}>×</button>
+                          </div>
+                        </div>
+                        {selKey===c.key && (
+                          <div style={{ padding: '0 14px 11px', display: 'flex', flexDirection: 'column', gap: 8 }} onClick={e => e.stopPropagation()}>
+                            {posProps.map(([prop, label, min, max]) => (
+                              <div key={prop}>
+                                <label style={{ fontSize: 9, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</label>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                  <input type="range" min={min} max={max} step={0.5} value={c[prop]||0} onChange={e => upd(c.key, prop, parseFloat(e.target.value))} style={{ flex: 1, accentColor: '#7c3aed' }} />
+                                  <input type="number" min={min} max={max} step={0.5} value={c[prop]||0} onChange={e => upd(c.key, prop, parseFloat(e.target.value)||0)} style={{ width: 48, padding: '3px 4px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 5, fontSize: 11, textAlign: 'center', background: 'rgba(0,0,0,0.4)', color: 'white' }} />
+                                </div>
+                              </div>
+                            ))}
+                            <div style={{ display: 'flex', gap: 7 }}>
+                              <div style={{ flex: 1 }}><label style={{ fontSize:9, fontWeight:700, color:'#64748b', display:'block', marginBottom:3, textTransform:'uppercase', letterSpacing:'0.06em' }}>Tamaño</label><input type="number" min={6} max={60} value={c.fontSize||12} onChange={e => upd(c.key,'fontSize',parseInt(e.target.value)||12)} style={{ width:'100%', padding:'5px 6px', border:'1px solid rgba(255,255,255,0.12)', borderRadius:5, fontSize:11, background:'rgba(0,0,0,0.4)', color:'white' }} /></div>
+                              <div style={{ flex: 1 }}><label style={{ fontSize:9, fontWeight:700, color:'#64748b', display:'block', marginBottom:3, textTransform:'uppercase', letterSpacing:'0.06em' }}>Color</label><input type="color" value={c.color||'#000000'} onChange={e => upd(c.key,'color',e.target.value)} style={{ width:'100%', height:28, border:'1px solid rgba(255,255,255,0.12)', borderRadius:5, cursor:'pointer', padding:1, background:'transparent' }} /></div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              {['normal','bold'].map(fs => <button key={fs} onClick={() => upd(c.key,'fontStyle',fs)} style={{ flex:1, padding:'4px 2px', border:`1.5px solid ${c.fontStyle===fs?'#7c3aed':'rgba(255,255,255,0.12)'}`, borderRadius:5, background:c.fontStyle===fs?'rgba(124,58,237,0.35)':'transparent', color:c.fontStyle===fs?'#c4b5fd':'#64748b', fontSize:10, fontWeight:fs==='bold'?700:400, cursor:'pointer' }}>{fs==='bold'?'Negrita':'Normal'}</button>)}
+                              {!isPdfTipo && [['left','←'],['center','⊡'],['right','→']].map(([al,icon]) => <button key={al} onClick={() => upd(c.key,'align',al)} style={{ flex:1, padding:'4px 2px', border:`1.5px solid ${c.align===al?'#7c3aed':'rgba(255,255,255,0.12)'}`, borderRadius:5, background:c.align===al?'rgba(124,58,237,0.35)':'transparent', color:c.align===al?'#c4b5fd':'#64748b', fontSize:11, cursor:'pointer' }}>{icon}</button>)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {(() => {
+                    const used = campos.map(c=>c.key); const avail = Object.keys(fieldLabels).filter(k=>!used.includes(k)); if(!avail.length) return null;
+                    const newCampo = isPdfTipo ? { x_mm:25, y_mm:130, fontSize:11, fontStyle:'normal', color:'#000000' } : { x:50, y:50, fontSize:12, fontStyle:'normal', align:'center', color:'#000000' };
+                    return (<div style={{ padding:'10px 14px', borderTop:'1px solid rgba(255,255,255,0.07)' }}><p style={{ fontSize:9, fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>+ Agregar campo</p><select defaultValue="" onChange={e => { const k=e.target.value; if(!k) return; setCampos(prev=>[...prev,{key:k,...newCampo}]); e.target.value=''; }} style={{ width:'100%', padding:'6px 8px', borderRadius:6, border:'1px solid rgba(255,255,255,0.12)', background:'rgba(0,0,0,0.4)', color:'white', fontSize:12, cursor:'pointer' }}><option value="">Seleccionar...</option>{avail.map(k=><option key={k} value={k}>{fieldLabels[k]}</option>)}</select></div>);
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function CertEditor({ plantilla, campos, onCamposChange, onSave, onBack }) {
+      const imgRef = React.useRef(null);
+      const dragging = React.useRef(null);
+      const pdfContainerRef = React.useRef(null);
+      const pdfCanvasRef = React.useRef(null);
+      const draggingPdf = React.useRef(null);
+      const [selKey, setSelKey] = React.useState(null);
+      const [containerW, setContainerW] = React.useState(600);
+      const [pdfRendered, setPdfRendered] = React.useState(false);
+      const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(plantilla.imagen_path);
+      const isPdfTipo = plantilla.imagen_path && plantilla.imagen_path.toLowerCase().endsWith('.pdf');
+
+      React.useEffect(() => {
+        if (isPdfTipo || !imgRef.current) return;
+        const obs = new ResizeObserver(entries => setContainerW(entries[0].contentRect.width));
+        obs.observe(imgRef.current);
+        return () => obs.disconnect();
+      }, [isPdfTipo]);
+
+      React.useEffect(() => {
+        if (!isPdfTipo || !window.pdfjsLib) return;
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        (async () => {
+          try {
+            const pdf = await window.pdfjsLib.getDocument(publicUrl + '?t=' + Date.now()).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 2 });
+            const canvas = pdfCanvasRef.current;
+            if (!canvas) return;
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+            setPdfRendered(true);
+          } catch(e) { console.error('PDF preview error:', e); }
+        })();
+      }, [isPdfTipo, publicUrl]);
+
+      const sampleVals = { nombre_completo: 'JUAN SEBASTIÁN HENAO MENESES', nombre: 'JUAN SEBASTIÁN', apellidos: 'HENAO MENESES', empresa: 'Asobares Colombia', documento: '1.073.234.567', nombre_lote: 'Gestión Gastronómica para Bares', horas: '40', ciudad: 'Bogotá', dia: '28', mes: 'julio', anio: '2026' };
+      const fieldLabels = { nombre_completo: 'Nombre completo', empresa: 'Empresa', documento: 'Documento', nombre_lote: 'Nombre del lote', horas: 'Horas', ciudad: 'Ciudad', dia: 'Día', mes: 'Mes', anio: 'Año' };
+      const fieldLabelsAll = { nombre_completo: 'Nombre completo', nombre: 'Nombre', apellidos: 'Apellidos', empresa: 'Empresa', documento: 'Documento', nombre_lote: 'Nombre del lote', horas: 'Horas', ciudad: 'Ciudad', dia: 'Día', mes: 'Mes', anio: 'Año' };
+
+      const ptToPx = pt => pt * (25.4 / 72) * (containerW / 297);
+      const ptToPxPdf = pt => pt * (25.4 / 72) * (pdfContainerRef.current ? pdfContainerRef.current.getBoundingClientRect().width / 210 : 3);
+
+      const moveCampo = (clientX, clientY) => {
+        if (!dragging.current || !imgRef.current) return;
+        const rect = imgRef.current.getBoundingClientRect();
+        const x = Math.round(Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100)) * 10) / 10;
+        const y = Math.round(Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100)) * 10) / 10;
+        onCamposChange(campos.map(c => c.key === dragging.current ? { ...c, x, y } : c));
+      };
+      const movePdfCampo = (clientX, clientY) => {
+        if (!draggingPdf.current || !pdfContainerRef.current) return;
+        const rect = pdfContainerRef.current.getBoundingClientRect();
+        const x_mm = Math.round(Math.max(0, Math.min(210, ((clientX - rect.left) / rect.width) * 210)) * 10) / 10;
+        const y_mm = Math.round(Math.max(0, Math.min(297, ((clientY - rect.top) / rect.height) * 297)) * 10) / 10;
+        onCamposChange(campos.map(c => c.key === draggingPdf.current ? { ...c, x_mm, y_mm } : c));
+      };
+      const upd = (key, prop, val) => onCamposChange(campos.map(c => c.key === key ? { ...c, [prop]: val } : c));
+      const alignOffset = (align) => align === 'center' ? '-50%, -50%' : align === 'right' ? '-100%, -50%' : '0, -50%';
+
+      if (isPdfTipo) return (
+        <div>
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+            <button onClick={onBack} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>← Plantillas</button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Editor — {plantilla.nombre}</h2>
+              <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Arrastra los campos sobre la carta. Haz clic en un campo para editar sus propiedades.</p>
+            </div>
+            <button onClick={() => onSave(campos)} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer', flexShrink: 0 }}><i className="bi bi-floppy"></i> Guardar cambios</button>
+          </div>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            <div style={{ flex: '1 1 360px', minWidth: 0 }}>
+              <div
+                ref={pdfContainerRef}
+                style={{ position: 'relative', userSelect: 'none', borderRadius: 12, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', cursor: 'default', touchAction: 'none', background: '#e2e8f0', aspectRatio: '210/297' }}
+                onMouseMove={e => movePdfCampo(e.clientX, e.clientY)}
+                onMouseUp={() => { draggingPdf.current = null; }}
+                onMouseLeave={() => { draggingPdf.current = null; }}
+                onTouchMove={e => { e.preventDefault(); movePdfCampo(e.touches[0].clientX, e.touches[0].clientY); }}
+                onTouchEnd={() => { draggingPdf.current = null; }}
+              >
+                {!pdfRendered && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#64748b', fontSize: 13 }}>Cargando vista previa...</p></div>}
+                <canvas ref={pdfCanvasRef} style={{ width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }} />
+                {campos.map(c => {
+                  const fsPx = ptToPxPdf(c.fontSize || 11);
+                  const isSel = selKey === c.key;
+                  return (
+                    <div key={c.key}
+                      onMouseDown={e => { e.preventDefault(); e.stopPropagation(); draggingPdf.current = c.key; setSelKey(c.key); }}
+                      onTouchStart={e => { e.stopPropagation(); draggingPdf.current = c.key; setSelKey(c.key); }}
+                      onClick={() => setSelKey(k => k === c.key ? null : c.key)}
+                      style={{ position: 'absolute', left: `${(c.x_mm||0)/210*100}%`, top: `${(c.y_mm||0)/297*100}%`, transform: 'translate(0,-50%)', cursor: 'grab', zIndex: 10, touchAction: 'none', lineHeight: 1 }}
+                    >
+                      <span style={{ display: 'block', fontSize: `${fsPx}px`, fontWeight: c.fontStyle==='bold'?700:400, color: c.color||'#000', fontFamily: 'Helvetica, Arial, sans-serif', whiteSpace: 'nowrap', outline: isSel?'2px solid #7c3aed':'1.5px dashed rgba(124,58,237,0.5)', outlineOffset: 2, borderRadius: 2, padding: '0 2px', background: isSel?'rgba(124,58,237,0.08)':'rgba(255,255,255,0.6)' }}>
+                        {sampleVals[c.key] ?? c.key}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div style={{ flex: '0 0 280px', minWidth: 260 }}>
+              <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', background: '#faf5ff' }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed' }}>CAMPOS — haz clic para editar</p>
+                </div>
+                <div style={{ maxHeight: '65vh', overflowY: 'auto' }}>
+                  {campos.map(c => (
+                    <div key={c.key} style={{ borderBottom: '1px solid #f1f5f9', background: selKey===c.key?'#faf5ff':'white', transition: 'background 0.15s' }}>
+                      <div onClick={() => setSelKey(k => k===c.key?null:c.key)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 16px', cursor: 'pointer' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: selKey===c.key?'#7c3aed':'#cbd5e1', flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>{fieldLabelsAll[c.key]||c.key}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' }}>{c.x_mm}mm,{c.y_mm}mm</span>
+                          <button onClick={e => { e.stopPropagation(); onCamposChange(campos.filter(f=>f.key!==c.key)); if(selKey===c.key) setSelKey(null); }} style={{ width: 20, height: 20, borderRadius: 4, border: 'none', background: '#fee2e2', color: '#ef4444', fontSize: 13, lineHeight: 1, cursor: 'pointer', flexShrink: 0, padding: 0 }}>×</button>
+                        </div>
+                      </div>
+                      {selKey===c.key && (
+                        <div style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }} onClick={e => e.stopPropagation()}>
+                          {[['x_mm','X — desde la izquierda (mm)',0,200],['y_mm','Y — desde arriba (mm)',0,290]].map(([prop,label,min,max]) => (
+                            <div key={prop}>
+                              <label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</label>
+                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <input type="range" min={min} max={max} step={0.5} value={c[prop]||0} onChange={e => upd(c.key, prop, parseFloat(e.target.value))} style={{ flex: 1, accentColor: '#7c3aed' }} />
+                                <input type="number" min={min} max={max} step={0.5} value={c[prop]||0} onChange={e => upd(c.key, prop, parseFloat(e.target.value)||0)} style={{ width: 54, padding: '4px 6px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 12, textAlign: 'center' }} />
+                              </div>
+                            </div>
+                          ))}
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            <div style={{ flex: 1 }}><label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tamaño (pt)</label><input type="number" min={6} max={60} value={c.fontSize||11} onChange={e => upd(c.key,'fontSize',parseInt(e.target.value)||11)} style={{ width: '100%', padding: '6px 8px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 12 }} /></div>
+                            <div style={{ flex: 1 }}><label style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Color</label><input type="color" value={c.color||'#000000'} onChange={e => upd(c.key,'color',e.target.value)} style={{ width: '100%', height: 34, border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer', padding: 2 }} /></div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            {['normal','bold'].map(fs => <button key={fs} onClick={() => upd(c.key,'fontStyle',fs)} style={{ flex: 1, padding: '5px 4px', border: `1.5px solid ${c.fontStyle===fs?'#7c3aed':'#e5e7eb'}`, borderRadius: 6, background: c.fontStyle===fs?'#ede9fe':'white', color: c.fontStyle===fs?'#7c3aed':'#64748b', fontSize: 11, fontWeight: fs==='bold'?700:400, cursor: 'pointer' }}>{fs==='bold'?'Negrita':'Normal'}</button>)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {(() => { const used=campos.map(c=>c.key); const avail=Object.keys(fieldLabelsAll).filter(k=>!used.includes(k)); if(!avail.length) return null; return (<div style={{ padding:'12px 16px', borderTop:'2px solid #f1f5f9' }}><p style={{ fontSize:10, fontWeight:700, color:'#7c3aed', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8 }}>+ Agregar campo</p><select defaultValue="" onChange={e => { const k=e.target.value; if(!k) return; onCamposChange([...campos,{key:k,x_mm:25,y_mm:130,fontSize:11,fontStyle:'normal',color:'#000000'}]); e.target.value=''; }} style={{ width:'100%', padding:'8px 10px', borderRadius:8, border:'2px solid #e5e7eb', fontSize:13, background:'white', cursor:'pointer' }}><option value="">Seleccionar campo...</option>{avail.map(k=><option key={k} value={k}>{fieldLabelsAll[k]}</option>)}</select></div>); })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      return (
+        <div>
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+            <button onClick={onBack} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>← Plantillas</button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Editor — {plantilla.nombre}</h2>
+              <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Arrastra los textos de ejemplo sobre la imagen. Haz clic en un campo para editar sus propiedades.</p>
+            </div>
+            <button onClick={() => onSave(campos)} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer', flexShrink: 0 }}><i className="bi bi-floppy"></i> Guardar cambios</button>
+          </div>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            <div style={{ flex: '1 1 420px', minWidth: 0 }}>
+              <div ref={imgRef} style={{ position: 'relative', userSelect: 'none', borderRadius: 12, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', cursor: 'default', touchAction: 'none' }}
+                onMouseMove={e => moveCampo(e.clientX, e.clientY)} onMouseUp={() => { dragging.current = null; }} onMouseLeave={() => { dragging.current = null; }}
+                onTouchMove={e => { e.preventDefault(); moveCampo(e.touches[0].clientX, e.touches[0].clientY); }} onTouchEnd={() => { dragging.current = null; }}>
+                <img src={publicUrl} alt="Plantilla" style={{ width: '100%', display: 'block', pointerEvents: 'none' }} />
+                {campos.map(c => {
+                  const fsPx = ptToPx(c.fontSize || 12);
+                  const isSel = selKey === c.key;
+                  return (
+                    <div key={c.key} onMouseDown={e => { e.preventDefault(); e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }} onTouchStart={e => { e.stopPropagation(); dragging.current = c.key; setSelKey(c.key); }} onClick={() => setSelKey(k => k === c.key ? null : c.key)}
+                      style={{ position: 'absolute', left: `${c.x}%`, top: `${c.y}%`, transform: `translate(${alignOffset(c.align)})`, cursor: 'grab', zIndex: 10, touchAction: 'none', lineHeight: 1 }}>
+                      <span style={{ display: 'block', fontSize: `${fsPx}px`, fontWeight: c.fontStyle==='bold'?700:400, color: c.color||'#000', fontFamily: 'Helvetica, Arial, sans-serif', whiteSpace: 'nowrap', outline: isSel?'2px solid #7c3aed':'1.5px dashed rgba(124,58,237,0.4)', outlineOffset: 2, borderRadius: 2, padding: '0 2px', background: isSel?'rgba(124,58,237,0.08)':'transparent' }}>
+                        {sampleVals[c.key] ?? c.key}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div style={{ flex: '0 0 280px', minWidth: 260 }}>
+              <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', background: '#faf5ff' }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed' }}>CAMPOS — haz clic para editar</p>
+                </div>
+                <div style={{ maxHeight: '65vh', overflowY: 'auto' }}>
+                  {campos.map(c => (
+                    <div key={c.key} style={{ borderBottom: '1px solid #f1f5f9', background: selKey===c.key?'#faf5ff':'white', transition: 'background 0.15s' }}>
+                      <div onClick={() => setSelKey(k => k===c.key?null:c.key)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 16px', cursor: 'pointer' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: selKey===c.key?'#7c3aed':'#cbd5e1', flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>{fieldLabels[c.key]||c.key}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' }}>x:{c.x} y:{c.y}</span>
+                          <button onClick={e => { e.stopPropagation(); onCamposChange(campos.filter(f=>f.key!==c.key)); if(selKey===c.key) setSelKey(null); }} style={{ width: 20, height: 20, borderRadius: 4, border: 'none', background: '#fee2e2', color: '#ef4444', fontSize: 13, lineHeight: 1, cursor: 'pointer', flexShrink: 0, padding: 0 }}>×</button>
+                        </div>
+                      </div>
+                      {selKey===c.key && (
+                        <div style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }} onClick={e => e.stopPropagation()}>
+                          <div><label style={{ fontSize:10, fontWeight:700, color:'#64748b', display:'block', marginBottom:4, textTransform:'uppercase', letterSpacing:'0.05em' }}>X — Posición horizontal</label><div style={{ display:'flex', gap:8, alignItems:'center' }}><input type="range" min={0} max={100} step={0.5} value={c.x} onChange={e => upd(c.key,'x',parseFloat(e.target.value))} style={{ flex:1, accentColor:'#7c3aed' }} /><input type="number" min={0} max={100} step={0.5} value={c.x} onChange={e => upd(c.key,'x',parseFloat(e.target.value)||0)} style={{ width:54, padding:'4px 6px', border:'1px solid #e5e7eb', borderRadius:6, fontSize:12, textAlign:'center' }} /></div></div>
+                          <div><label style={{ fontSize:10, fontWeight:700, color:'#64748b', display:'block', marginBottom:4, textTransform:'uppercase', letterSpacing:'0.05em' }}>Y — Posición vertical</label><div style={{ display:'flex', gap:8, alignItems:'center' }}><input type="range" min={0} max={100} step={0.5} value={c.y} onChange={e => upd(c.key,'y',parseFloat(e.target.value))} style={{ flex:1, accentColor:'#7c3aed' }} /><input type="number" min={0} max={100} step={0.5} value={c.y} onChange={e => upd(c.key,'y',parseFloat(e.target.value)||0)} style={{ width:54, padding:'4px 6px', border:'1px solid #e5e7eb', borderRadius:6, fontSize:12, textAlign:'center' }} /></div></div>
+                          <div style={{ display:'flex', gap:10 }}>
+                            <div style={{ flex:1 }}><label style={{ fontSize:10, fontWeight:700, color:'#64748b', display:'block', marginBottom:4, textTransform:'uppercase', letterSpacing:'0.05em' }}>Tamaño (pt)</label><input type="number" min={6} max={60} value={c.fontSize||12} onChange={e => upd(c.key,'fontSize',parseInt(e.target.value)||12)} style={{ width:'100%', padding:'6px 8px', border:'1px solid #e5e7eb', borderRadius:6, fontSize:12 }} /></div>
+                            <div style={{ flex:1 }}><label style={{ fontSize:10, fontWeight:700, color:'#64748b', display:'block', marginBottom:4, textTransform:'uppercase', letterSpacing:'0.05em' }}>Color</label><input type="color" value={c.color||'#000000'} onChange={e => upd(c.key,'color',e.target.value)} style={{ width:'100%', height:34, border:'1px solid #e5e7eb', borderRadius:6, cursor:'pointer', padding:2 }} /></div>
+                          </div>
+                          <div style={{ display:'flex', gap:8 }}>
+                            <div style={{ flex:1 }}><label style={{ fontSize:10, fontWeight:700, color:'#64748b', display:'block', marginBottom:4, textTransform:'uppercase', letterSpacing:'0.05em' }}>Estilo</label><div style={{ display:'flex', gap:4 }}>{['normal','bold'].map(fs => <button key={fs} onClick={() => upd(c.key,'fontStyle',fs)} style={{ flex:1, padding:'5px 4px', border:`1.5px solid ${c.fontStyle===fs?'#7c3aed':'#e5e7eb'}`, borderRadius:6, background:c.fontStyle===fs?'#ede9fe':'white', color:c.fontStyle===fs?'#7c3aed':'#64748b', fontSize:11, fontWeight:fs==='bold'?700:400, cursor:'pointer' }}>{fs==='bold'?'Negrita':'Normal'}</button>)}</div></div>
+                            <div style={{ flex:1 }}><label style={{ fontSize:10, fontWeight:700, color:'#64748b', display:'block', marginBottom:4, textTransform:'uppercase', letterSpacing:'0.05em' }}>Alinear</label><div style={{ display:'flex', gap:3 }}>{[['left','←'],['center','⊡'],['right','→']].map(([al,icon]) => <button key={al} onClick={() => upd(c.key,'align',al)} style={{ flex:1, padding:'5px 2px', border:`1.5px solid ${c.align===al?'#7c3aed':'#e5e7eb'}`, borderRadius:6, background:c.align===al?'#ede9fe':'white', color:c.align===al?'#7c3aed':'#64748b', fontSize:12, cursor:'pointer' }}>{icon}</button>)}</div></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {(() => { const used=campos.map(c=>c.key); const avail=Object.keys(fieldLabels).filter(k=>!used.includes(k)); if(!avail.length) return null; return (<div style={{ padding:'12px 16px', borderTop:'2px solid #f1f5f9' }}><p style={{ fontSize:10, fontWeight:700, color:'#7c3aed', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8 }}>+ Agregar campo</p><select defaultValue="" onChange={e => { const k=e.target.value; if(!k) return; onCamposChange([...campos,{key:k,x:50,y:50,fontSize:12,fontStyle:'normal',align:'left',color:'#1a1a2e'}]); e.target.value=''; }} style={{ width:'100%', padding:'8px 10px', borderRadius:8, border:'2px solid #e5e7eb', fontSize:13, background:'white', cursor:'pointer' }}><option value="">Seleccionar campo...</option>{avail.map(k=><option key={k} value={k}>{fieldLabels[k]}</option>)}</select></div>); })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function CrmEditModal({ record, onSave, onClose }) {
+      const [nombre, setNombre] = React.useState(record.nombre || '');
+      const [apellidos, setApellidos] = React.useState(record.apellidos || '');
+      const [nombreArtistico, setNombreArtistico] = React.useState(record.nombre_artistico || '');
+      const [cargo, setCargo] = React.useState(record.cargo || '');
+      const [genero, setGenero] = React.useState(record.genero || '');
+      const [email, setEmail] = React.useState(record.email || '');
+      const [telefono, setTelefono] = React.useState(record.telefono || '');
+      const [ciudad, setCiudad] = React.useState(record.ciudad_departamento || '');
+      const [precioShow, setPrecioShow] = React.useState(record.precio_show || '');
+      const [resena, setResena] = React.useState(record.resena || '');
+      const [estado, setEstado] = React.useState(record.estado || 'nuevo');
+      const inp = { width: '100%', padding: '10px 12px', borderRadius: 8, border: '2px solid #e5e7eb', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' };
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 640, maxHeight: '90vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #E84338, #c41e16)', borderRadius: '20px 20px 0 0' }}>
+              <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}><i className="bi bi-pencil-square"></i> Editar inscrito</h2>
+              <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ gridColumn: '1 / -1' }}><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>NOMBRE ARTÍSTICO</label><input value={nombreArtistico} onChange={e => setNombreArtistico(e.target.value)} style={inp} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>NOMBRE</label><input value={nombre} onChange={e => setNombre(e.target.value)} style={inp} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>APELLIDOS</label><input value={apellidos} onChange={e => setApellidos(e.target.value)} style={inp} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>EMAIL</label><input value={email} onChange={e => setEmail(e.target.value)} type="email" style={inp} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>TELÉFONO</label><input value={telefono} onChange={e => setTelefono(e.target.value)} style={inp} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>CARGO</label><input value={cargo} onChange={e => setCargo(e.target.value)} style={inp} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>GÉNERO</label><input value={genero} onChange={e => setGenero(e.target.value)} style={inp} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>CIUDAD / DEPARTAMENTO</label><input value={ciudad} onChange={e => setCiudad(e.target.value)} style={inp} /></div>
+                <div><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>PRECIO SHOW</label><input value={precioShow} onChange={e => setPrecioShow(e.target.value)} style={inp} /></div>
+                <div style={{ gridColumn: '1 / -1' }}><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>ESTADO</label><select value={estado} onChange={e => setEstado(e.target.value)} style={inp}>{Object.entries(crmEstados).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div>
+                <div style={{ gridColumn: '1 / -1' }}><label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 5 }}>RESEÑA</label><textarea value={resena} onChange={e => setResena(e.target.value)} rows={3} style={{ ...inp, resize: 'vertical' }} /></div>
+              </div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8 }}>
+                <button onClick={onClose} style={{ padding: '11px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                <button onClick={() => onSave({ nombre, apellidos, nombre_artistico: nombreArtistico, cargo, genero, email: email.trim().toLowerCase(), telefono, ciudad_departamento: ciudad, precio_show: precioShow, resena, estado })} style={{ padding: '11px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [currentUser, setCurrentUser] = useState(null);
+      const [users, setUsers] = useState([]);
+      const [tasks, setTasks] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [view, setView] = useState('dashboard');
+      const [showTaskModal, setShowTaskModal] = useState(false);
+      const [showUserModal, setShowUserModal] = useState(false);
+      const [editingUser, setEditingUser] = useState(null);
+      const [editingTask, setEditingTask] = useState(null);
+      const [filterMes, setFilterMes] = useState('all');
+      const [filterEstado, setFilterEstado] = useState('all');
+      const [filterUsuario, setFilterUsuario] = useState('all');
+      const [searchTerm, setSearchTerm] = useState('');
+      const [selectedMonth, setSelectedMonth] = useState(meses[new Date().getMonth()]);
+      const [loginUsername, setLoginUsername] = useState('');
+      const [loginPassword, setLoginPassword] = useState('');
+      const [loginError, setLoginError] = useState('');
+      const [showLoginPassword, setShowLoginPassword] = useState(false);
+      const [notification, setNotification] = useState(null);
+      const [draggedTask, setDraggedTask] = useState(null);
+      const [notifications, setNotifications] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('asobares_notifs') || '[]'); } catch { return []; }
+      });
+      const [showNotifPanel, setShowNotifPanel] = useState(false);
+      const [bellShaking, setBellShaking] = useState(false);
+      const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+      const [sidebarOpen, setSidebarOpen] = useState(false);
+      const usersRef = useRef([]);
+      const [docs, setDocs] = useState([]);
+      const [docsLoading, setDocsLoading] = useState(false);
+      const [docNav, setDocNav] = useState({ cat: null, subcat: null });
+      const [docSearch, setDocSearch] = useState('');
+      const [docPreview, setDocPreview] = useState(null);
+      const [shareDocId, setShareDocId] = useState(null);
+      const [savingDoc, setSavingDoc] = useState(false);
+      const [conectaView, setConectaView] = useState('panorama');
+      const [conectaAliados, setConectaAliados] = useState([]);
+      const [conectaPropuestas, setConectaPropuestas] = useState([]);
+      const [conectaTareas, setConectaTareas] = useState([]);
+      const [conectaSolicitudes, setConectaSolicitudes] = useState([]);
+      const [conectaPlanes, setConectaPlanes] = useState([]);
+      const [conectaRadar, setConectaRadar] = useState([]);
+      const [conectaActLog, setConectaActLog] = useState([]);
+      const [conectaCargando, setConectaCargando] = useState(false);
+      const [conectaPropDetalle, setConectaPropDetalle] = useState(null);
+      const [conectaModalAlly, setConectaModalAlly] = useState(undefined);
+      const [conectaModalProp, setConectaModalProp] = useState(undefined);
+      const [conectaModalTarea, setConectaModalTarea] = useState(undefined);
+      const [conectaModalSolicitud, setConectaModalSolicitud] = useState(undefined);
+      const [conectaModalPlan, setConectaModalPlan] = useState(undefined);
+      const [conectaModalRadar, setConectaModalRadar] = useState(undefined);
+      const [conectaPropSearch, setConectaPropSearch] = useState('');
+      const [conectaMostrarTareasTodas, setConectaMostrarTareasTodas] = useState(false);
+      const [conectaFinanzas, setConectaFinanzas] = useState([]);
+      const [conectaPanoramaPlat, setConectaPanoramaPlat] = useState('');
+      const [conectaPanoramaMes, setConectaPanoramaMes] = useState(() => new Date().toISOString().slice(0,7));
+      const [conectaModalFinanza, setConectaModalFinanza] = useState(undefined);
+      const [showAddDocModal, setShowAddDocModal] = useState(false);
+      const [crmData, setCrmData] = useState([]);
+      const [crmLoading, setCrmLoading] = useState(false);
+      const [crmSearch, setCrmSearch] = useState('');
+      const [crmFiltroEstado, setCrmFiltroEstado] = useState('all');
+      const [crmDetalle, setCrmDetalle] = useState(null);
+      const [crmEditando, setCrmEditando] = useState(null);
+      const [fonturData, setFonturData] = useState([]);
+      const [fonturLoading, setFonturLoading] = useState(false);
+      const [fonturError, setFonturError] = useState(null);
+      const [fonturSearch, setFonturSearch] = useState('');
+      const [fonturDpto, setFonturDpto] = useState('all');
+      const [fonturCargo, setFonturCargo] = useState('all');
+      const [fonturDetalle, setFonturDetalle] = useState(null);
+      const [registrosData, setRegistrosData] = useState([]);
+      const [registrosLoading, setRegistrosLoading] = useState(false);
+      const [registrosError, setRegistrosError] = useState(null);
+      const [registrosSearch, setRegistrosSearch] = useState('');
+      const [registrosFiltroForm, setRegistrosFiltroForm] = useState('all');
+      const [registrosDetalle, setRegistrosDetalle] = useState(null);
+      const [registrosEditando, setRegistrosEditando] = useState(null);
+      const [gastroData, setGastroData] = useState([]);
+      const [gastroLoading, setGastroLoading] = useState(false);
+      const [gastroSearch, setGastroSearch] = useState('');
+      const [gastroFiltroEstado, setGastroFiltroEstado] = useState('all');
+      const [gastroDetalle, setGastroDetalle] = useState(null);
+      const [gastroNotasEdit, setGastroNotasEdit] = useState('');
+      const [gastroEditModal, setGastroEditModal] = useState(false);
+      const [gastroEditData, setGastroEditData] = useState({});
+      const [aevLabData, setAevLabData] = useState([]);
+      const [aevLabLoading, setAevLabLoading] = useState(false);
+      const [aevLabSearch, setAevLabSearch] = useState('');
+      const [aevLabFiltroEstado, setAevLabFiltroEstado] = useState('all');
+      const [aevLabDetalle, setAevLabDetalle] = useState(null);
+      const [aevLabNotasEdit, setAevLabNotasEdit] = useState('');
+      const [aevLabEditModal, setAevLabEditModal] = useState(false);
+      const [aevLabEditData, setAevLabEditData] = useState({});
+      const [aevBoot2Data, setAevBoot2Data] = useState([]);
+      const [aevBoot2Loading, setAevBoot2Loading] = useState(false);
+      const [aevBoot2Search, setAevBoot2Search] = useState('');
+      const [aevBoot2FiltroEstado, setAevBoot2FiltroEstado] = useState('all');
+      const [aevBoot2Detalle, setAevBoot2Detalle] = useState(null);
+      const [aevBoot2NotasEdit, setAevBoot2NotasEdit] = useState('');
+      const [aevBoot2EditModal, setAevBoot2EditModal] = useState(false);
+      const [aevBoot2EditData, setAevBoot2EditData] = useState({});
+      const [aevSegData, setAevSegData] = useState([]);
+      const [aevSegLoading, setAevSegLoading] = useState(false);
+      const [aevSegSearch, setAevSegSearch] = useState('');
+      const [aevSegFiltroEstado, setAevSegFiltroEstado] = useState('all');
+      const [aevSegDetalle, setAevSegDetalle] = useState(null);
+      const [aevSegNotasEdit, setAevSegNotasEdit] = useState('');
+      const [aevSegEditModal, setAevSegEditModal] = useState(false);
+      const [aevSegEditData, setAevSegEditData] = useState({});
+      const [armeniaCapData, setArmeniaCapData] = useState([]);
+      const [armeniaCapLoading, setArmeniaCapLoading] = useState(false);
+      const [armeniaCapSearch, setArmeniaCapSearch] = useState('');
+      const [armeniaCapFiltroEstado, setArmeniaCapFiltroEstado] = useState('all');
+      const [armeniaCapDetalle, setArmeniaCapDetalle] = useState(null);
+      const [armeniaCapNotasEdit, setArmeniaCapNotasEdit] = useState('');
+      const [armeniaCapEditModal, setArmeniaCapEditModal] = useState(false);
+      const [armeniaCapEditData, setArmeniaCapEditData] = useState({});
+
+      const [armeniaDiagData, setArmeniaDiagData] = useState([]);
+      const [armeniaDiagLoading, setArmeniaDiagLoading] = useState(false);
+      const [armeniaDiagSearch, setArmeniaDiagSearch] = useState('');
+      const [armeniaDiagFiltroEstado, setArmeniaDiagFiltroEstado] = useState('all');
+      const [armeniaDiagDetalle, setArmeniaDiagDetalle] = useState(null);
+      const [armeniaDiagNotasEdit, setArmeniaDiagNotasEdit] = useState('');
+      const [armeniaDiagEditModal, setArmeniaDiagEditModal] = useState(false);
+      const [armeniaDiagEditData, setArmeniaDiagEditData] = useState({});
+
+      const [armeniaAsistData, setArmeniaAsistData] = useState([]);
+      const [armeniaAsistLoading, setArmeniaAsistLoading] = useState(false);
+      const [armeniaAsistSearch, setArmeniaAsistSearch] = useState('');
+      const [armeniaAsistFiltroEstado, setArmeniaAsistFiltroEstado] = useState('all');
+      const [armeniaAsistDetalle, setArmeniaAsistDetalle] = useState(null);
+      const [armeniaAsistNotasEdit, setArmeniaAsistNotasEdit] = useState('');
+
+      const [armeniaGuiaData, setArmeniaGuiaData] = useState([]);
+      const [armeniaGuiaLoading, setArmeniaGuiaLoading] = useState(false);
+      const [armeniaGuiaSearch, setArmeniaGuiaSearch] = useState('');
+      const [armeniaGuiaFiltroEstado, setArmeniaGuiaFiltroEstado] = useState('all');
+      const [armeniaGuiaDetalle, setArmeniaGuiaDetalle] = useState(null);
+      const [armeniaGuiaNotasEdit, setArmeniaGuiaNotasEdit] = useState('');
+
+      const [armeniaPostGastroData, setArmeniaPostGastroData] = useState([]);
+      const [armeniaPostGastroLoading, setArmeniaPostGastroLoading] = useState(false);
+      const [armeniaPostGastroSearch, setArmeniaPostGastroSearch] = useState('');
+      const [armeniaPostGastroFiltroEstado, setArmeniaPostGastroFiltroEstado] = useState('all');
+      const [armeniaPostGastroDetalle, setArmeniaPostGastroDetalle] = useState(null);
+      const [armeniaPostGastroNotasEdit, setArmeniaPostGastroNotasEdit] = useState('');
+
+      const [barWeekData, setBarWeekData] = useState([]);
+      const [barWeekLoading, setBarWeekLoading] = useState(false);
+      const [barWeekSearch, setBarWeekSearch] = useState('');
+      const [barWeekFiltroEstado, setBarWeekFiltroEstado] = useState('all');
+      const [barWeekDetalle, setBarWeekDetalle] = useState(null);
+      const [barWeekNotasEdit, setBarWeekNotasEdit] = useState('');
+
+      const [espaciosCorpData, setEspaciosCorpData] = useState([]);
+      const [espaciosCorpLoading, setEspaciosCorpLoading] = useState(false);
+      const [espaciosCorpSearch, setEspaciosCorpSearch] = useState('');
+      const [espaciosCorpFiltroEstado, setEspaciosCorpFiltroEstado] = useState('all');
+      const [espaciosCorpDetalle, setEspaciosCorpDetalle] = useState(null);
+      const [espaciosCorpNotasEdit, setEspaciosCorpNotasEdit] = useState('');
+
+      const [ecosistemaDjData, setEcosistemaDjData] = useState([]);
+      const [ecosistemaDjLoading, setEcosistemaDjLoading] = useState(false);
+      const [ecosistemaDjSearch, setEcosistemaDjSearch] = useState('');
+      const [ecosistemaDjFiltroEstado, setEcosistemaDjFiltroEstado] = useState('all');
+
+      const [mixShakeData, setMixShakeData] = useState([]);
+      const [mixShakeLoading, setMixShakeLoading] = useState(false);
+      const [mixShakeSearch, setMixShakeSearch] = useState('');
+      const [mixShakeFiltroEstado, setMixShakeFiltroEstado] = useState('all');
+      const [mixShakeDetalle, setMixShakeDetalle] = useState(null);
+      const [mixShakeNotasEdit, setMixShakeNotasEdit] = useState('');
+
+const [circuloGastroData, setCirculoGastroData] = useState([]);
+const [circuloGastroLoading, setCirculoGastroLoading] = useState(false);
+const [circuloGastroSearch, setCirculoGastroSearch] = useState('');
+const [circuloGastroFiltroEstado, setCirculoGastroFiltroEstado] = useState('all');
+const [circuloGastroDetalle, setCirculoGastroDetalle] = useState(null);
+const [circuloGastroNotasEdit, setCirculoGastroNotasEdit] = useState('');
+
+const [clusterDjData, setClusterDjData] = useState([]);
+const [clusterDjLoading, setClusterDjLoading] = useState(false);
+const [clusterDjSearch, setClusterDjSearch] = useState('');
+const [clusterDjFiltroEstado, setClusterDjFiltroEstado] = useState('all');
+const [clusterDjDetalle, setClusterDjDetalle] = useState(null);
+const [clusterDjNotasEdit, setClusterDjNotasEdit] = useState('');
+
+const [baseTotalCount, setBaseTotalCount] = useState(null);
+const [baseTotalSearch, setBaseTotalSearch] = useState('');
+const [baseTotalResults, setBaseTotalResults] = useState([]);
+const [baseTotalLoading, setBaseTotalLoading] = useState(false);
+const [baseTotalPage, setBaseTotalPage] = useState(0);
+const [baseTotalExporting, setBaseTotalExporting] = useState(false);
+
+const [afiliadosData, setAfiliadosData] = useState([]);
+const [afiliadosLoading, setAfiliadosLoading] = useState(false);
+const [afiliadosSearch, setAfiliadosSearch] = useState('');
+const [afiliadosFiltroEstado, setAfiliadosFiltroEstado] = useState('all');
+const [afiliadosDetalle, setAfiliadosDetalle] = useState(null);
+const [afiliadosNotasEdit, setAfiliadosNotasEdit] = useState('');
+const [afiliadosExporting, setAfiliadosExporting] = useState(false);
+
+      const [certPlantillas, setCertPlantillas] = useState([]);
+      const [certLotes, setCertLotes] = useState([]);
+      const [certPersonas, setCertPersonas] = useState([]);
+      const [certLoading, setCertLoading] = useState(false);
+      const [certSubView, setCertSubView] = useState('hub');
+      const [certLoteActivo, setCertLoteActivo] = useState(null);
+      const [certGenerando, setCertGenerando] = useState(false);
+      const [certProgreso, setCertProgreso] = useState({ done: 0, total: 0 });
+      const [certEnviando, setCertEnviando] = useState(false);
+      const [certProgresoEnvio, setCertProgresoEnvio] = useState({ done: 0, total: 0 });
+      const [certDescargando, setCertDescargando] = useState(false);
+      const [certProgresoDescarga, setCertProgresoDescarga] = useState({ done: 0, total: 0 });
+      const [zipDescargando, setZipDescargando] = useState(null);
+      const [certImportando, setCertImportando] = useState(false);
+      const [certEditLote, setCertEditLote] = useState(null);
+      const [certShowPlantillaModal, setCertShowPlantillaModal] = useState(false);
+      const [certShowLoteModal, setCertShowLoteModal] = useState(false);
+      const [certShowPersonaModal, setCertShowPersonaModal] = useState(false);
+      const [certPlantillaActiva, setCertPlantillaActiva] = useState(null);
+      const [certEditorCampos, setCertEditorCampos] = useState([]);
+      const [certPreviewData, setCertPreviewData] = useState(null);
+      const [certInformeOpen, setCertInformeOpen] = useState(false);
+
+      useEffect(() => { loadData(); }, []);
+      useEffect(() => { usersRef.current = users; }, [users]);
+      useEffect(() => { localStorage.setItem('asobares_notifs', JSON.stringify(notifications)); }, [notifications]);
+      useEffect(() => { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); }, []);
+      useEffect(() => { const onResize = () => { const m = window.innerWidth < 768; setIsMobile(m); if (!m) setSidebarOpen(false); }; window.addEventListener('resize', onResize); return () => window.removeEventListener('resize', onResize); }, []);
+      useEffect(() => { if (isMobile) setSidebarOpen(false); }, [view]);
+      useEffect(() => { if (view === 'docs') loadDocs(); }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-aev') loadCrm(); }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'fontur') loadFontur(); }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'registros') loadRegistros(); }, [view]);
+      useEffect(() => { if (view === 'certificaciones') { setCertSubView('hub'); loadCert(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-gastro') { setGastroDetalle(null); loadGastromarketing(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-aev-lab') { setAevLabDetalle(null); loadAevLab(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-aev-bootcamp2') { setAevBoot2Detalle(null); loadAevBoot2(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-aev-seguridad') { setAevSegDetalle(null); loadAevSeg(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-armenia-cap') { setArmeniaCapDetalle(null); loadArmeniaCap(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-armenia-diag') { setArmeniaDiagDetalle(null); loadArmeniaDiag(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-armenia-asistencia') { setArmeniaAsistDetalle(null); loadArmeniaAsist(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-armenia-guia') { setArmeniaGuiaDetalle(null); loadArmeniaGuia(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-armenia-postgastro') { setArmeniaPostGastroDetalle(null); loadArmeniaPostGastro(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-bar-week') { setBarWeekDetalle(null); loadBarWeek(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-espacios-corp') { setEspaciosCorpDetalle(null); loadEspaciosCorp(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-ecosistema-dj') { loadEcosistemaDj(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-mix-shake') { setMixShakeDetalle(null); loadMixShake(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-circulo-gastro') { setCirculoGastroDetalle(null); loadCirculoGastro(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-cluster-dj') { setClusterDjDetalle(null); loadClusterDj(); } }, [view]);
+      useEffect(() => { if (view === 'crm-base-total') { loadBaseTotalPage(0, ''); } else if (view === 'crm') { loadBaseTotalCount(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-afiliados') { setAfiliadosDetalle(null); loadAfiliados(); } }, [view]);
+      useEffect(() => { if (view === 'conecta') loadConecta(); }, [view]);
+
+      useEffect(() => {
+        if (!currentUser) return;
+        const channel = supabase.channel('db-changes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tareas' }, (payload) => {
+          const t = payload.new;
+          const resps = getResponsables(t);
+          if (resps.includes(currentUser.id) && t.creado_por !== currentUser.id) {
+            const from = usersRef.current.find(u => u.id === t.creado_por);
+            const msg = `${from?.name || 'Alguien'} te asignó: "${t.proyecto}"`;
+            setNotifications(prev => [{ id: Date.now(), msg, from: from?.name, avatar: from?.avatar || '👤', task: t.proyecto, time: new Date().toISOString(), read: false }, ...prev].slice(0, 50));
+            setBellShaking(true);
+            setTimeout(() => setBellShaking(false), 500);
+            playSound();
+            // Notificación del navegador - funciona en cualquier pestaña
+            if ('Notification' in window) {
+              if (Notification.permission === 'granted') {
+                const notif = new Notification('Nueva tarea asignada - Asobares', { 
+                  body: msg, 
+                  icon: '/asobares_original.png',
+                  badge: '/asobares_original.png',
+                  tag: 'asobares-task-' + t.id,
+                  renotify: true,
+                  requireInteraction: true,
+                  silent: false
+                });
+                notif.onclick = () => { window.focus(); notif.close(); };
+              } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(perm => {
+                  if (perm === 'granted') {
+                    new Notification('Nueva tarea asignada - Asobares', { body: msg, icon: '/asobares_original.png' });
+                  }
+                });
+              }
+            }
+          }
+          loadData();
+        }).on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, () => loadData()).subscribe();
+        return () => supabase.removeChannel(channel);
+      }, [currentUser]);
+
+      const loadData = async () => {
+        setLoading(true);
+        try {
+          const { data: u } = await supabase.from('usuarios').select('*').order('id');
+          const { data: t } = await supabase.from('tareas').select('*').order('id', { ascending: false });
+          setUsers(u || []);
+          setTasks(t || []);
+          const saved = localStorage.getItem('asobares_user');
+          if (saved) { const user = JSON.parse(saved); const fresh = u?.find(x => x.id === user.id); if (fresh) setCurrentUser(fresh); }
+        } catch (e) { console.error(e); }
+        setLoading(false);
+      };
+
+      const showNotif = (msg, type = 'success') => { setNotification({ msg, type }); setTimeout(() => setNotification(null), 3000); };
+      const handleLogin = () => {
+        const u = loginUsername.trim().toLowerCase();
+        const p = loginPassword.trim();
+        const user = users.find(x => (x.username?.toLowerCase() === u || x.email?.toLowerCase() === u) && x.password === p);
+        if (user) { setCurrentUser(user); localStorage.setItem('asobares_user', JSON.stringify(user)); setLoginError(''); showNotif(`¡Bienvenido, ${user.name}!`); if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); }
+        else setLoginError('Usuario o contraseña incorrectos');
+      };
+      const handleLogout = () => { setCurrentUser(null); localStorage.removeItem('asobares_user'); setView('dashboard'); };
+
+      const handleSaveTask = async (data) => {
+        try {
+          const taskData = { mes: data.mes, cargo: data.cargo, responsable: data.responsables, proyecto: data.proyecto, eje_estrategico: data.ejeEstrategico, fecha_inicio: data.fechaInicio, fecha_fin: data.fechaFin, estado: data.estado, descripcion: data.descripcion };
+          if (editingTask) { 
+            await supabase.from('tareas').update(taskData).eq('id', editingTask.id); 
+            showNotif('Tarea actualizada'); 
+          } else { 
+            taskData.creado_por = currentUser.id; 
+            await supabase.from('tareas').insert(taskData); 
+            // Enviar emails a los responsables (excepto al creador)
+            const responsablesIds = data.responsables.filter(id => id !== currentUser.id);
+            for (const respId of responsablesIds) {
+              const resp = users.find(u => u.id === respId);
+              if (resp?.email) {
+                fetch(`${SUPABASE_URL}/functions/v1/send-task-notification`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+                  body: JSON.stringify({ to: resp.email, toName: resp.name, fromName: currentUser.name, proyecto: data.proyecto, descripcion: data.descripcion, fechaFin: data.fechaFin })
+                }).catch(e => console.log('Error enviando email:', e));
+              }
+            }
+            showNotif('Tarea creada'); 
+          }
+          await loadData(); setShowTaskModal(false); setEditingTask(null);
+        } catch (e) { console.error(e); showNotif('Error al guardar', 'error'); }
+      };
+
+      const handleDeleteTask = async (id) => { if (confirm('¿Eliminar tarea?')) { await supabase.from('tareas').delete().eq('id', id); await loadData(); showNotif('Tarea eliminada'); } };
+
+      const handleSaveUser = async (data) => {
+        try {
+          if (editingUser) {
+            const upd = { name: data.name, username: data.username, email: data.email, cargo: data.cargo, avatar: data.avatar, role: data.role };
+            if (data.password) upd.password = data.password;
+            await supabase.from('usuarios').update(upd).eq('id', editingUser.id);
+            if (currentUser.id === editingUser.id) { const u = { ...currentUser, ...upd }; setCurrentUser(u); localStorage.setItem('asobares_user', JSON.stringify(u)); }
+            showNotif('Usuario actualizado');
+          } else { await supabase.from('usuarios').insert({ username: data.username, name: data.name, email: data.email, password: data.password, role: data.role || 'user', cargo: data.cargo, avatar: data.avatar || '👤' }); showNotif('Usuario creado'); }
+          await loadData(); setShowUserModal(false); setEditingUser(null);
+        } catch (e) { showNotif('Error al guardar', 'error'); }
+      };
+
+      const handleDeleteUser = async (id) => { if (id === currentUser.id) return showNotif('No puedes eliminarte', 'error'); if (confirm('¿Eliminar usuario?')) { await supabase.from('usuarios').delete().eq('id', id); await loadData(); showNotif('Usuario eliminado'); } };
+
+      const loadDocs = async () => {
+        setDocsLoading(true);
+        try {
+          const { data, error } = await supabase.from('documentos').select('*').order('categoria').order('subcategoria').order('nombre');
+          if (!error) setDocs(data || []);
+        } catch (e) { console.error(e); }
+        setDocsLoading(false);
+      };
+      const handleAddDoc = async (data) => {
+        setSavingDoc(true);
+        try {
+          const tipo = getDriveType(data.url);
+          const { error } = await supabase.from('documentos').insert({ categoria: data.categoria, subcategoria: data.subcategoria || null, nombre: data.nombre, url: data.url, tipo, descripcion: data.descripcion || null, agregado_por: currentUser.id, agregado_por_nombre: currentUser.name });
+          if (error) throw error;
+          showNotif('Recurso agregado correctamente');
+          setShowAddDocModal(false);
+          await loadDocs();
+        } catch (e) { showNotif('Error al agregar recurso', 'error'); console.error(e); }
+        setSavingDoc(false);
+      };
+      const handleDeleteDoc = async (id) => {
+        if (!confirm('¿Eliminar este recurso?')) return;
+        const { error } = await supabase.from('documentos').delete().eq('id', id);
+        if (error) showNotif('Error al eliminar', 'error');
+        else { showNotif('Recurso eliminado'); await loadDocs(); }
+      };
+      const loadCrm = async () => {
+        setCrmLoading(true);
+        const { data } = await supabase.from('artistas_area_en_vivo').select('*').order('creado_en', { ascending: false });
+        setCrmData(data || []);
+        setCrmLoading(false);
+      };
+      const updateEstadoCrm = async (id, estado) => {
+        await supabase.from('artistas_area_en_vivo').update({ estado }).eq('id', id);
+        await loadCrm();
+        showNotif('Estado actualizado');
+      };
+      const deleteCrm = async (id) => {
+        if (!window.confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+        await supabase.from('artistas_area_en_vivo').delete().eq('id', id);
+        setCrmDetalle(null);
+        await loadCrm();
+        showNotif('Registro eliminado');
+      };
+      const saveCrmEdit = async (id, campos) => {
+        await supabase.from('artistas_area_en_vivo').update(campos).eq('id', id);
+        await loadCrm();
+        const updated = { ...crmDetalle, ...campos };
+        setCrmDetalle(updated);
+        setCrmEditando(null);
+        showNotif('Registro actualizado');
+      };
+      const exportCrmExcel = () => {
+        const filtered = crmData.filter(r => {
+          if (crmFiltroEstado !== 'all' && r.estado !== crmFiltroEstado) return false;
+          const q = crmSearch.toLowerCase();
+          if (q && !r.nombre_artistico?.toLowerCase().includes(q) && !r.nombre?.toLowerCase().includes(q) && !r.email?.toLowerCase().includes(q)) return false;
+          return true;
+        });
+        const headers = ['Nombre Artístico','Nombre','Apellidos','Cargo','Género','Perfil Cargo','Tipo Documento','Número Documento','Teléfono','Email','Dirección','Ciudad/Depto','Reseña','Precio Show','Géneros DJ','Géneros Artista','Instagram','Facebook','YouTube','TikTok','Twitter','Vimeo','Experiencia (años)','Participó BOMM','Eventos Masivos','Núm. Eventos','Link Audio','EPK Link','Trabaja Establecimiento','Nombre Establecimiento','NIT Establecimiento','Cómo se enteró','Ruedas Negocio BOMM','Capacitaciones AeV','Acepta Datos','Estado','Fecha Registro'];
+        const boolStr = v => v === true ? 'Sí' : v === false ? 'No' : '';
+        const rows = filtered.map(r => [
+          r.nombre_artistico, r.nombre, r.apellidos, r.cargo, r.genero, r.perfil_cargo,
+          r.tipo_documento, r.numero_documento, r.telefono, r.email, r.direccion, r.ciudad_departamento,
+          r.resena, r.precio_show, (r.generos_dj||[]).join(', '), (r.generos_artista||[]).join(', '),
+          r.instagram, r.facebook, r.youtube, r.tiktok, r.twitter, r.vimeo,
+          r.experiencia_anios, boolStr(r.participo_bomm), boolStr(r.eventos_masivos), r.num_eventos,
+          r.link_audio, r.epk_link, boolStr(r.trabaja_establecimiento), r.nombre_establecimiento, r.nit_establecimiento,
+          (r.como_se_entero||[]).join(', '), boolStr(r.ruedas_negocio_bomm), boolStr(r.capacitaciones_aev),
+          boolStr(r.acepta_datos), (crmEstados[r.estado]||crmEstados['nuevo']).label,
+          r.creado_en ? new Date(r.creado_en).toLocaleDateString('es-CO') : ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        const colWidths = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i]||'').length), 10) }));
+        ws['!cols'] = colWidths;
+        XLSX.utils.book_append_sheet(wb, ws, 'Artistas AeV');
+        XLSX.writeFile(wb, 'artistas_area_en_vivo_' + new Date().toISOString().slice(0,10) + '.xlsx');
+        showNotif('Archivo Excel descargado');
+      };
+      const loadFontur = async () => {
+        setFonturLoading(true);
+        setFonturError(null);
+        const { data, error } = await supabase.from('inscripciones_ntc6496').select('*').order('created_at', { ascending: false });
+        if (error) { setFonturError(error.message); setFonturLoading(false); return; }
+        setFonturData(data || []);
+        setFonturLoading(false);
+      };
+      const getFonturFiltered = () => {
+        const q = fonturSearch.toLowerCase();
+        return fonturData.filter(r => {
+          if (fonturDpto !== 'all' && r.departamento !== fonturDpto) return false;
+          if (fonturCargo !== 'all' && r.cargo !== fonturCargo) return false;
+          if (q && !r.nombre?.toLowerCase().includes(q) && !r.apellidos?.toLowerCase().includes(q) && !r.empresa?.toLowerCase().includes(q) && !r.email?.toLowerCase().includes(q) && !r.numero_identificacion?.toLowerCase().includes(q)) return false;
+          return true;
+        });
+      };
+      const exportFonturCsv = () => {
+        const filtered = getFonturFiltered();
+        const headers = ['Fecha de registro','Nombre','Apellidos','Tipo de identificación','Número de identificación','Rango de edad','Género','País','Departamento','Ciudad','Dirección','Complemento de dirección','Tipo de zona','Teléfono','Correo electrónico','Grupo étnico','Discapacidad','Víctima del conflicto','Empresa','NIT','Cargo','Acepta datos'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleString('es-CO') : '',
+          r.nombre, r.apellidos, r.tipo_identificacion, r.numero_identificacion,
+          r.rango_edad, r.genero, r.pais, r.departamento, r.ciudad,
+          r.direccion, r.direccion_complemento || '', r.tipo_zona,
+          r.telefono, r.email, r.grupo_etnico, r.discapacidad, r.victima_conflicto,
+          r.empresa, r.nit, r.cargo, r.acepta_datos ? 'Sí' : 'No'
+        ]);
+        const csv = [headers, ...rows].map(row => row.map(c => '"' + String(c||'').replace(/"/g,'""') + '"').join(',')).join('\n');
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'formulario-fontur-' + new Date().toISOString().slice(0,10) + '.csv';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        showNotif('Archivo descargado');
+      };
+      const loadRegistros = async () => {
+        setRegistrosLoading(true);
+        setRegistrosError(null);
+        const { data, error } = await supabase.from('envios_formularios').select('*').order('creado_en', { ascending: false });
+        if (error) { setRegistrosError(error.message); setRegistrosLoading(false); return; }
+        setRegistrosData(data || []);
+        setRegistrosLoading(false);
+      };
+      const openDocFirmado = async (ruta) => {
+        const { data, error } = await supabase.storage.from('formularios').createSignedUrl(ruta, 3600);
+        if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+        else showNotif('No se pudo generar el enlace del documento');
+      };
+      const saveRegistroEdit = async (reg) => {
+        const { id, datos, notas, logo_url } = reg;
+        await supabase.from('envios_formularios').update({ datos, notas: notas||'', logo_url: logo_url||'' }).eq('id', id);
+        setRegistrosEditando(null);
+        await loadRegistros();
+        showNotif('Registro actualizado ✓');
+      };
+      const uploadLogoRegistro = (file, cb) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => cb(e.target.result);
+        reader.readAsDataURL(file);
+      };
+      const downloadExcelRegistros = async () => {
+        const reg = getRegistrosFiltered();
+        if (!reg.length) { showNotif('Sin registros para exportar', 'error'); return; }
+        if (!window.XLSX) {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+            s.onload = resolve; s.onerror = reject;
+            document.head.appendChild(s);
+          });
+        }
+        const XLSX = window.XLSX;
+        const headers = ['Fecha envío','Formulario','Nombre establecimiento','Razón social','Identificación','Representante legal','Departamento','Dirección','Email empresa','Teléfono empresa','Celular','Tipo negocio','Concepto','Música en vivo','Horario desde','Horario hasta','Días operación','Aforo','Instagram','Facebook','Página web','Notas admin'];
+        const rows = reg.map(r => {
+          const d = r.datos || {};
+          return [r.creado_en?new Date(r.creado_en).toLocaleString('es-CO'):'',r.formulario||'',d.nombre_establecimiento||'',d.razon_social||'',d.identificacion||'',((d.nombre_representante||'')+' '+(d.apellido_representante||'')).trim(),d.departamento_establecimiento||'',d.direccion_establecimiento||'',d.email_empresa||'',d.telefono_empresa||'',d.celular_establecimiento||'',d.tipo_negocio||'',d.concepto||'',d.musica_en_vivo||'',d.horario_desde||'',d.horario_hasta||'',d.dias_operacion||'',d.aforo||'',d.instagram||'',d.facebook||'',d.pagina_web||'',r.notas||''];
+        });
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h,i) => ({ wch: i < 2 ? 20 : i < 4 ? 30 : 18 }));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Registros');
+        XLSX.writeFile(wb, `registros_asobares_${new Date().toISOString().slice(0,10)}.xlsx`);
+      };
+      const getRegistrosFiltered = () => {
+        const q = registrosSearch.toLowerCase();
+        return registrosData.filter(r => {
+          const d = r.datos || {};
+          if (registrosFiltroForm !== 'all' && r.formulario !== registrosFiltroForm) return false;
+          if (q && !d.nombre_establecimiento?.toLowerCase().includes(q) && !d.razon_social?.toLowerCase().includes(q) && !d.email_empresa?.toLowerCase().includes(q)) return false;
+          return true;
+        });
+      };
+      const loadGastromarketing = async () => {
+        setGastroLoading(true);
+        const { data } = await supabase.from('postulaciones_gastromarketing').select('*').order('created_at', { ascending: false });
+        setGastroData(data || []);
+        setGastroLoading(false);
+      };
+      const updateGastroEstado = async (id, estado) => {
+        await supabase.from('postulaciones_gastromarketing').update({ estado }).eq('id', id);
+        setGastroData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setGastroDetalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveGastroNotas = async (id, notas) => {
+        await supabase.from('postulaciones_gastromarketing').update({ notas }).eq('id', id);
+        setGastroData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setGastroDetalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const updateGastroPersona = async (id, data) => {
+        const { error } = await supabase.from('postulaciones_gastromarketing').update(data).eq('id', id);
+        if (error) { showNotif('Error al guardar: ' + error.message); return; }
+        setGastroData(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
+        setGastroDetalle(prev => prev?.id === id ? { ...prev, ...data } : prev);
+        setGastroEditModal(false);
+        showNotif('Datos actualizados');
+      };
+      const loadAevLab = async () => {
+        setAevLabLoading(true);
+        const { data } = await supabase.from('inscripciones_aev_lab').select('*').order('created_at', { ascending: false });
+        setAevLabData(data || []);
+        setAevLabLoading(false);
+      };
+      const updateAevLabEstado = async (id, estado) => {
+        await supabase.from('inscripciones_aev_lab').update({ estado }).eq('id', id);
+        setAevLabData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setAevLabDetalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveAevLabNotas = async (id, notas) => {
+        await supabase.from('inscripciones_aev_lab').update({ notas }).eq('id', id);
+        setAevLabData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setAevLabDetalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const updateAevLabPersona = async (id, data) => {
+        const { error } = await supabase.from('inscripciones_aev_lab').update(data).eq('id', id);
+        if (error) { showNotif('Error al guardar: ' + error.message); return; }
+        setAevLabData(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
+        setAevLabDetalle(prev => prev?.id === id ? { ...prev, ...data } : prev);
+        setAevLabEditModal(false);
+        showNotif('Datos actualizados');
+      };
+      const deleteAevLabPersona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_aev_lab').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setAevLabData(prev => prev.filter(r => r.id !== id));
+        setAevLabDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getAevLabFiltered = () => {
+        const q = aevLabSearch.toLowerCase();
+        return aevLabData.filter(r => {
+          if (aevLabFiltroEstado !== 'all' && r.estado !== aevLabFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.profesion, r.ciudad, r.departamento, r.empresa_nombre, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportAevLabExcel = () => {
+        const filtered = getAevLabFiltered();
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
+          r.genero, r.departamento || '', r.ciudad, r.profesion, r.empresa_nombre || '', r.empresa_nit || '',
+          r.empresa_direccion || '', r.empresa_telefono || '', r.empresa_representante || '',
+          r.empresa_cedula_rep || '', r.empresa_email || '', r.estado || '', r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Inscripciones AeV Lab');
+        XLSX.writeFile(wb, 'inscripciones_aev_lab_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+      const loadAevBoot2 = async () => {
+        setAevBoot2Loading(true);
+        const { data } = await supabase.from('inscripciones_aev_bootcamp2').select('*').order('created_at', { ascending: false });
+        setAevBoot2Data(data || []);
+        setAevBoot2Loading(false);
+      };
+      const updateAevBoot2Estado = async (id, estado) => {
+        await supabase.from('inscripciones_aev_bootcamp2').update({ estado }).eq('id', id);
+        setAevBoot2Data(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setAevBoot2Detalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveAevBoot2Notas = async (id, notas) => {
+        await supabase.from('inscripciones_aev_bootcamp2').update({ notas }).eq('id', id);
+        setAevBoot2Data(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setAevBoot2Detalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const updateAevBoot2Persona = async (id, data) => {
+        const { error } = await supabase.from('inscripciones_aev_bootcamp2').update(data).eq('id', id);
+        if (error) { showNotif('Error al guardar: ' + error.message); return; }
+        setAevBoot2Data(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
+        setAevBoot2Detalle(prev => prev?.id === id ? { ...prev, ...data } : prev);
+        setAevBoot2EditModal(false);
+        showNotif('Datos actualizados');
+      };
+      const deleteAevBoot2Persona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_aev_bootcamp2').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setAevBoot2Data(prev => prev.filter(r => r.id !== id));
+        setAevBoot2Detalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getAevBoot2Filtered = () => {
+        const q = aevBoot2Search.toLowerCase();
+        return aevBoot2Data.filter(r => {
+          if (aevBoot2FiltroEstado !== 'all' && r.estado !== aevBoot2FiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.profesion, r.ciudad, r.departamento, r.empresa_nombre, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportAevBoot2Excel = () => {
+        const filtered = getAevBoot2Filtered();
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
+          r.genero, r.departamento || '', r.ciudad, r.profesion, r.empresa_nombre || '', r.empresa_nit || '',
+          r.empresa_direccion || '', r.empresa_telefono || '', r.empresa_representante || '',
+          r.empresa_cedula_rep || '', r.empresa_email || '', r.estado || '', r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Bootcamp 2');
+        XLSX.writeFile(wb, 'inscripciones_aev_bootcamp2_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+      const loadAevSeg = async () => {
+        setAevSegLoading(true);
+        const { data } = await supabase.from('inscripciones_aev_seguridad').select('*').order('created_at', { ascending: false });
+        setAevSegData(data || []);
+        setAevSegLoading(false);
+      };
+      const updateAevSegEstado = async (id, estado) => {
+        await supabase.from('inscripciones_aev_seguridad').update({ estado }).eq('id', id);
+        setAevSegData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setAevSegDetalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveAevSegNotas = async (id, notas) => {
+        await supabase.from('inscripciones_aev_seguridad').update({ notas }).eq('id', id);
+        setAevSegData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setAevSegDetalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const updateAevSegPersona = async (id, data) => {
+        const { error } = await supabase.from('inscripciones_aev_seguridad').update(data).eq('id', id);
+        if (error) { showNotif('Error al guardar: ' + error.message); return; }
+        setAevSegData(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
+        setAevSegDetalle(prev => prev?.id === id ? { ...prev, ...data } : prev);
+        setAevSegEditModal(false);
+        showNotif('Datos actualizados');
+      };
+      const deleteAevSegPersona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_aev_seguridad').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setAevSegData(prev => prev.filter(r => r.id !== id));
+        setAevSegDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getAevSegFiltered = () => {
+        const q = aevSegSearch.toLowerCase();
+        return aevSegData.filter(r => {
+          if (aevSegFiltroEstado !== 'all' && r.estado !== aevSegFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.profesion, r.ciudad, r.departamento, r.empresa_nombre, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportAevSegExcel = () => {
+        const filtered = getAevSegFiltered();
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
+          r.genero, r.departamento || '', r.ciudad, r.profesion, r.empresa_nombre || '', r.empresa_nit || '',
+          r.empresa_direccion || '', r.empresa_telefono || '', r.empresa_representante || '',
+          r.empresa_cedula_rep || '', r.empresa_email || '', r.estado || '', r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Bootcamp 3 Seguridad');
+        XLSX.writeFile(wb, 'inscripciones_aev_seguridad_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+      const loadArmeniaCap = async () => {
+        setArmeniaCapLoading(true);
+        const { data } = await supabase.from('inscripciones_armenia_cap').select('*').order('created_at', { ascending: false });
+        setArmeniaCapData(data || []);
+        setArmeniaCapLoading(false);
+      };
+      const updateArmeniaCapEstado = async (id, estado) => {
+        await supabase.from('inscripciones_armenia_cap').update({ estado }).eq('id', id);
+        setArmeniaCapData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setArmeniaCapDetalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveArmeniaCapNotas = async (id, notas) => {
+        await supabase.from('inscripciones_armenia_cap').update({ notas }).eq('id', id);
+        setArmeniaCapData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setArmeniaCapDetalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const updateArmeniaCapPersona = async (id, data) => {
+        const { error } = await supabase.from('inscripciones_armenia_cap').update(data).eq('id', id);
+        if (error) { showNotif('Error al guardar: ' + error.message); return; }
+        setArmeniaCapData(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
+        setArmeniaCapDetalle(prev => prev?.id === id ? { ...prev, ...data } : prev);
+        setArmeniaCapEditModal(false);
+        showNotif('Registro actualizado');
+      };
+      const deleteArmeniaCapPersona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_armenia_cap').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar. Contacta al administrador.'); return; }
+        setArmeniaCapData(prev => prev.filter(r => r.id !== id));
+        setArmeniaCapDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getArmeniaCapFiltered = () => {
+        const q = armeniaCapSearch.toLowerCase();
+        return armeniaCapData.filter(r => {
+          if (armeniaCapFiltroEstado !== 'all' && r.estado !== armeniaCapFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.cargo, r.ciudad, r.departamento, r.numero_identificacion, r.capacitaciones].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportDynamicExcel = (data, sheetName, filename) => {
+        if (!window.XLSX) { showNotif('Cargando exportador, intenta en un segundo', 'error'); return; }
+        if (!data.length) { showNotif('Sin registros para exportar', 'error'); return; }
+        const skipKeys = new Set(['id']);
+        const colPriority = { created_at: 0, nombre: 1, nombre_establecimiento: 1, apellidos: 2, apellido: 2, email: 3, correo: 3, telefono: 4, estado: 9998, notas: 9999 };
+        const seenKeys = new Set();
+        const allKeys = [];
+        data.forEach(r => Object.keys(r).forEach(k => { if (!skipKeys.has(k) && !seenKeys.has(k)) { seenKeys.add(k); allKeys.push(k); } }));
+        allKeys.sort((a, b) => { const pa = colPriority[a] ?? 500; const pb = colPriority[b] ?? 500; return pa !== pb ? pa - pb : a.localeCompare(b); });
+        const fmtKey = k => k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const headers = allKeys.map(fmtKey);
+        const rows = data.map(r => allKeys.map(k => {
+          const v = r[k];
+          if (k === 'created_at' && v) return new Date(v).toLocaleString('es-CO');
+          if (v === null || v === undefined) return '';
+          if (typeof v === 'boolean') return v ? 'Sí' : 'No';
+          if (Array.isArray(v)) return v.join(', ');
+          return String(v);
+        }));
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        XLSX.writeFile(wb, filename + '_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+      const exportArmeniaCapExcel = () => exportDynamicExcel(getArmeniaCapFiltered(), 'Inscripciones Cap', 'inscripciones_armenia_cap');
+
+      const loadArmeniaDiag = async () => {
+        setArmeniaDiagLoading(true);
+        const { data } = await supabase.from('inscripciones_armenia_diag').select('*').order('created_at', { ascending: false });
+        setArmeniaDiagData(data || []);
+        setArmeniaDiagLoading(false);
+      };
+      const updateArmeniaDiagEstado = async (id, estado) => {
+        await supabase.from('inscripciones_armenia_diag').update({ estado }).eq('id', id);
+        setArmeniaDiagData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setArmeniaDiagDetalle(prev => prev && prev.id === id ? { ...prev, estado } : prev);
+      };
+      const saveArmeniaDiagNotas = async (id, notas) => {
+        await supabase.from('inscripciones_armenia_diag').update({ notas }).eq('id', id);
+        setArmeniaDiagData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setArmeniaDiagDetalle(prev => prev && prev.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const updateArmeniaDiagPersona = async (id, data) => {
+        const { error } = await supabase.from('inscripciones_armenia_diag').update(data).eq('id', id);
+        if (error) { showNotif('Error: ' + error.message); return; }
+        setArmeniaDiagData(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
+        setArmeniaDiagDetalle(prev => prev && prev.id === id ? { ...prev, ...data } : prev);
+        setArmeniaDiagEditModal(false);
+        showNotif('Registro actualizado');
+      };
+      const deleteArmeniaDiagPersona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_armenia_diag').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setArmeniaDiagData(prev => prev.filter(r => r.id !== id));
+        setArmeniaDiagDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getArmeniaDiagFiltered = () => {
+        const q = armeniaDiagSearch.toLowerCase();
+        return armeniaDiagData.filter(r => {
+          if (armeniaDiagFiltroEstado !== 'all' && r.estado !== armeniaDiagFiltroEstado) return false;
+          if (q && ![r.nombre_establecimiento, r.razon_social, r.nombre_representante, r.correo_informe, r.correo_representante, r.numero_identificacion, r.ciudad_empresa, r.tipo_negocio].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const loadArmeniaAsist = async () => {
+        setArmeniaAsistLoading(true);
+        const { data } = await supabase.from('inscripciones_armenia_asistencia').select('*').order('created_at', { ascending: false });
+        setArmeniaAsistData(data || []);
+        setArmeniaAsistLoading(false);
+      };
+      const updateArmeniaAsistEstado = async (id, estado) => {
+        await supabase.from('inscripciones_armenia_asistencia').update({ estado }).eq('id', id);
+        setArmeniaAsistData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setArmeniaAsistDetalle(prev => prev && prev.id === id ? { ...prev, estado } : prev);
+      };
+      const saveArmeniaAsistNotas = async (id, notas) => {
+        await supabase.from('inscripciones_armenia_asistencia').update({ notas }).eq('id', id);
+        setArmeniaAsistData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setArmeniaAsistDetalle(prev => prev && prev.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteArmeniaAsistPersona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_armenia_asistencia').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setArmeniaAsistData(prev => prev.filter(r => r.id !== id));
+        setArmeniaAsistDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getArmeniaAsistFiltered = () => {
+        const q = armeniaAsistSearch.toLowerCase();
+        return armeniaAsistData.filter(r => {
+          if (armeniaAsistFiltroEstado !== 'all' && r.estado !== armeniaAsistFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellido, r.correo, r.cargo, r.ciudad, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportArmeniaAsistExcel = () => exportDynamicExcel(getArmeniaAsistFiltered(), 'Asistencia Armenia', 'asistencia_armenia');
+
+      const loadArmeniaGuia = async () => {
+        setArmeniaGuiaLoading(true);
+        const { data } = await supabase.from('inscripciones_armenia_guia').select('*').order('created_at', { ascending: false });
+        setArmeniaGuiaData(data || []);
+        setArmeniaGuiaLoading(false);
+      };
+      const updateArmeniaGuiaEstado = async (id, estado) => {
+        await supabase.from('inscripciones_armenia_guia').update({ estado }).eq('id', id);
+        setArmeniaGuiaData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setArmeniaGuiaDetalle(prev => prev && prev.id === id ? { ...prev, estado } : prev);
+      };
+      const saveArmeniaGuiaNotas = async (id, notas) => {
+        await supabase.from('inscripciones_armenia_guia').update({ notas }).eq('id', id);
+        setArmeniaGuiaData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setArmeniaGuiaDetalle(prev => prev && prev.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteArmeniaGuiaPersona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_armenia_guia').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setArmeniaGuiaData(prev => prev.filter(r => r.id !== id));
+        setArmeniaGuiaDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getArmeniaGuiaFiltered = () => {
+        const q = armeniaGuiaSearch.toLowerCase();
+        return armeniaGuiaData.filter(r => {
+          if (armeniaGuiaFiltroEstado !== 'all' && r.estado !== armeniaGuiaFiltroEstado) return false;
+          if (q && ![r.nombre_establecimiento, r.correo_contacto, r.nombre_contacto, r.ciudad, r.instagram, r.tipo_negocio].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportArmeniaGuiaExcel = () => exportDynamicExcel(getArmeniaGuiaFiltered(), 'Guía Armenia', 'guia_armenia');
+
+      const loadArmeniaPostGastro = async () => {
+        setArmeniaPostGastroLoading(true);
+        const { data } = await supabase.from('postulaciones_armenia_gastro').select('*').order('created_at', { ascending: false });
+        setArmeniaPostGastroData(data || []);
+        setArmeniaPostGastroLoading(false);
+      };
+      const updateArmeniaPostGastroEstado = async (id, estado) => {
+        await supabase.from('postulaciones_armenia_gastro').update({ estado }).eq('id', id);
+        setArmeniaPostGastroData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setArmeniaPostGastroDetalle(prev => prev && prev.id === id ? { ...prev, estado } : prev);
+      };
+      const saveArmeniaPostGastroNotas = async (id, notas) => {
+        await supabase.from('postulaciones_armenia_gastro').update({ notas }).eq('id', id);
+        setArmeniaPostGastroData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setArmeniaPostGastroDetalle(prev => prev && prev.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteArmeniaPostGastroPersona = async (id) => {
+        const { error, count } = await supabase.from('postulaciones_armenia_gastro').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setArmeniaPostGastroData(prev => prev.filter(r => r.id !== id));
+        setArmeniaPostGastroDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getArmeniaPostGastroFiltered = () => {
+        const q = armeniaPostGastroSearch.toLowerCase();
+        return armeniaPostGastroData.filter(r => {
+          if (armeniaPostGastroFiltroEstado !== 'all' && r.estado !== armeniaPostGastroFiltroEstado) return false;
+          if (q && ![r.nombre_establecimiento, r.correo_contacto, r.nombre_contacto, r.ciudad, r.barrio, r.correo_establecimiento].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportArmeniaPostGastroExcel = () => exportDynamicExcel(getArmeniaPostGastroFiltered(), 'Postulaciones Gastro', 'postulaciones_gastro_armenia');
+
+      const exportArmeniaDiagExcel = () => exportDynamicExcel(getArmeniaDiagFiltered(), 'Diagnóstico Armenia', 'diagnostico_armenia');
+
+      const loadBarWeek = async () => {
+        setBarWeekLoading(true);
+        const { data } = await supabase.from('inscripciones_bar_week').select('*').order('created_at', { ascending: false });
+        setBarWeekData(data || []);
+        setBarWeekLoading(false);
+      };
+      const updateBarWeekEstado = async (id, estado) => {
+        await supabase.from('inscripciones_bar_week').update({ estado }).eq('id', id);
+        setBarWeekData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setBarWeekDetalle(prev => prev && prev.id === id ? { ...prev, estado } : prev);
+      };
+      const saveBarWeekNotas = async (id, notas) => {
+        await supabase.from('inscripciones_bar_week').update({ notas }).eq('id', id);
+        setBarWeekData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setBarWeekDetalle(prev => prev && prev.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteBarWeekPersona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_bar_week').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setBarWeekData(prev => prev.filter(r => r.id !== id));
+        setBarWeekDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getBarWeekFiltered = () => {
+        const q = barWeekSearch.toLowerCase();
+        return barWeekData.filter(r => {
+          if (barWeekFiltroEstado !== 'all' && r.estado !== barWeekFiltroEstado) return false;
+          if (q && ![r.nombre_establecimiento, r.barrio, r.localidad, r.nombre_contacto, r.correo_contacto, r.instagram].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportBarWeekExcel = () => exportDynamicExcel(getBarWeekFiltered(), 'Bar Week Bogotá', 'bar_week_bogota');
+
+      const loadEspaciosCorp = async () => {
+        setEspaciosCorpLoading(true);
+        const { data } = await supabase.from('registro_espacios_corporativos').select('*').order('created_at', { ascending: false });
+        setEspaciosCorpData(data || []);
+        setEspaciosCorpLoading(false);
+      };
+      const updateEspaciosCorpEstado = async (id, estado) => {
+        await supabase.from('registro_espacios_corporativos').update({ estado }).eq('id', id);
+        setEspaciosCorpData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setEspaciosCorpDetalle(prev => prev && prev.id === id ? { ...prev, estado } : prev);
+      };
+      const saveEspaciosCorpNotas = async (id, notas) => {
+        await supabase.from('registro_espacios_corporativos').update({ notas }).eq('id', id);
+        setEspaciosCorpData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setEspaciosCorpDetalle(prev => prev && prev.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteEspaciosCorpRegistro = async (id) => {
+        const { error, count } = await supabase.from('registro_espacios_corporativos').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setEspaciosCorpData(prev => prev.filter(r => r.id !== id));
+        setEspaciosCorpDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getEspaciosCorpFiltered = () => {
+        const q = espaciosCorpSearch.toLowerCase();
+        return espaciosCorpData.filter(r => {
+          if (espaciosCorpFiltroEstado !== 'all' && r.estado !== espaciosCorpFiltroEstado) return false;
+          if (q && ![r.nombre_establecimiento, r.localidad_zona, r.direccion, r.nombre_responsable, r.correo_electronico, r.telefono_whatsapp].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportEspaciosCorpExcel = () => exportDynamicExcel(getEspaciosCorpFiltered(), 'Espacios Corporativos', 'espacios_corporativos');
+
+      const loadEcosistemaDj = async () => {
+        setEcosistemaDjLoading(true);
+        const { data } = await supabase.from('ecosistema_dj').select('*').order('id', { ascending: true });
+        setEcosistemaDjData(data || []);
+        setEcosistemaDjLoading(false);
+      };
+      const getEcosistemaDjFiltered = () => {
+        const q = ecosistemaDjSearch.toLowerCase();
+        return ecosistemaDjData.filter(r => {
+          if (ecosistemaDjFiltroEstado !== 'all' && r.estado_entrada !== ecosistemaDjFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellido, r.email, r.empresa, r.cargo, r.numero_identificacion, r.ticket_id, r.empresa_actual].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const loadMixShake = async () => {
+        setMixShakeLoading(true);
+        const { data } = await supabase.from('inscripciones_mix_and_shake').select('*').order('created_at', { ascending: false });
+        setMixShakeData(data || []);
+        setMixShakeLoading(false);
+      };
+      const updateMixShakeEstado = async (id, estado) => {
+        await supabase.from('inscripciones_mix_and_shake').update({ estado }).eq('id', id);
+        setMixShakeData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setMixShakeDetalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveMixShakeNotas = async (id, notas) => {
+        await supabase.from('inscripciones_mix_and_shake').update({ notas }).eq('id', id);
+        setMixShakeData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setMixShakeDetalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteMixShake = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_mix_and_shake').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setMixShakeData(prev => prev.filter(r => r.id !== id));
+        setMixShakeDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getMixShakeFiltered = () => {
+        const q = mixShakeSearch.toLowerCase();
+        return mixShakeData.filter(r => {
+          if (mixShakeFiltroEstado !== 'all' && r.estado !== mixShakeFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.profesion, r.ciudad, r.departamento, r.empresa_nombre, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const loadAfiliados = async () => {
+        setAfiliadosLoading(true);
+        const { data } = await supabase.from('afiliados').select('*').order('razon_social');
+        setAfiliadosData(data || []);
+        setAfiliadosLoading(false);
+      };
+      const saveAfiliadoNota = async (id, notas, estado) => {
+        await supabase.from('afiliados').update({ notas, estado }).eq('id', id);
+        setAfiliadosData(prev => prev.map(r => r.id === id ? { ...r, notas, estado } : r));
+        setAfiliadosDetalle(prev => prev ? { ...prev, notas, estado } : prev);
+      };
+      const exportAfiliados = async () => {
+        setAfiliadosExporting(true);
+        const { data } = await supabase.from('afiliados').select('*').order('razon_social');
+        const rows = (data || []).map(r => ({
+          'NIT': r.nit, 'Razón Social': r.razon_social, 'Nombre Comercial': r.nombre_comercial,
+          'Rep. Legal': r.representante_legal, 'Doc. RL': r.documento_rl,
+          'Dirección': r.direccion, 'Teléfono': r.telefono, 'Email Facturación': r.email_facturacion,
+          'Nombre Contacto Fact.': r.nombre_contacto_facturacion, 'Tel. Facturación': r.telefono_facturacion,
+          'Correo Facturación': r.correo_facturacion, 'Cámara Comercio': r.camara_comercio,
+          'RUT': r.rut, 'Cédula RL': r.cedula_rl, 'Uso Marca': r.uso_marca,
+          'Certificado Afiliado': r.certificado_afiliado, 'Adendo Anticorrupción': r.adendo_anticorrupcion,
+          'Formato Afiliación': r.formato_afiliacion, 'Pág. Red de Cuidado': r.pag_red_cuidado,
+          'Web Asobares': r.web_asobares, 'Mi Destino tu Noche': r.mi_destino_tu_noche,
+          'No. Establecimientos': r.num_establecimientos, 'Link Documentos': r.link_documentos,
+          'Persona Contacto': r.persona_contacto, 'Tel. Contacto': r.telefono_contacto,
+          'Correo Electrónico': r.correo_electronico, 'Estado': r.estado, 'Observación': r.observacion, 'No. Carpeta': r.no_carpeta
+        }));
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Afiliados');
+        XLSX.writeFile(wb, 'Afiliados_Asobares.xlsx');
+        setAfiliadosExporting(false);
+      };
+      const loadBaseTotalCount = async () => {
+        const { count } = await supabase.from('base_datos_general').select('*', { count: 'exact', head: true });
+        setBaseTotalCount(count);
+      };
+      const loadBaseTotalPage = async (page, search) => {
+        setBaseTotalLoading(true);
+        const perPage = 100;
+        const from = page * perPage;
+        const to = from + perPage - 1;
+        let q = supabase.from('base_datos_general').select('*', { count: 'exact' });
+        if (search && search.trim().length >= 3) {
+          const t = search.trim();
+          q = q.or(`nombre.ilike.%${t}%,apellido.ilike.%${t}%,email.ilike.%${t}%,ciudad.ilike.%${t}%,profesion.ilike.%${t}%,numero_documento.ilike.%${t}%`);
+        }
+        const { data, count } = await q.range(from, to);
+        setBaseTotalResults(data || []);
+        setBaseTotalCount(count);
+        setBaseTotalPage(page);
+        setBaseTotalLoading(false);
+      };
+      const exportAllBaseTotal = async (search) => {
+        setBaseTotalExporting(true);
+        const batchSize = 1000;
+        let allData = [];
+        let from = 0;
+        while (true) {
+          let q = supabase.from('base_datos_general').select('*');
+          if (search && search.trim().length >= 3) {
+            const t = search.trim();
+            q = q.or(`nombre.ilike.%${t}%,apellido.ilike.%${t}%,email.ilike.%${t}%,ciudad.ilike.%${t}%,profesion.ilike.%${t}%,numero_documento.ilike.%${t}%`);
+          }
+          const { data } = await q.range(from, from + batchSize - 1);
+          if (!data || data.length === 0) break;
+          allData = [...allData, ...data];
+          if (data.length < batchSize) break;
+          from += batchSize;
+        }
+        const headers = ['Nombre','Nombre 2','Apellido','Apellido 2','Género','Ciudad','Perfil Cargo','Profesión','Tipo Doc.','Nº Doc.','Email','Teléfono'];
+        const rows = allData.map(r => [r.nombre||'',r.nombre_2||'',r.apellido||'',r.apellido_2||'',r.genero||'',r.ciudad||'',r.perfil_cargo||'',r.profesion||'',r.tipo_documento||'',r.numero_documento||'',r.email||'',r.telefono||'']);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, 14) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Base Total');
+        XLSX.writeFile(wb, 'base_datos_total_' + new Date().toISOString().slice(0,10) + '.xlsx');
+        setBaseTotalExporting(false);
+      };
+
+      const loadClusterDj = async () => {
+        setClusterDjLoading(true);
+        const { data } = await supabase.from('inscripciones_cluster_dj').select('*').order('created_at', { ascending: false });
+        setClusterDjData(data || []);
+        setClusterDjLoading(false);
+      };
+      const updateClusterDjEstado = async (id, estado) => {
+        await supabase.from('inscripciones_cluster_dj').update({ estado }).eq('id', id);
+        setClusterDjData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setClusterDjDetalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveClusterDjNotas = async (id, notas) => {
+        await supabase.from('inscripciones_cluster_dj').update({ notas }).eq('id', id);
+        setClusterDjData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setClusterDjDetalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteClusterDj = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_cluster_dj').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setClusterDjData(prev => prev.filter(r => r.id !== id));
+        setClusterDjDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getClusterDjFiltered = () => {
+        const q = clusterDjSearch.toLowerCase();
+        return clusterDjData.filter(r => {
+          if (clusterDjFiltroEstado !== 'all' && r.estado !== clusterDjFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.profesion, r.ciudad, r.departamento, r.empresa_nombre, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportClusterDjExcel = () => {
+        const filtered = getClusterDjFiltered();
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
+          r.genero, r.departamento || '', r.ciudad, r.profesion, r.empresa_nombre || '', r.empresa_nit || '',
+          r.empresa_direccion || '', r.empresa_telefono || '', r.empresa_representante || '',
+          r.empresa_cedula_rep || '', r.empresa_email || '', r.estado || '', r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Cluster DJ');
+        XLSX.writeFile(wb, 'cluster_dj_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+
+      const loadCirculoGastro = async () => {
+        setCirculoGastroLoading(true);
+        const { data } = await supabase.from('inscripciones_circulo_gastro').select('*').order('created_at', { ascending: false });
+        setCirculoGastroData(data || []);
+        setCirculoGastroLoading(false);
+      };
+      const updateCirculoGastroEstado = async (id, estado) => {
+        await supabase.from('inscripciones_circulo_gastro').update({ estado }).eq('id', id);
+        setCirculoGastroData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setCirculoGastroDetalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveCirculoGastroNotas = async (id, notas) => {
+        await supabase.from('inscripciones_circulo_gastro').update({ notas }).eq('id', id);
+        setCirculoGastroData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setCirculoGastroDetalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteCirculoGastro = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_circulo_gastro').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setCirculoGastroData(prev => prev.filter(r => r.id !== id));
+        setCirculoGastroDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getCirculoGastroFiltered = () => {
+        const q = circuloGastroSearch.toLowerCase();
+        return circuloGastroData.filter(r => {
+          if (circuloGastroFiltroEstado !== 'all' && r.estado !== circuloGastroFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.profesion, r.ciudad, r.departamento, r.empresa_nombre, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportCirculoGastroExcel = () => {
+        const filtered = getCirculoGastroFiltered();
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
+          r.genero, r.departamento || '', r.ciudad, r.profesion, r.empresa_nombre || '', r.empresa_nit || '',
+          r.empresa_direccion || '', r.empresa_telefono || '', r.empresa_representante || '',
+          r.empresa_cedula_rep || '', r.empresa_email || '', r.estado || '', r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Círculo Gastro');
+        XLSX.writeFile(wb, 'circulo_gastro_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+
+      const exportMixShakeExcel = () => {
+        const filtered = getMixShakeFiltered();
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Departamento','Ciudad','Profesión','Empresa','NIT','Dirección Emp.','Tel. Emp.','Representante','Cédula Rep.','Email Emp.','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
+          r.genero, r.departamento || '', r.ciudad, r.profesion, r.empresa_nombre || '', r.empresa_nit || '',
+          r.empresa_direccion || '', r.empresa_telefono || '', r.empresa_representante || '',
+          r.empresa_cedula_rep || '', r.empresa_email || '', r.estado || '', r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Mix And Shake');
+        XLSX.writeFile(wb, 'mix_and_shake_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+
+      const exportEcosistemaDjExcel = () => {
+        const filtered = getEcosistemaDjFiltered();
+        const headers = ['TicketID','ID Boleto','ID Pedido','Nombre','Apellido','Email','Teléfono','Estado Entrada','Tipo Entrada','Variación','Empresa','Designación','Estado Pedido','Método Pago','Fecha Pedido','Precio Entrada','Precio Pagado','Tipo ID','Nº ID','Rango Edad','Género','Zona Residencia','Grupo Étnico','Discapacidad','Víctima Conflicto','Empresa Actual','NIT Empresa','Cargo','Acepta Datos','Día 1','Registrado Día 1','Comprado Día 1','Registrado por Día 1','Confirmado por Día 1'];
+        const rows = filtered.map(r => [
+          r.ticket_id, r.id_boleto, r.id_pedido, r.nombre, r.apellido, r.email, r.telefono,
+          r.estado_entrada, r.tipo_entrada, r.variacion, r.empresa, r.designacion,
+          r.estado_pedido, r.metodo_pago, r.fecha_pedido, r.precio_entrada, r.precio_pagado,
+          r.tipo_identificacion, r.numero_identificacion, r.rango_edad, r.genero,
+          r.zona_residencia, r.grupo_etnico, r.discapacidad, r.victima_conflicto,
+          r.empresa_actual, r.nit_empresa, r.cargo, r.acepta_datos,
+          r.dia1, r.registrado_dia1, r.comprado_dia1, r.registrado_por_dia1, r.confirmado_por_dia1
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Ecosistema DJ');
+        XLSX.writeFile(wb, 'ecosistema_dj_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+
+      const downloadArchivosZip = async (data, nameKey, fileMapping, zipName) => {
+        const withFiles = data.filter(r => fileMapping.some(f => r[f.key]));
+        if (!withFiles.length) { showNotif('No hay archivos adjuntos en los registros filtrados', 'error'); return; }
+        showNotif(`Preparando ${withFiles.length} registros...`);
+        if (!window.JSZip) {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          });
+        }
+        const zip = new window.JSZip();
+        const sanitize = str => (str || 'sin_nombre').replace(/[\/\\:*?"<>|]/g, '_').slice(0, 60);
+        const getExt = url => { try { const p = new URL(url).pathname.split('/').pop().split('?')[0]; const d = p.lastIndexOf('.'); return d > -1 ? p.slice(d).toLowerCase() : ''; } catch { return ''; } };
+        const fetchHeaders = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` };
+        let count = 0, errors = 0, idx = 0;
+        for (const r of withFiles) {
+          idx++;
+          showNotif(`Descargando ${idx}/${withFiles.length}...`);
+          const nombre = sanitize(r[nameKey]);
+          for (const f of fileMapping) {
+            if (!r[f.key]) continue;
+            try {
+              const res = await fetch(r[f.key], { headers: fetchHeaders });
+              if (!res.ok) { errors++; continue; }
+              const blob = await res.blob();
+              let ext = getExt(r[f.key]);
+              if (!ext) ext = blob.type.includes('pdf') ? '.pdf' : blob.type.includes('png') ? '.png' : '.jpg';
+              zip.folder(f.folder).file(`${nombre}_${f.suffix}${ext}`, blob);
+              count++;
+            } catch (e) { errors++; console.warn('ZIP fetch error:', r[f.key], e); }
+          }
+        }
+        if (!count) {
+          showNotif(`Sin archivos descargables (${errors} errores). Verifica que el bucket de Storage sea público.`, 'error');
+          return;
+        }
+        showNotif('Generando ZIP...');
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = zipName + '_' + new Date().toISOString().slice(0, 10) + '.zip';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+        showNotif(`✓ ZIP listo — ${count} archivos${errors ? ` (${errors} no disponibles)` : ''}`);
+      };
+      const downloadArmeniaGuiaArchivos = () => downloadArchivosZip(
+        getArmeniaGuiaFiltered(), 'nombre_establecimiento',
+        [{key:'link_logo',folder:'Logos',suffix:'logo'},{key:'link_foto_establecimiento',folder:'Fotos',suffix:'foto'},{key:'link_camara_comercio',folder:'Documentos',suffix:'camara_comercio'}],
+        'guia_armenia_archivos'
+      );
+      const downloadArmeniaDiagArchivos = () => downloadArchivosZip(
+        getArmeniaDiagFiltered(), 'nombre_establecimiento',
+        [{key:'link_camara_comercio',folder:'Documentos',suffix:'camara_comercio'},{key:'link_rut',folder:'Documentos',suffix:'rut'},{key:'link_cedula_representante',folder:'Documentos',suffix:'cedula_representante'}],
+        'diagnostico_armenia_archivos'
+      );
+
+      const deleteGastroPersona = async (id) => {
+        const { error, count } = await supabase.from('postulaciones_gastromarketing').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error al eliminar: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar. Contacta al administrador.'); return; }
+        setGastroData(prev => prev.filter(r => r.id !== id));
+        setGastroDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getGastroFiltered = () => {
+        const q = gastroSearch.toLowerCase();
+        return gastroData.filter(r => {
+          if (gastroFiltroEstado !== 'all' && r.estado !== gastroFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.empresa, r.ciudad, r.cargo, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportGastroExcel = () => {
+        const filtered = getGastroFiltered();
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','País','Ciudad','Departamento','Dirección','Dirección 2','Tipo ID','Número ID','Rango Edad','Género','Empresa','NIT Empresa','Cargo','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre, r.apellidos, r.email, r.telefono, r.pais, r.ciudad, r.departamento,
+          r.direccion, r.direccion2 || '', r.tipo_identificacion, r.numero_identificacion,
+          r.rango_edad, r.genero, r.empresa, r.nit_empresa, r.cargo, r.estado, r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i]||'').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Gastromarketing Day');
+        XLSX.writeFile(wb, 'postulados_gastromarketing_' + new Date().toISOString().slice(0,10) + '.xlsx');
+        showNotif('Excel descargado');
+      };
+      const loadCertPlantillas = async () => {
+        const { data } = await supabase.from('cert_plantillas').select('*').order('created_at', { ascending: false });
+        setCertPlantillas(data || []);
+      };
+      const loadCertLotes = async () => {
+        const { data } = await supabase.from('cert_lotes').select('*, cert_plantillas(nombre)').order('created_at', { ascending: false });
+        setCertLotes(data || []);
+      };
+      const loadCertPersonas = async (loteId) => {
+        const { data } = await supabase.from('cert_personas').select('*').eq('lote_id', loteId).order('nombre', { ascending: true });
+        setCertPersonas(data || []);
+      };
+      const loadCert = async () => {
+        setCertLoading(true);
+        await Promise.all([loadCertPlantillas(), loadCertLotes()]);
+        setCertLoading(false);
+      };
+      const saveLoteEdit = async (loteId, data) => {
+        const { error } = await supabase.from('cert_lotes').update(data).eq('id', loteId);
+        if (error) { showNotif('Error al guardar el lote'); return; }
+        await loadCert();
+        setCertLoteActivo(prev => ({ ...prev, ...data }));
+        setCertEditLote(null);
+        showNotif('Lote actualizado correctamente');
+      };
+      const saveEditorCampos = async (plantillaId, campos) => {
+        const { error } = await supabase.from('cert_plantillas').update({ campos }).eq('id', plantillaId);
+        if (error) { showNotif('Error guardando: ' + error.message); return false; }
+        await loadCertPlantillas();
+        showNotif('¡Campos guardados correctamente!');
+        return true;
+      };
+      const savePlantilla = async ({ nombre, descripcion, imageFile, campos }) => {
+        const ext = imageFile.name.split('.').pop().toLowerCase();
+        const path = `plantillas/${Date.now()}.${ext}`;
+        const contentType = ext === 'pdf' ? 'application/pdf' : imageFile.type;
+        const { error: upErr } = await supabase.storage.from('certificaciones').upload(path, imageFile, { contentType });
+        if (upErr) { showNotif('Error al subir archivo: ' + upErr.message); return; }
+        await supabase.from('cert_plantillas').insert({ nombre, descripcion, imagen_path: path, campos });
+        await loadCertPlantillas();
+        showNotif('Plantilla creada');
+      };
+      const saveLote = async (data) => {
+        await supabase.from('cert_lotes').insert(data);
+        await loadCertLotes();
+        showNotif('Lote creado');
+      };
+      const savePersona = async (data) => {
+        await supabase.from('cert_personas').insert(data);
+        await loadCertPersonas(data.lote_id);
+        showNotif('Participante agregado');
+      };
+      const deletePersona = async (id, loteId) => {
+        if (!window.confirm('¿Eliminar este participante?')) return;
+        await supabase.from('cert_personas').delete().eq('id', id);
+        await loadCertPersonas(loteId);
+        showNotif('Participante eliminado');
+      };
+      const parseCsvPersonas = (file, loteId) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const text = e.target.result;
+          const lines = text.split('\n').filter(l => l.trim());
+          if (lines.length < 2) return showNotif('CSV sin datos');
+          const sep = lines[0].includes(';') ? ';' : ',';
+          const headers = lines[0].split(sep).map(h => h.trim().replace(/"/g, '').toLowerCase());
+          const get = (row, ...keys) => { for (const k of keys) { const v = row[k]; if (v && v.trim()) return v.trim(); } return ''; };
+          let count = 0;
+          for (const line of lines.slice(1)) {
+            const vals = line.split(sep).map(v => v.trim().replace(/"/g, ''));
+            const row = headers.reduce((o, h, i) => { o[h] = vals[i] || ''; return o; }, {});
+            const email = get(row, 'email', 'correo', 'e-mail', 'email_personal');
+            if (!email) continue;
+            await supabase.from('cert_personas').insert({ lote_id: loteId, nombre: get(row, 'nombre', 'name', 'nombres', 'first_name'), apellidos: get(row, 'apellidos', 'apellido', 'last_name', 'surname'), empresa: get(row, 'empresa', 'company', 'establecimiento', 'nombre_establecimiento'), documento: get(row, 'documento', 'cedula', 'nit', 'identificacion', 'num_identificacion', 'numero_identificacion'), email: email.toLowerCase(), estado: 'pendiente' });
+            count++;
+          }
+          await loadCertPersonas(loteId);
+          showNotif(`${count} participante${count !== 1 ? 's' : ''} cargado${count !== 1 ? 's' : ''}`);
+        };
+        reader.readAsText(file, 'UTF-8');
+      };
+      const importarDesdeCRM = async (loteId, source) => {
+        if (!source || certImportando) return;
+        setCertImportando(true);
+        const cfgMap = {
+          'aev-lab':       { table: 'inscripciones_aev_lab',               mapN: r=>r.nombre||'',   mapA: r=>r.apellidos||'',  mapE: r=>r.email||'',             mapD: r=>r.numero_identificacion||'', mapEmp: r=>r.empresa_nombre||'' },
+          'aev-bootcamp2': { table: 'inscripciones_aev_bootcamp2',        mapN: r=>r.nombre||'',   mapA: r=>r.apellidos||'',  mapE: r=>r.email||'',             mapD: r=>r.numero_identificacion||'', mapEmp: r=>r.empresa_nombre||'' },
+          'armenia-cap':   { table: 'inscripciones_armenia_capacitacion', mapN: r=>r.nombre||'',   mapA: r=>r.apellidos||'',  mapE: r=>r.correo||r.email||'',   mapD: r=>r.numero_identificacion||'', mapEmp: r=>'' },
+          'armenia-asist': { table: 'inscripciones_armenia_asistencia',   mapN: r=>r.nombre||'',   mapA: r=>r.apellido||'',   mapE: r=>r.correo||r.email||'',   mapD: r=>r.numero_identificacion||'', mapEmp: r=>'' },
+        };
+        const cfg = cfgMap[source];
+        if (!cfg) { setCertImportando(false); return; }
+        try {
+          const [{ data: origen, error: errOrigen }, { data: existentes }] = await Promise.all([
+            supabase.from(cfg.table).select('*'),
+            supabase.from('cert_personas').select('email').eq('lote_id', loteId),
+          ]);
+          if (errOrigen) throw errOrigen;
+          const asistieron = (origen || []).filter(r => r.estado === 'asistio');
+          if (!asistieron.length) { showNotif('No hay personas marcadas como "Asistió" en esa fuente'); setCertImportando(false); return; }
+          const used = new Set((existentes || []).map(p => (p.email || '').toLowerCase()));
+          const rows = asistieron
+            .filter(r => { const e = (cfg.mapE(r) || '').toLowerCase(); return e && !used.has(e); })
+            .map(r => ({ lote_id: loteId, nombre: cfg.mapN(r), apellidos: cfg.mapA(r), email: (cfg.mapE(r)).toLowerCase(), documento: cfg.mapD(r), empresa: cfg.mapEmp(r), estado: 'pendiente' }));
+          if (!rows.length) { showNotif('No hay personas nuevas para importar — todos ya están en el lote o nadie marcado como "Asistió"'); setCertImportando(false); return; }
+          const { error } = await supabase.from('cert_personas').insert(rows);
+          if (error) throw error;
+          await loadCertPersonas(loteId);
+          showNotif(`✓ ${rows.length} persona${rows.length !== 1 ? 's' : ''} importada${rows.length !== 1 ? 's' : ''} desde el CRM`);
+        } catch (err) { showNotif('Error al importar: ' + err.message); }
+        setCertImportando(false);
+      };
+      const generarPDF = async (persona, lote, plantilla, camposOverride = null) => {
+        const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(plantilla.imagen_path);
+        const isPdfTipo = plantilla.imagen_path && plantilla.imagen_path.toLowerCase().endsWith('.pdf');
+        const fechaObj = lote.fecha ? new Date(lote.fecha + 'T12:00:00') : null;
+        const vals = { nombre_completo: [persona.nombre, persona.apellidos].filter(Boolean).join(' '), nombre: persona.nombre || '', apellidos: persona.apellidos || '', empresa: persona.empresa || '', documento: persona.documento || '', ciudad: lote.ciudad || '', horas: lote.horas != null ? String(lote.horas) : '', nombre_lote: lote.nombre || '', dia: fechaObj ? String(fechaObj.getDate()) : '', mes: fechaObj ? fechaObj.toLocaleString('es-CO', { month: 'long' }) : '', anio: fechaObj ? String(fechaObj.getFullYear()) : '' };
+
+        if (isPdfTipo) {
+          if (!window.PDFLib) throw new Error('pdf-lib no disponible — recarga la página');
+          const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
+          const pdfBytes = await fetch(publicUrl + '?t=' + Date.now()).then(r => r.arrayBuffer());
+          const pdfDoc = await PDFDocument.load(pdfBytes);
+          const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+          const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+          const pages = pdfDoc.getPages();
+          const firstPage = pages[0];
+          const { height: pageH } = firstPage.getSize();
+          const MM_TO_PT = 2.83465;
+          for (const campo of (camposOverride || plantilla.campos || [])) {
+            const val = vals[campo.key];
+            if (val === undefined || val === null || val === '') continue;
+            const text = String(val).toUpperCase();
+            const xPt = (campo.x_mm || 0) * MM_TO_PT;
+            const yPt = pageH - ((campo.y_mm || 0) * MM_TO_PT) - ((campo.fontSize || 11) * 0.75);
+            const usedFont = campo.fontStyle === 'bold' ? boldFont : font;
+            const hex = campo.color || '#000000';
+            const r = parseInt(hex.slice(1,3),16)/255, g = parseInt(hex.slice(3,5),16)/255, b = parseInt(hex.slice(5,7),16)/255;
+            firstPage.drawText(text, { x: xPt, y: yPt, size: campo.fontSize || 11, font: usedFont, color: rgb(r, g, b) });
+          }
+          const outBytes = await pdfDoc.save();
+          return {
+            save(filename) {
+              const blob = new Blob([outBytes], { type: 'application/pdf' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+            },
+            output(type) {
+              if (type === 'arraybuffer') return outBytes.buffer;
+              if (type === 'datauristring') {
+                let bin = ''; const chunk = 8192;
+                for (let i = 0; i < outBytes.length; i += chunk) bin += String.fromCharCode.apply(null, outBytes.subarray(i, i + chunk));
+                return 'data:application/pdf;base64,' + btoa(bin);
+              }
+            }
+          };
+        }
+
+        if (!window.jspdf) throw new Error('jsPDF no disponible — recarga la página');
+        const { jsPDF } = window.jspdf;
+        const { base64, iw, ih } = await new Promise((res, rej) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => { const c = document.createElement('canvas'); c.width = img.naturalWidth || img.width; c.height = img.naturalHeight || img.height; c.getContext('2d').drawImage(img, 0, 0); res({ base64: c.toDataURL('image/jpeg', 0.92), iw: c.width, ih: c.height }); };
+          img.onerror = () => rej(new Error('Error cargando la imagen de la plantilla'));
+          img.src = publicUrl + '?t=' + Date.now();
+        });
+        const landscape = iw >= ih;
+        const pW = landscape ? 297 : 210;
+        const pH = landscape ? pW * ih / iw : 297;
+        const doc = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: [pW, pH] });
+        doc.addImage(base64, 'JPEG', 0, 0, pW, pH);
+        for (const campo of (camposOverride || plantilla.campos || [])) {
+          const val = vals[campo.key];
+          if (val === undefined || val === null || val === '') continue;
+          doc.setFontSize(campo.fontSize || 12);
+          doc.setFont('helvetica', campo.fontStyle || 'normal');
+          const hex = campo.color || '#000000';
+          doc.setTextColor(parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16));
+          doc.text(String(val).toUpperCase(), (campo.x / 100) * pW, (campo.y / 100) * pH, { align: campo.align || 'left' });
+        }
+        return doc;
+      };
+      const descargarCertificado = async (persona, lote, plantilla) => {
+        if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
+        try {
+          showNotif('Generando PDF...');
+          const doc = await generarPDF(persona, lote, plantilla);
+          doc.save(`Certificado_${[persona.nombre, persona.apellidos].filter(Boolean).join('_')}.pdf`);
+        } catch (e) { showNotif('Error: ' + e.message); }
+      };
+      const enviarCertificado = async (persona, lote, plantilla, camposOverride = null) => {
+        if (!persona.email) return showNotif('Esta persona no tiene email registrado');
+        if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
+        try {
+          showNotif('Generando PDF...');
+          const doc = await generarPDF(persona, lote, plantilla, camposOverride);
+          const base64 = doc.output('datauristring').split(',')[1];
+          const nombreCompleto = [persona.nombre, persona.apellidos].filter(Boolean).join(' ');
+          const fileName = `Certificado_${nombreCompleto.replace(/\s+/g, '_')}.pdf`;
+          showNotif('Enviando correo...');
+          const tipo = plantilla.imagen_path && plantilla.imagen_path.toLowerCase().endsWith('.pdf') ? 'carta' : 'certificado';
+          const { data, error } = await supabase.functions.invoke('send-certificate', {
+            body: { email: persona.email, nombre: nombreCompleto, loteNombre: lote.nombre, pdfBase64: base64, fileName, tipo },
+          });
+          if (error || data?.error) throw new Error(error?.message || data?.error);
+          await supabase.from('cert_personas').update({ estado: 'enviado' }).eq('id', persona.id);
+          await loadCertPersonas(lote.id);
+          showNotif(`✓ Certificado enviado a ${persona.email}`);
+        } catch (e) {
+          await supabase.from('cert_personas').update({ estado: 'error' }).eq('id', persona.id);
+          await loadCertPersonas(lote.id);
+          showNotif('Error al enviar: ' + e.message);
+        }
+      };
+      const descargarPDFGenerado = (persona) => {
+        if (!persona.cert_path) return;
+        const { data: { publicUrl } } = supabase.storage.from('certificaciones').getPublicUrl(persona.cert_path);
+        const a = document.createElement('a'); a.href = publicUrl; a.target = '_blank'; a.download = `Certificado_${[persona.nombre, persona.apellidos].filter(Boolean).join('_')}.pdf`; a.click();
+      };
+      const generarTodos = async (personas, lote, plantilla, camposOverride = null) => {
+        if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
+        setCertGenerando(true);
+        setCertProgreso({ done: 0, total: personas.length });
+        for (let i = 0; i < personas.length; i++) {
+          const p = personas[i];
+          try {
+            const doc = await generarPDF(p, lote, plantilla, camposOverride);
+            const bytes = doc.output('arraybuffer');
+            const path = `lotes/${lote.id}/${p.id}.pdf`;
+            await supabase.storage.from('certificaciones').upload(path, bytes, { contentType: 'application/pdf', upsert: true });
+            await supabase.from('cert_personas').update({ estado: 'generado', cert_path: path }).eq('id', p.id);
+          } catch { await supabase.from('cert_personas').update({ estado: 'error' }).eq('id', p.id); }
+          setCertProgreso(prev => ({ ...prev, done: i + 1 }));
+        }
+        await loadCertPersonas(lote.id);
+        setCertGenerando(false);
+        showNotif('¡Certificados generados!');
+      };
+      const descargarTodos = async (personas, lote, plantilla) => {
+        if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
+        if (!window.JSZip) return showNotif('JSZip no disponible — recarga la página');
+        setCertDescargando(true);
+        setCertProgresoDescarga({ done: 0, total: personas.length });
+        const zip = new window.JSZip();
+        for (let i = 0; i < personas.length; i++) {
+          const p = personas[i];
+          try {
+            const doc = await generarPDF(p, lote, plantilla);
+            const bytes = doc.output('arraybuffer');
+            const filename = `Certificado_${[p.nombre, p.apellidos].filter(Boolean).join('_')}.pdf`;
+            zip.file(filename, bytes);
+          } catch {}
+          setCertProgresoDescarga(prev => ({ ...prev, done: i + 1 }));
+        }
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Certificados_${lote.nombre.replace(/\s+/g, '_')}.zip`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        setCertDescargando(false);
+        showNotif('¡ZIP descargado!');
+      };
+      const descargarCarpetaZip = async (doc) => {
+        const folderId = doc.url.match(/folders\/([^/?&#]+)/)?.[1];
+        if (!folderId) return showNotif('No se pudo leer el ID de la carpeta', 'error');
+        setZipDescargando(doc.id);
+        try {
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/download-folder-zip`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
+            body: JSON.stringify({ folderId, folderName: doc.nombre }),
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || 'Error al generar el ZIP');
+          }
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${doc.nombre}.zip`;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+        } catch (e) {
+          showNotif('Error: ' + e.message, 'error');
+        }
+        setZipDescargando(null);
+      };
+      const enviarTodos = async (personas, lote, plantilla, camposOverride = null) => {
+        if (!plantilla) return showNotif('Este lote no tiene plantilla configurada');
+        const pendientes = personas.filter(p => p.email && p.estado !== 'enviado');
+        if (!pendientes.length) return showNotif('Todos los certificados ya fueron enviados ✓');
+        setCertEnviando(true);
+        setCertProgresoEnvio({ done: 0, total: pendientes.length });
+        let enviados = 0, errores = 0;
+        for (let i = 0; i < pendientes.length; i++) {
+          const p = pendientes[i];
+          try {
+            const doc = await generarPDF(p, lote, plantilla, camposOverride);
+            const base64 = doc.output('datauristring').split(',')[1];
+            const nombreCompleto = [p.nombre, p.apellidos].filter(Boolean).join(' ');
+            const fileName = `Certificado_${nombreCompleto.replace(/\s+/g, '_')}.pdf`;
+            const tipo = plantilla.imagen_path && plantilla.imagen_path.toLowerCase().endsWith('.pdf') ? 'carta' : 'certificado';
+            const { data, error } = await supabase.functions.invoke('send-certificate', {
+              body: { email: p.email, nombre: nombreCompleto, loteNombre: lote.nombre, pdfBase64: base64, fileName, tipo },
+            });
+            if (error || data?.error) throw new Error(error?.message || data?.error);
+            await supabase.from('cert_personas').update({ estado: 'enviado' }).eq('id', p.id);
+            enviados++;
+          } catch {
+            await supabase.from('cert_personas').update({ estado: 'error' }).eq('id', p.id);
+            errores++;
+          }
+          setCertProgresoEnvio(prev => ({ ...prev, done: i + 1 }));
+        }
+        await loadCertPersonas(lote.id);
+        setCertEnviando(false);
+        showNotif(`✓ ${enviados} enviado${enviados !== 1 ? 's' : ''}${errores ? ` · ${errores} con error` : ''}`);
+      };
+      const handleUpdateStatus = async (id, status) => { await supabase.from('tareas').update({ estado: status }).eq('id', id); await loadData(); showNotif(`Movida a "${statusLabels[status].label}"`); };
+      const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      const clearNotifs = () => setNotifications([]);
+
+      const handleDragStart = (e, task) => { setDraggedTask(task); e.target.classList.add('dragging'); };
+      const handleDragEnd = (e) => { setDraggedTask(null); e.target.classList.remove('dragging'); };
+      const handleDragOver = (e) => e.preventDefault();
+      const handleDragEnter = (e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); };
+      const handleDragLeave = (e) => e.currentTarget.classList.remove('drag-over');
+      const handleDrop = (e, status) => { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); if (draggedTask) handleUpdateStatus(draggedTask.id, status); };
+
+      const getAllTasks = () => filterUsuario !== 'all' ? tasks.filter(t => isUserResponsable(t, parseInt(filterUsuario))) : tasks;
+      const getMyTasks = () => currentUser ? tasks.filter(t => isUserResponsable(t, currentUser.id)) : [];
+      const allTasks = getAllTasks();
+      const myTasks = getMyTasks();
+      const filteredTasks = allTasks.filter(t => { if (filterMes !== 'all' && t.mes !== filterMes) return false; if (filterEstado !== 'all' && t.estado !== filterEstado) return false; if (searchTerm && !t.proyecto.toLowerCase().includes(searchTerm.toLowerCase())) return false; return true; });
+      const myFilteredTasks = myTasks.filter(t => { if (filterMes !== 'all' && t.mes !== filterMes) return false; if (filterEstado !== 'all' && t.estado !== filterEstado) return false; if (searchTerm && !t.proyecto.toLowerCase().includes(searchTerm.toLowerCase())) return false; return true; });
+      const assignedByMe = currentUser ? tasks.filter(t => t.creado_por === currentUser.id && !isUserResponsable(t, currentUser.id)) : [];
+
+      const getStats = (userId, month) => {
+        const t = tasks.filter(x => isUserResponsable(x, userId) && (!month || x.mes === month));
+        const comp = t.filter(x => x.estado === 'completado').length;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const ret = t.filter(x => { if (x.estado === 'completado') return false; const f = new Date(x.fecha_fin + 'T23:59:59'); return f < today; }).length;
+        return { total: t.length, completadas: comp, enCurso: t.filter(x => x.estado === 'en-curso').length, pendientes: t.filter(x => x.estado === 'planeado').length, retrasadas: ret, cumplimiento: t.length ? Math.round((comp / t.length) * 100) : 0 };
+      };
+
+      const myStats = currentUser ? getStats(currentUser.id, selectedMonth) : {};
+      const globalStats = (() => { const t = tasks.filter(x => x.mes === selectedMonth); const comp = t.filter(x => x.estado === 'completado').length; const today = new Date(); today.setHours(0, 0, 0, 0); const ret = t.filter(x => { if (x.estado === 'completado') return false; const f = new Date(x.fecha_fin + 'T23:59:59'); return f < today; }).length; return { total: t.length, completadas: comp, enCurso: t.filter(x => x.estado === 'en-curso').length, pendientes: t.filter(x => x.estado === 'planeado').length, retrasadas: ret, cumplimiento: t.length ? Math.round((comp / t.length) * 100) : 0 }; })();
+      const userStats = users.map(u => ({ ...u, ...getStats(u.id, selectedMonth) }));
+      const currentMonth = meses[new Date().getMonth()];
+      const currentYear = new Date().getFullYear();
+      const unreadCount = notifications.filter(n => !n.read).length;
+      const timeAgo = (ts) => { const s = Math.floor((new Date() - new Date(ts)) / 1000); if (s < 60) return 'Ahora'; const m = Math.floor(s / 60); if (m < 60) return `${m}m`; const h = Math.floor(m / 60); if (h < 24) return `${h}h`; return `${Math.floor(h / 24)}d`; };
+
+      // ── CONECTA helpers ────────────────────────────────────────────────────
+      const CONECTA_PLATFORMS = ['Clúster DJ','Mix & Shake','Círculo Gastro','Mi Destino Tu Noche','Expobar'];
+      const CONECTA_PROP_TYPES = ['Incluida en el convenio','Ampliación con cobro adicional','Negocio nuevo'];
+      const formatCOP = n => new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(n)||0);
+      const cToday = () => new Date().toISOString().slice(0,10);
+      const cInDays = n => new Date(Date.now()+n*86400000).toISOString().slice(0,10);
+      const cAllyName = id => conectaAliados.find(a=>a.id===id)?.name||'(aliado)';
+      const cHealth = a => { const hoy=cToday(),en30=cInDays(30); if(a.concern||conectaTareas.some(t=>t.ally_id===a.id&&!t.done&&t.due<hoy)) return 'prioritaria'; if(!conectaPlanes.some(p=>p.ally_id===a.id&&p.month===hoy.slice(0,7))||(a.renew&&a.renew<=en30)) return 'atencion'; return 'bien'; };
+      const cHealthLabel = h => ({prioritaria:'Intervención prioritaria',atencion:'Requiere atención',bien:'Al día'}[h]);
+      const cHealthStyle = h => ({prioritaria:{background:'#fce6e6',color:'#9b3030'},atencion:{background:'#fff0c8',color:'#775410'},bien:{background:'#e1f4eb',color:'#176246'}}[h]);
+      const cPropBadge = s => (['GO aprobado','Ejecutada','Aceptada por aliado','En ejecución'].includes(s)?{background:'#e1f4eb',color:'#176246'}:['Descartada'].includes(s)?{background:'#fce6e6',color:'#9b3030'}:{background:'#fff0c8',color:'#775410'});
+
+      const loadConecta = async () => {
+        setConectaCargando(true);
+        const [a,p,t,s,pl,r,l,f] = await Promise.all([
+          supabase.from('conecta_aliados').select('*').order('name'),
+          supabase.from('conecta_propuestas').select('*').order('created_at',{ascending:false}),
+          supabase.from('conecta_tareas').select('*').order('due'),
+          supabase.from('conecta_solicitudes').select('*').order('created_at',{ascending:false}),
+          supabase.from('conecta_planes').select('*').order('due'),
+          supabase.from('conecta_radar').select('*').order('created_at',{ascending:false}),
+          supabase.from('conecta_log').select('*').order('created_at',{ascending:false}).limit(50),
+          supabase.from('conecta_finanzas').select('*').order('date',{ascending:false}),
+        ]);
+        setConectaAliados(a.data||[]); setConectaPropuestas(p.data||[]); setConectaTareas(t.data||[]);
+        setConectaSolicitudes(s.data||[]); setConectaPlanes(pl.data||[]); setConectaRadar(r.data||[]); setConectaActLog(l.data||[]);
+        setConectaFinanzas(f.data||[]);
+        setConectaCargando(false);
+      };
+      const cLog = async text => { try { await supabase.from('conecta_log').insert({actor:currentUser?.name||'',text}); } catch{} };
+
+      const saveAllyC = async d => { if(d.id){await supabase.from('conecta_aliados').update({...d,updated_at:new Date().toISOString()}).eq('id',d.id);await cLog('Editó aliado: '+d.name);}else{const {id,...rest}=d;await supabase.from('conecta_aliados').insert(rest);await cLog('Creó aliado: '+d.name);}setConectaModalAlly(undefined);loadConecta(); };
+      const deleteAllyC = async (id,name) => { if(!confirm(`¿Eliminar aliado "${name}"?`))return;await supabase.from('conecta_aliados').delete().eq('id',id);await cLog('Eliminó aliado: '+name);loadConecta(); };
+      const saveFinanzaC = async d => { if(d.id){await supabase.from('conecta_finanzas').update(d).eq('id',d.id);}else{const {id,...rest}=d;await supabase.from('conecta_finanzas').insert({...rest,date:rest.date||cToday()});}await cLog(`Registró facturación ${formatCOP(d.invoiced)} · ${d.platform}`);setConectaModalFinanza(undefined);loadConecta(); };
+      const deleteFinanzaC = async id => { await supabase.from('conecta_finanzas').delete().eq('id',id);await cLog('Eliminó registro de facturación');loadConecta(); };
+
+      const savePropC = async d => {
+        const now=new Date().toISOString();
+        if(d.id){const prev=conectaPropuestas.find(p=>p.id===d.id);const hist=[...(prev?.history||[]),{date:now,actor:currentUser?.name,action:'Editada v'+(d.version||1)}];await supabase.from('conecta_propuestas').update({...d,history:hist,updated_at:now,status:'Borrador'}).eq('id',d.id);await cLog('Editó propuesta: '+d.title);}
+        else{const {id,...rest}=d;await supabase.from('conecta_propuestas').insert({...rest,status:'Borrador',version:1,history:[]});await cLog('Creó propuesta: '+d.title);}
+        setConectaModalProp(undefined);loadConecta();
+      };
+      const deletePropC = async (id,title) => { if(!confirm(`¿Eliminar "${title}"?`))return;await supabase.from('conecta_propuestas').delete().eq('id',id);await cLog('Eliminó propuesta: '+title);setConectaPropDetalle(null);loadConecta(); };
+      const changeStatusC = async (prop,status,comment='') => {
+        const allowed={'Borrador':['Pendiente de GO'],'Ajustes solicitados':['Pendiente de GO'],'Pendiente de GO':['GO aprobado','Ajustes solicitados','Descartada'],'GO aprobado':['Presentada al aliado'],'Presentada al aliado':['Aceptada por aliado'],'Aceptada por aliado':['En ejecución'],'En ejecución':['Ejecutada']};
+        if(!allowed[prop.status]?.includes(status))return;
+        if(prop.status==='Pendiente de GO'&&currentUser?.role!=='admin'){showNotif('Solo el administrador puede dar GO','error');return;}
+        const hist=[...(prop.history||[]),{date:new Date().toISOString(),actor:currentUser?.name,action:status,comment}];
+        await supabase.from('conecta_propuestas').update({status,history:hist,updated_at:new Date().toISOString()}).eq('id',prop.id);
+        await cLog(`${prop.title}: "${status}"`);
+        setConectaPropDetalle(p=>p?.id===prop.id?{...p,status,history:hist}:p);
+        loadConecta();
+      };
+      const duplicatePropC = async p => { const {id,...rest}=p;await supabase.from('conecta_propuestas').insert({...rest,title:p.title+' · copia',status:'Borrador',version:1,history:[]});await cLog('Duplicó propuesta: '+p.title);loadConecta(); };
+
+      const saveTareaC = async d => { if(d.id){await supabase.from('conecta_tareas').update(d).eq('id',d.id);}else{const {id,...rest}=d;await supabase.from('conecta_tareas').insert({...rest,done:false});}await cLog((d.id?'Editó':'Creó')+' tarea: '+d.title);setConectaModalTarea(undefined);loadConecta(); };
+      const toggleTareaC = async t => { await supabase.from('conecta_tareas').update({done:!t.done}).eq('id',t.id);await cLog((t.done?'Reabrió':'Completó')+' tarea: '+t.title);loadConecta(); };
+      const deleteTareaC = async (id,title) => { await supabase.from('conecta_tareas').delete().eq('id',id);await cLog('Eliminó tarea: '+title);loadConecta(); };
+
+      const saveSolicitudC = async d => { if(d.id){await supabase.from('conecta_solicitudes').update(d).eq('id',d.id);}else{const {id,...rest}=d;await supabase.from('conecta_solicitudes').insert({...rest,status:'Nueva',date:cToday()});await cLog('Registró solicitud de: '+d.name);}setConectaModalSolicitud(undefined);loadConecta(); };
+      const atenderSolicitudC = async s => { await supabase.from('conecta_solicitudes').update({status:'Atendida'}).eq('id',s.id);await cLog('Atendió solicitud de: '+s.name);loadConecta(); };
+
+      const savePlanC = async d => { if(d.id){await supabase.from('conecta_planes').update(d).eq('id',d.id);}else{const {id,...rest}=d;await supabase.from('conecta_planes').insert({...rest,done:false,result:''});await cLog('Creó plan mensual');}setConectaModalPlan(undefined);loadConecta(); };
+      const resultadoPlanC = async plan => { const r=prompt('Resultado observado:',plan.result||'');if(r===null||!r.trim())return;await supabase.from('conecta_planes').update({result:r,done:true}).eq('id',plan.id);await cLog('Resultado: '+plan.action);loadConecta(); };
+
+      const saveRadarC = async d => { if(d.id){await supabase.from('conecta_radar').update(d).eq('id',d.id);}else{const {id,...rest}=d;await supabase.from('conecta_radar').insert({...rest,date:cToday()});await cLog('Añadió al radar: '+d.name);}setConectaModalRadar(undefined);loadConecta(); };
+      const deleteRadarC = async (id,name) => { await supabase.from('conecta_radar').delete().eq('id',id);await cLog('Eliminó del radar: '+name);loadConecta(); };
+
+      if (loading) return (<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a2e' }}><div style={{ textAlign: 'center', color: 'white' }}><div className="loading" style={{ width: 50, height: 50, margin: '0 auto 20px' }}></div><p>Cargando...</p></div></div>);
+
+      if (!currentUser) return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', padding: 20 }}>
+          <div style={{ background: 'white', borderRadius: 24, padding: 48, width: '100%', maxWidth: 440, boxShadow: '0 25px 60px rgba(232,67,56,0.25)' }}>
+            <div style={{ textAlign: 'center', marginBottom: 40 }}><AsobaresLogo width={260} /><div style={{ height: 1, background: 'linear-gradient(90deg, transparent, #E84338, transparent)', margin: '24px 0' }}></div><h2 style={{ fontSize: 20, color: '#1a1a2e', fontWeight: 600 }}>Gestión de Equipo</h2></div>
+            <div>
+              <div style={{ marginBottom: 20 }}><label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600, color: '#374151' }}>Usuario</label><input type="text" value={loginUsername} onChange={e => setLoginUsername(e.target.value)} placeholder="nombre.apellido" style={{ width: '100%', padding: '14px 16px', borderRadius: 12, border: '2px solid #e5e7eb', fontSize: 16, boxSizing: 'border-box' }} /></div>
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600, color: '#374151' }}>Contraseña</label>
+                <div style={{ position: 'relative' }}>
+                  <input type={showLoginPassword ? 'text' : 'password'} value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && handleLogin()} style={{ width: '100%', padding: '14px 48px 14px 16px', borderRadius: 12, border: '2px solid #e5e7eb', fontSize: 16, boxSizing: 'border-box' }} />
+                  <button type="button" onClick={() => setShowLoginPassword(p => !p)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', cursor: 'pointer', fontSize: 18, color: '#94a3b8', lineHeight: 1, padding: 0 }}><i className={showLoginPassword ? 'bi bi-eye-slash' : 'bi bi-eye'}></i></button>
+                </div>
+              </div>
+              {loginError && <p style={{ color: '#E84338', fontSize: 14, marginBottom: 16, textAlign: 'center' }}>{loginError}</p>}
+              <button onClick={handleLogin} style={{ width: '100%', padding: 16, borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Iniciar Sesión</button>
+            </div>
+            <div style={{ marginTop: 32, textAlign: 'center' }}><p style={{ fontSize: 13, color: '#64748b' }}>¿No recuerdas tu contraseña?</p><p style={{ fontSize: 13, color: '#64748b' }}>Solicítala a <a href="mailto:webasobares@gmail.com" style={{ color: '#E84338', fontWeight: 600 }}>webasobares@gmail.com</a></p></div>
+          </div>
+        </div>
+      );
+
+      return (
+        <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fa' }}>
+          {notification && <div style={{ position: 'fixed', top: 24, right: 24, padding: '16px 28px', borderRadius: 12, background: notification.type === 'success' ? '#10b981' : '#E84338', color: 'white', fontWeight: 600, zIndex: 1001 }}>{notification.msg}</div>}
+
+          {isMobile && sidebarOpen && <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 150 }} />}
+          <aside style={{ width: 260, background: 'linear-gradient(180deg, #1a1a2e, #16213e)', padding: '24px 16px', display: 'flex', flexDirection: 'column', position: 'fixed', height: '100vh', zIndex: 200, transform: isMobile && !sidebarOpen ? 'translateX(-260px)' : 'translateX(0)', transition: 'transform 0.3s ease' }}>
+            <div style={{ padding: '0 8px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 24 }}><AsobaresLogoSmall width={150} /><p style={{ color: '#94a3b8', fontSize: 11, marginTop: 12, letterSpacing: 1 }}>GESTIÓN DE EQUIPO</p></div>
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, overflowY: 'auto' }}>
+              {[{ id: 'dashboard', icon: 'bi-speedometer2', label: 'Mi Dashboard' }, { id: 'my-tasks', icon: 'bi-clipboard-check', label: 'Mis Tareas' }, { id: 'my-board', icon: 'bi-kanban', label: 'Mi Tablero' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><i className={'bi '+item.icon} style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>{item.label}</button>))}
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
+              <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>EQUIPO</p>
+              {[{ id: 'all-tasks', icon: 'bi-folder', label: 'Tareas del Equipo' }, { id: 'all-board', icon: 'bi-kanban', label: 'Tablero General' }, { id: 'assigned', icon: 'bi-send', label: 'Tareas que Asigné' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><i className={'bi '+item.icon} style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>{item.label}</button>))}
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
+              <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
+              <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2-open" style={{fontSize:18,marginRight:8}}></i>Documentación</button>
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('certificaciones')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'certificaciones' ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'transparent', color: view === 'certificaciones' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'certificaciones' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-mortarboard" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Certificaciones</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('conecta')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'conecta' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'conecta' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'conecta' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-handshake" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Conecta</button>}
+              {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: 'bi-people', label: 'Gestión de Equipo' }, { id: 'analytics', icon: 'bi-graph-up', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><i className={'bi '+item.icon} style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>{item.label}</button>))}</>)}
+            </nav>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: 'rgba(255,255,255,0.05)', borderRadius: 10, marginBottom: 12 }}><span style={{ fontSize: 32 }}>{currentUser.avatar}</span><div><p style={{ color: 'white', fontSize: 14, fontWeight: 600 }}>{currentUser.name}</p><p style={{ color: '#E84338', fontSize: 11 }}>{currentUser.cargo}</p></div></div>
+              <button onClick={handleLogout} style={{ width: '100%', padding: 12, borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#94a3b8', cursor: 'pointer' }}>Cerrar Sesión</button>
+            </div>
+          </aside>
+
+          <main style={{ flex: 1, marginLeft: isMobile ? 0 : 260, padding: isMobile ? '16px 12px 80px' : '32px 32px 80px', minWidth: 0 }}>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 20 : 32 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'crm-ecosistema-dj' && 'El Ecosistema DJ'}{view === 'crm-mix-shake' && 'Mix And Shake'}
+                {view === 'crm-circulo-gastro' && 'Círculo Gastro'}
+                {view === 'crm-cluster-dj' && 'Cluster DJ'}
+                {view === 'crm-base-total' && 'Base de Datos Total'}{view === 'crm-afiliados' && 'Afiliados'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
+              <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ position: 'relative' }}>
+                  <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}><i className="bi bi-bell"></i>{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
+                  {showNotifPanel && (<div style={{ position: 'absolute', top: 50, right: 0, width: 360, background: 'white', borderRadius: 16, boxShadow: '0 10px 40px rgba(0,0,0,0.15)', zIndex: 1000, overflow: 'hidden' }}><div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Notificaciones</h3>{notifications.length > 0 && <button onClick={clearNotifs} style={{ background: 'none', border: 'none', color: '#E84338', fontSize: 12, cursor: 'pointer' }}>Limpiar</button>}</div><div style={{ maxHeight: 400, overflowY: 'auto' }}>{notifications.length === 0 ? <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}><i className="bi bi-bell" style={{fontSize:32,marginBottom:8,display:'block',textAlign:'center'}}></i><p>No hay notificaciones</p></div> : notifications.map(n => (<div key={n.id} style={{ padding: '14px 20px', borderBottom: '1px solid #f1f5f9', background: n.read ? 'white' : '#fef2f2' }}><div style={{ display: 'flex', gap: 12 }}><span style={{ fontSize: 28 }}>{n.avatar}</span><div style={{ flex: 1 }}><p style={{ fontSize: 13, fontWeight: 600, margin: 0, color: '#1a1a2e' }}>{n.from}</p><p style={{ fontSize: 13, margin: '4px 0', color: '#475569' }}>Te asignó: <strong>{n.task}</strong></p><p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{timeAgo(n.time)}</p></div></div></div>))}</div></div>)}
+                </div>
+                {!isMobile && <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'white', borderRadius: 10, border: '2px solid #e5e7eb' }}><i className="bi bi-calendar3" style={{fontSize:14}}></i><select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ border: 'none', fontSize: 14, fontWeight: 600, color: '#E84338', cursor: 'pointer', outline: 'none' }}>{meses.map(m => <option key={m} value={m}>{m}</option>)}</select></div>}
+                {currentUser.role !== 'invitado' && <button onClick={() => { setEditingTask(null); setShowTaskModal(true); }} style={{ padding: isMobile ? '10px 14px' : '14px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: isMobile ? 20 : 14, fontWeight: 700, cursor: 'pointer' }}>{isMobile ? '+' : '+ Nueva Tarea'}</button>}
+              </div>
+            </header>
+
+            {showNotifPanel && <div onClick={() => setShowNotifPanel(false)} style={{ position: 'fixed', inset: 0, zIndex: 999 }}></div>}
+
+            {view === 'dashboard' && (<div><div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)', gap: isMobile ? 12 : 20, marginBottom: isMobile ? 16 : 32 }}>{[{ icon: 'bi-clipboard-check', val: myStats.total || 0, label: `Tareas ${selectedMonth}`, color: '#1a1a2e' }, { icon: 'bi-check-circle-fill', val: myStats.completadas || 0, label: 'Completadas', color: '#10b981' }, { icon: 'bi-arrow-clockwise', val: myStats.enCurso || 0, label: 'En Curso', color: '#f59e0b' }, { icon: 'bi-pencil-square', val: myStats.pendientes || 0, label: 'Pendientes', color: '#3b82f6' }, { icon: 'bi-exclamation-triangle-fill', val: myStats.retrasadas || 0, label: 'Retrasadas', color: '#E84338' }].map((s, i) => (<div key={i} style={{ background: 'white', borderRadius: 16, padding: 24, borderLeft: `4px solid ${s.color}` }}><i className={'bi '+s.icon} style={{fontSize:28,lineHeight:1}}></i><p style={{ fontSize: 36, fontWeight: 700, color: s.color, marginTop: 8 }}>{s.val}</p><p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>{s.label}</p></div>))}</div><div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr', gap: 16 }}><div style={{ background: 'white', borderRadius: 16, padding: 24 }}><h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Mi Cumplimiento</h2><div style={{ display: 'flex', justifyContent: 'center' }}><div style={{ position: 'relative', width: 140, height: 140 }}><svg width="140" height="140" viewBox="0 0 140 140"><circle cx="70" cy="70" r="55" fill="none" stroke="#f1f5f9" strokeWidth="12" /><circle cx="70" cy="70" r="55" fill="none" stroke={myStats.cumplimiento >= 70 ? '#10b981' : myStats.cumplimiento >= 40 ? '#f59e0b' : '#E84338'} strokeWidth="12" strokeDasharray={`${((myStats.cumplimiento || 0) / 100) * 345} 345`} strokeLinecap="round" transform="rotate(-90 70 70)" /></svg><div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 32, fontWeight: 700 }}>{myStats.cumplimiento || 0}%</span></div></div></div></div><div style={{ background: 'white', borderRadius: 16, padding: 24 }}><h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Mis Tareas Pendientes</h2>{myTasks.filter(t => t.mes === selectedMonth && t.estado !== 'completado').slice(0, 5).map(t => (<div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 14, background: '#f8f9fa', borderRadius: 10, marginBottom: 12 }}><div><p style={{ fontSize: 14, fontWeight: 600 }}>{t.proyecto}</p><p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>Vence: {t.fecha_fin}</p></div><span style={{ padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: statusLabels[t.estado]?.bg, color: statusLabels[t.estado]?.color }}>{statusLabels[t.estado]?.label}</span></div>))}{myTasks.filter(t => t.mes === selectedMonth && t.estado !== 'completado').length === 0 && <p style={{ textAlign: 'center', color: '#64748b', padding: 20 }}>¡Sin tareas pendientes!</p>}</div></div></div>)}
+
+            {view === 'my-tasks' && (<div><div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}><input type="text" placeholder="Buscar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ flex: 1, minWidth: 200, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} /><select value={filterMes} onChange={e => setFilterMes(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}><option value="all">Todos los meses</option>{meses.map(m => <option key={m} value={m}>{m}</option>)}</select><select value={filterEstado} onChange={e => setFilterEstado(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}><option value="all">Todos estados</option>{Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div><div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>{!isMobile && <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 130px 140px 96px', padding: '10px 16px', background: '#f8f9fa', borderBottom: '1px solid #f1f5f9' }}><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>PROYECTO</span><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>FECHAS</span><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>ESTADO</span><span></span></div>}{myFilteredTasks.map(t => isMobile ? (<div key={t.id} onClick={() => { setEditingTask(t); setShowTaskModal(true); }} style={{ padding: '14px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}><div style={{ minWidth: 0, flex: 1 }}><p style={{ fontSize: 14, fontWeight: 600 }}>{t.proyecto}</p>{t.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{t.descripcion}</p>}</div><span style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: statusLabels[t.estado]?.bg, color: statusLabels[t.estado]?.color }}>{statusLabels[t.estado]?.label}</span></div><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><p style={{ fontSize: 12, color: '#94a3b8' }}><i className="bi bi-calendar3" style={{marginRight:4}}></i>{t.fecha_inicio} → <i className="bi bi-flag-fill" style={{marginRight:4}}></i>{t.fecha_fin}</p><div style={{ display: 'flex', gap: 6 }}>{currentUser.role !== 'invitado' && <><button onClick={e => { e.stopPropagation(); setEditingTask(t); setShowTaskModal(true); }} style={{ padding: '6px 8px', borderRadius: 8, border: 'none', background: '#f1f5f9', cursor: 'pointer' }}><i className="bi bi-pencil-square"></i></button><button onClick={e => { e.stopPropagation(); handleDeleteTask(t.id); }} style={{ padding: '6px 8px', borderRadius: 8, border: 'none', background: '#fee2e2', cursor: 'pointer' }}><i className="bi bi-trash"></i></button></>}</div></div></div>) : (<div key={t.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 130px 140px 96px', padding: '14px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', alignItems: 'start', gap: 8 }} onClick={() => { setEditingTask(t); setShowTaskModal(true); }}><div style={{ minWidth: 0 }}><p style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.proyecto}</p>{t.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.descripcion}</p>}<p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.eje_estrategico}</p></div><div><p style={{ fontSize: 12 }}><i className="bi bi-calendar3" style={{marginRight:4}}></i>{t.fecha_inicio}</p><p style={{ fontSize: 12, color: '#64748b' }}><i className="bi bi-flag-fill" style={{marginRight:4}}></i>{t.fecha_fin}</p></div><span style={{ padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: statusLabels[t.estado]?.bg, color: statusLabels[t.estado]?.color }}>{statusLabels[t.estado]?.label}</span><div style={{ display: 'flex', gap: 6 }}>{currentUser.role !== 'invitado' && <><button onClick={e => { e.stopPropagation(); setEditingTask(t); setShowTaskModal(true); }} style={{ padding: '8px 10px', borderRadius: 8, border: 'none', background: '#f1f5f9', cursor: 'pointer' }}><i className="bi bi-pencil-square"></i></button><button onClick={e => { e.stopPropagation(); handleDeleteTask(t.id); }} style={{ padding: '8px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', cursor: 'pointer' }}><i className="bi bi-trash"></i></button></>}</div></div>))}{myFilteredTasks.length === 0 && <p style={{ textAlign: 'center', padding: 48, color: '#64748b' }}>No tienes tareas</p>}</div></div>)}
+
+            {view === 'my-board' && (<div><p style={{ color: '#64748b', marginBottom: 20 }}>{currentUser.role === 'invitado' ? 'Modo solo lectura' : 'Arrastra las tarjetas para cambiar estado'}</p><div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 12 : 20, overflowX: isMobile ? 'auto' : 'visible' }}>{Object.entries(statusLabels).map(([key, val]) => { const col = myTasks.filter(t => t.estado === key); return (<div key={key} className="kanban-column" onDragOver={currentUser.role !== 'invitado' ? handleDragOver : undefined} onDragEnter={currentUser.role !== 'invitado' ? handleDragEnter : undefined} onDragLeave={currentUser.role !== 'invitado' ? handleDragLeave : undefined} onDrop={currentUser.role !== 'invitado' ? (e => handleDrop(e, key)) : undefined} style={{ background: '#f1f5f9', borderRadius: 16, padding: 16, minHeight: 400 }}><div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 16, borderTop: `4px solid ${val.color}` }}><div style={{ display: 'flex', justifyContent: 'space-between' }}><h3 style={{ fontSize: 14, fontWeight: 700 }}>{val.label}</h3><span style={{ background: val.bg, color: val.color, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{col.length}</span></div></div><div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{col.map(t => (<div key={t.id} className="kanban-card" draggable={currentUser.role !== 'invitado'} onDragStart={currentUser.role !== 'invitado' ? (e => handleDragStart(e, t)) : undefined} onDragEnd={currentUser.role !== 'invitado' ? handleDragEnd : undefined} style={{ background: 'white', borderRadius: 12, padding: 16, cursor: currentUser.role === 'invitado' ? 'default' : 'grab' }}><span style={{ padding: '4px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600, background: '#f1f5f9', color: '#475569' }}>{t.eje_estrategico}</span><h4 style={{ fontSize: 14, fontWeight: 600, margin: '8px 0' }}>{t.proyecto}</h4><p style={{ fontSize: 10, color: '#94a3b8' }}><i className="bi bi-flag-fill" style={{marginRight:4}}></i>{t.fecha_fin}</p></div>))}</div></div>); })}</div></div>)}
+
+            {view === 'all-tasks' && (<div><div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}><input type="text" placeholder="Buscar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ flex: 1, minWidth: 200, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} /><select value={filterMes} onChange={e => setFilterMes(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}><option value="all">Todos los meses</option>{meses.map(m => <option key={m} value={m}>{m}</option>)}</select><select value={filterUsuario} onChange={e => setFilterUsuario(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}><option value="all">Todos</option>{users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select><select value={filterEstado} onChange={e => setFilterEstado(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}><option value="all">Todos estados</option>{Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div><div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>{!isMobile && <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 150px 130px 140px 96px', padding: '10px 16px', background: '#f8f9fa', borderBottom: '1px solid #f1f5f9' }}><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>PROYECTO</span><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>RESPONSABLES</span><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>FECHAS</span><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>ESTADO</span><span></span></div>}{filteredTasks.map(t => isMobile ? (<div key={t.id} onClick={() => { setEditingTask(t); setShowTaskModal(true); }} style={{ padding: '14px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}><div style={{ minWidth: 0, flex: 1 }}><p style={{ fontSize: 14, fontWeight: 600 }}>{t.proyecto}</p>{t.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{t.descripcion}</p>}</div><span style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: statusLabels[t.estado]?.bg, color: statusLabels[t.estado]?.color }}>{statusLabels[t.estado]?.label}</span></div><div style={{ marginBottom: 6 }}><ResponsablesDisplay task={t} users={users} /></div><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><p style={{ fontSize: 12, color: '#94a3b8' }}><i className="bi bi-calendar3" style={{marginRight:4}}></i>{t.fecha_inicio} → <i className="bi bi-flag-fill" style={{marginRight:4}}></i>{t.fecha_fin}</p><div style={{ display: 'flex', gap: 6 }}>{currentUser.role !== 'invitado' && <><button onClick={e => { e.stopPropagation(); setEditingTask(t); setShowTaskModal(true); }} style={{ padding: '6px 8px', borderRadius: 8, border: 'none', background: '#f1f5f9', cursor: 'pointer' }}><i className="bi bi-pencil-square"></i></button>{(currentUser.role === 'admin' || t.creado_por === currentUser.id) && <button onClick={e => { e.stopPropagation(); handleDeleteTask(t.id); }} style={{ padding: '6px 8px', borderRadius: 8, border: 'none', background: '#fee2e2', cursor: 'pointer' }}><i className="bi bi-trash"></i></button>}</>}</div></div></div>) : (<div key={t.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 150px 130px 140px 96px', padding: '14px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', alignItems: 'start', gap: 8 }} onClick={() => { setEditingTask(t); setShowTaskModal(true); }}><div style={{ minWidth: 0 }}><p style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.proyecto}</p>{t.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.descripcion}</p>}<p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.eje_estrategico}</p></div><div><ResponsablesDisplay task={t} users={users} /></div><div><p style={{ fontSize: 12 }}><i className="bi bi-calendar3" style={{marginRight:4}}></i>{t.fecha_inicio}</p><p style={{ fontSize: 12, color: '#64748b' }}><i className="bi bi-flag-fill" style={{marginRight:4}}></i>{t.fecha_fin}</p></div><span style={{ padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: statusLabels[t.estado]?.bg, color: statusLabels[t.estado]?.color }}>{statusLabels[t.estado]?.label}</span><div style={{ display: 'flex', gap: 6 }}>{currentUser.role !== 'invitado' && <><button onClick={e => { e.stopPropagation(); setEditingTask(t); setShowTaskModal(true); }} style={{ padding: '8px 10px', borderRadius: 8, border: 'none', background: '#f1f5f9', cursor: 'pointer' }}><i className="bi bi-pencil-square"></i></button>{(currentUser.role === 'admin' || t.creado_por === currentUser.id) && <button onClick={e => { e.stopPropagation(); handleDeleteTask(t.id); }} style={{ padding: '8px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', cursor: 'pointer' }}><i className="bi bi-trash"></i></button>}</>}</div></div>))}{filteredTasks.length === 0 && <p style={{ textAlign: 'center', padding: 48, color: '#64748b' }}>No hay tareas</p>}</div></div>)}
+
+            {view === 'all-board' && (<div><div style={{ display: 'flex', gap: 16, marginBottom: 20 }}><select value={filterUsuario} onChange={e => setFilterUsuario(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white', width: isMobile ? '100%' : 'auto' }}><option value="all">Todos</option>{users.map(u => <option key={u.id} value={u.id}>{u.avatar} {u.name}</option>)}</select></div><p style={{ color: '#64748b', marginBottom: 20 }}>{currentUser.role === 'invitado' ? 'Modo solo lectura' : 'Arrastra las tarjetas para cambiar estado'}</p><div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 12 : 20 }}>{Object.entries(statusLabels).map(([key, val]) => { const col = allTasks.filter(t => t.estado === key); return (<div key={key} className="kanban-column" onDragOver={currentUser.role !== 'invitado' ? handleDragOver : undefined} onDragEnter={currentUser.role !== 'invitado' ? handleDragEnter : undefined} onDragLeave={currentUser.role !== 'invitado' ? handleDragLeave : undefined} onDrop={currentUser.role !== 'invitado' ? (e => handleDrop(e, key)) : undefined} style={{ background: '#f1f5f9', borderRadius: 16, padding: 16, minHeight: 400 }}><div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 16, borderTop: `4px solid ${val.color}` }}><div style={{ display: 'flex', justifyContent: 'space-between' }}><h3 style={{ fontSize: 14, fontWeight: 700 }}>{val.label}</h3><span style={{ background: val.bg, color: val.color, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{col.length}</span></div></div><div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{col.map(t => (<div key={t.id} className="kanban-card" draggable={currentUser.role !== 'invitado'} onDragStart={currentUser.role !== 'invitado' ? (e => handleDragStart(e, t)) : undefined} onDragEnd={currentUser.role !== 'invitado' ? handleDragEnd : undefined} style={{ background: 'white', borderRadius: 12, padding: 16, cursor: currentUser.role === 'invitado' ? 'default' : 'grab' }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ padding: '4px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600, background: '#f1f5f9', color: '#475569' }}>{t.eje_estrategico}</span><ResponsablesDisplay task={t} users={users} compact /></div><h4 style={{ fontSize: 14, fontWeight: 600, margin: '8px 0' }}>{t.proyecto}</h4><p style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}><i className="bi bi-flag-fill" style={{marginRight:4}}></i>{t.fecha_fin}</p></div>))}</div></div>); })}</div></div>)}
+
+            {view === 'assigned' && (<div><p style={{ color: '#64748b', marginBottom: 20 }}>Tareas que asignaste a otros</p><div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>{!isMobile && <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 150px 110px 140px', padding: '10px 16px', background: '#f8f9fa', borderBottom: '1px solid #f1f5f9' }}><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>PROYECTO</span><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>ASIGNADOS</span><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>FECHA FIN</span><span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>ESTADO</span></div>}{assignedByMe.map(t => isMobile ? (<div key={t.id} onClick={() => { setEditingTask(t); setShowTaskModal(true); }} style={{ padding: '14px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}><div style={{ minWidth: 0, flex: 1 }}><p style={{ fontSize: 14, fontWeight: 600 }}>{t.proyecto}</p>{t.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{t.descripcion}</p>}</div><span style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: statusLabels[t.estado]?.bg, color: statusLabels[t.estado]?.color }}>{statusLabels[t.estado]?.label}</span></div><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><ResponsablesDisplay task={t} users={users} /><p style={{ fontSize: 12, color: '#94a3b8' }}><i className="bi bi-flag-fill" style={{marginRight:4}}></i>{t.fecha_fin}</p></div></div>) : (<div key={t.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 150px 110px 140px', padding: '14px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', alignItems: 'start', gap: 8 }} onClick={() => { setEditingTask(t); setShowTaskModal(true); }}><div style={{ minWidth: 0 }}><p style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.proyecto}</p>{t.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.descripcion}</p>}</div><div><ResponsablesDisplay task={t} users={users} /></div><p style={{ fontSize: 12 }}><i className="bi bi-flag-fill" style={{marginRight:4}}></i>{t.fecha_fin}</p><span style={{ padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: statusLabels[t.estado]?.bg, color: statusLabels[t.estado]?.color }}>{statusLabels[t.estado]?.label}</span></div>))}{assignedByMe.length === 0 && <p style={{ textAlign: 'center', padding: 48, color: '#64748b' }}>No has asignado tareas</p>}</div></div>)}
+
+            {view === 'docs' && (
+              <div>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
+                  {docNav.cat && (() => {
+                    const activeCat = docCategories.find(c => c.id === docNav.cat);
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                        <button onClick={() => setDocNav({ cat: null, subcat: null })} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#475569', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                          Documentación
+                        </button>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                        {docNav.subcat ? (
+                          <>
+                            <button onClick={() => setDocNav({ cat: docNav.cat, subcat: null })} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#475569', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                              <div style={{ width: 18, height: 18, borderRadius: 5, background: activeCat?.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={activeCat?.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={activeCat?.iconPath}/></svg>
+                              </div>
+                              {activeCat?.label}
+                            </button>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: activeCat?.bg, color: activeCat?.color, fontSize: 13, fontWeight: 700 }}>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                              {docNav.subcat}
+                            </span>
+                          </>
+                        ) : (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: activeCat?.bg, color: activeCat?.color, fontSize: 13, fontWeight: 700 }}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={activeCat?.iconPath}/></svg>
+                            {activeCat?.label}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  {docNav.cat && <input type="text" placeholder="Buscar..." value={docSearch} onChange={e => setDocSearch(e.target.value)} style={{ width: 200, padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13 }} />}
+                  <button onClick={loadDocs} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 14 }}><i className="bi bi-arrow-clockwise"></i></button>
+                  {currentUser.role !== 'invitado' && <button onClick={() => setShowAddDocModal(true)} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>+ Agregar recurso</button>}
+                </div>
+                {docsLoading ? (
+                  <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando...</p></div>
+                ) : !docNav.cat ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+                    {docCategories.map(cat => {
+                      const count = docs.filter(d => d.categoria === cat.id).length;
+                      const subcats = [...new Set(docs.filter(d => d.categoria === cat.id && d.subcategoria).map(d => d.subcategoria))];
+                      return (
+                        <div key={cat.id} onClick={() => { setDocNav({ cat: cat.id, subcat: null }); setDocSearch(''); }}
+                          style={{ background: 'white', borderRadius: 20, padding: '36px 28px', cursor: 'pointer', border: '1.5px solid #f1f5f9', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 20 }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = cat.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${cat.color}22`; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06)'; }}>
+                          <div style={{ width: 64, height: 64, borderRadius: 16, background: cat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={cat.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d={cat.iconPath} />
+                            </svg>
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <h3 style={{ fontSize: 17, fontWeight: 700, color: '#1a1a2e', marginBottom: 5 }}>{cat.label}</h3>
+                            <p style={{ fontSize: 12, color: '#94a3b8' }}>{count} recurso{count !== 1 ? 's' : ''}</p>
+                            {subcats.length > 0 && <p style={{ fontSize: 11, color: cat.color, fontWeight: 600, marginTop: 3 }}>{subcats.length} subcarpeta{subcats.length !== 1 ? 's' : ''}</p>}
+                          </div>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <path d="M9 18l6-6-6-6"/>
+                          </svg>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (() => {
+                  const renderDocCard = (doc) => {
+                    const previewUrl = getDrivePreviewUrl(doc.url);
+                    const downloadUrl = getDriveDownloadUrl(doc);
+                    const whatsappUrl = 'https://api.whatsapp.com/send?text=' + encodeURIComponent('*' + doc.nombre + '*\n\n' + doc.url);
+                    const mailtoUrl = 'mailto:?subject=' + encodeURIComponent(doc.nombre) + '&body=' + encodeURIComponent('Te comparto este recurso de Asobares:\n\n' + doc.nombre + '\n' + doc.url);
+                    return (
+                      <div key={doc.id} style={{ background: 'white', borderRadius: 16, overflow: 'hidden', border: '1px solid #f1f5f9', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column' }}>
+                        <div onClick={() => previewUrl && setDocPreview(doc)} style={{ background: 'linear-gradient(135deg, #f8f9fa, #f1f5f9)', height: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: previewUrl ? 'pointer' : 'default', position: 'relative' }}>
+                          <i className={'bi '+getDriveIcon(doc.tipo)} style={{fontSize:52}}></i>
+                          {previewUrl && <div style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 11, padding: '3px 8px', borderRadius: 6, fontWeight: 600 }}><i className="bi bi-eye"></i> Vista previa</div>}
+                        </div>
+                        <div style={{ padding: 16, flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <div>
+                            <p style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', lineHeight: 1.4, marginBottom: 4 }}>{doc.nombre}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8' }}>{getDriveLabel(doc.tipo)}</p>
+                            {doc.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{doc.descripcion}</p>}
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 'auto' }}>
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              {previewUrl && <button onClick={() => setDocPreview(doc)} style={{ flex: 1, padding: '9px 0', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}><i className="bi bi-eye"></i> Preview</button>}
+                              {doc.tipo === 'folder'
+                                ? <button onClick={() => descargarCarpetaZip(doc)} disabled={zipDescargando === doc.id} style={{ flex: 1, padding: '9px 0', borderRadius: 8, border: 'none', background: zipDescargando === doc.id ? '#e5e7eb' : 'linear-gradient(135deg, #E84338, #c41e16)', color: zipDescargando === doc.id ? '#94a3b8' : 'white', fontSize: 12, fontWeight: 600, cursor: zipDescargando === doc.id ? 'default' : 'pointer' }}>{zipDescargando === doc.id ? '⏳ Preparando...' : '⬇️ Descargar ZIP'}</button>
+                                : <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: '9px 0', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 12, fontWeight: 600, textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>{doc.url && doc.url.includes('supabase.co/storage') && doc.url.endsWith('.zip') ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Descargar ZIP</> : 'Abrir'}</a>
+                              }
+                              {downloadUrl && doc.tipo !== 'folder' && !doc.url?.includes('supabase.co/storage') && <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '9px 12px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontSize: 12, fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>⬇️</a>}
+                              {currentUser.role === 'admin' && <button onClick={() => handleDeleteDoc(doc.id)} style={{ padding: '9px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', cursor: 'pointer', fontSize: 12 }}><i className="bi bi-trash"></i></button>}
+                            </div>
+                            <div style={{ position: 'relative' }}>
+                              <button onClick={(e) => { e.stopPropagation(); setShareDocId(shareDocId === doc.id ? null : doc.id); }} style={{ width: '100%', padding: '9px 0', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                Compartir
+                              </button>
+                              {shareDocId === doc.id && (
+                                <div style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: 0, right: 0, background: 'white', borderRadius: 12, boxShadow: '0 4px 24px rgba(0,0,0,0.15)', padding: 6, zIndex: 50, border: '1px solid #f1f5f9' }}>
+                                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" onClick={() => setShareDocId(null)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, textDecoration: 'none', color: '#128C7E', fontWeight: 600, fontSize: 13, background: 'transparent' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#f0fdf4'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                    WhatsApp
+                                  </a>
+                                  <a href={mailtoUrl} onClick={() => setShareDocId(null)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, textDecoration: 'none', color: '#3b82f6', fontWeight: 600, fontSize: 13, background: 'transparent' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#eff6ff'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                    Correo electrónico
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  };
+                  const catInfo = docCategories.find(c => c.id === docNav.cat);
+                  if (docNav.subcat) {
+                    const subcatDocs = docs.filter(d => d.categoria === docNav.cat && d.subcategoria === docNav.subcat && (!docSearch || d.nombre.toLowerCase().includes(docSearch.toLowerCase())));
+                    return (
+                      <div>
+                        {subcatDocs.length === 0 ? <div style={{ background: 'white', borderRadius: 16, padding: 60, textAlign: 'center', color: '#94a3b8' }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600 }}>Sin recursos en esta subcarpeta</p></div>
+                          : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>{subcatDocs.map(renderDocCard)}</div>}
+                      </div>
+                    );
+                  }
+                  const catDocs = docs.filter(d => d.categoria === docNav.cat);
+                  const subcats = [...new Set(catDocs.filter(d => d.subcategoria).map(d => d.subcategoria))];
+                  const rootDocs = catDocs.filter(d => !d.subcategoria && (!docSearch || d.nombre.toLowerCase().includes(docSearch.toLowerCase())));
+                  return (
+                    <div>
+                      {subcats.length > 0 && (
+                        <div style={{ marginBottom: 32 }}>
+                          {rootDocs.length > 0 && <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>SUBCARPETAS</p>}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
+                            {subcats.map(sc => {
+                              const scCount = catDocs.filter(d => d.subcategoria === sc).length;
+                              return (
+                                <div key={sc} onClick={() => setDocNav({ cat: docNav.cat, subcat: sc })}
+                                  style={{ background: 'white', borderRadius: 14, padding: '18px 20px', cursor: 'pointer', border: '1.5px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 14, transition: 'all 0.15s' }}
+                                  onMouseEnter={e => { e.currentTarget.style.borderColor = catInfo?.color; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 4px 16px ${catInfo?.color}18`; }}
+                                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                                  <div style={{ width: 44, height: 44, borderRadius: 12, background: catInfo?.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={catInfo?.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                                    </svg>
+                                  </div>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <p style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sc}</p>
+                                    <p style={{ fontSize: 11, color: '#94a3b8' }}>{scCount} recurso{scCount !== 1 ? 's' : ''}</p>
+                                  </div>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 18l6-6-6-6"/></svg>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      {rootDocs.length > 0 && (
+                        <div>
+                          {subcats.length > 0 && <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>ARCHIVOS</p>}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>{rootDocs.map(renderDocCard)}</div>
+                        </div>
+                      )}
+                      {catDocs.length === 0 && <div style={{ background: 'white', borderRadius: 16, padding: 60, textAlign: 'center', color: '#94a3b8' }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600 }}>Sin recursos en {catInfo?.label}</p></div>}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {view === 'crm' && (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20, marginTop: 8 }}>
+                  {[
+                    { id: 'crm-aev-folder', icon: 'bi-music-note-beamed', title: 'Área en Vivo', desc: 'Formularios y postulados del programa Área en Vivo. Artistas, capacitaciones y eventos.', count: crmData.length + aevLabData.length + aevBoot2Data.length + aevSegData.length + ecosistemaDjData.length, loading: crmLoading || aevLabLoading || aevBoot2Loading || aevSegLoading || ecosistemaDjLoading, color: '#E84338', bg: '#fee2e2' },
+                    { id: 'fontur', icon: 'bi-clipboard-check', title: 'Formulario FONTUR', desc: 'Inscripciones al programa NTC 6496:2020 financiado por FONTUR. Solo consulta y exportación.', count: fonturData.length, loading: fonturLoading, color: '#1e3a5f', bg: '#dbeafe' },
+                    { id: 'registros', icon: 'bi-building', title: 'Registros de Formularios', desc: 'Envíos del formulario de afiliación de asobares.org. Establecimientos, datos de empresa y documentos adjuntos.', count: registrosData.length, loading: registrosLoading, color: '#059669', bg: '#d1fae5' },
+                    { id: 'crm-gastro', icon: 'bi-cup-hot', title: 'Postulados Gastromarketing Day', desc: 'Postulaciones al Gastromarketing Day — Catedral de Sal, 24-25 sep 2026. Gestiona estados y notas internas.', count: gastroData.length, loading: gastroLoading, color: '#f59e0b', bg: '#fef3c7' },
+                    { id: 'crm-armenia-folder', icon: 'bi-buildings', title: 'Armenia 24', desc: 'Formularios del programa de Fortalecimiento Empresarial en Armenia, Quindío — Alcaldía de Armenia · Asobares · Quindío Convention Bureau.', count: armeniaCapData.length + armeniaDiagData.length + armeniaAsistData.length + armeniaGuiaData.length + armeniaPostGastroData.length, loading: armeniaCapLoading || armeniaDiagLoading || armeniaAsistLoading || armeniaGuiaLoading || armeniaPostGastroLoading, color: '#2db84b', bg: '#f0f9f4' },
+                    { id: 'crm-bar-week', icon: 'bi-cup-straw', title: 'Bar Week Bogotá', desc: 'Establecimientos registrados en Bar Week Bogotá 2026 — Cóctel + Tapa por $35.000 · 27 nov al 7 dic · Asobares · IDT.', count: barWeekData.length, loading: barWeekLoading, color: '#d4a017', bg: '#fffde7' },
+                    { id: 'crm-espacios-corp', icon: 'bi-building-check', title: 'Espacios Corporativos', desc: 'Establecimientos registrados para el directorio de espacios para eventos corporativos — Iniciativa ASOBARES + ANATO Capítulo Central.', count: espaciosCorpData.length, loading: espaciosCorpLoading, color: '#1d4ed8', bg: '#eff6ff' },
+                    { id: 'crm-mix-shake', icon: 'bi-cup-straw-fill', title: 'Mix And Shake', desc: 'Comunidad de bartending de Asobares Colombia — Inscripciones de talento de barra, establecimientos, marcas y proveedores.', count: mixShakeData.length, loading: mixShakeLoading, color: '#8B2BE8', bg: '#f3e8ff' },
+                          { id: 'crm-circulo-gastro', icon: 'bi-fork-knife', title: 'Círculo Gastro', desc: 'Comunidad gastronómica de circulogastro.com — Inscripciones de profesionales, establecimientos, marcas y proveedores.', count: circuloGastroData.length, loading: circuloGastroLoading, color: '#e67e22', bg: '#fef3e2' },
+                          { id: 'crm-cluster-dj', icon: 'bi-vinyl-fill', title: 'Cluster DJ', desc: 'Comunidad de DJs de clusterdj.co — Inscripciones de talentos, establecimientos, marcas y proveedores del sector.', count: clusterDjData.length, loading: clusterDjLoading, color: '#0ea5e9', bg: '#e0f2fe' },
+                          { id: 'crm-base-total', icon: 'bi-database-fill', title: 'Base de Datos Total', desc: 'Base de datos general del sector — más de 120.000 registros de personas vinculadas a la industria de bares y restaurantes.', count: baseTotalCount, loading: baseTotalCount === null, color: '#1e293b', bg: '#f1f5f9' },
+                          { id: 'crm-afiliados', icon: 'bi-patch-check-fill', title: 'Afiliados', desc: 'Establecimientos afiliados a Asobares — razón social, representante legal, documentos y datos de contacto.', count: afiliadosData.length, loading: afiliadosLoading, color: '#16a34a', bg: '#dcfce7' }
+                  ].map(card => (
+                    <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: 16, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0 }}><i className={'bi '+card.icon} style={{lineHeight:1}}></i></div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{card.title}</h3>
+                          <p style={{ fontSize: 13, color: card.color, fontWeight: 700, marginTop: 2 }}>{card.loading ? '...' : card.count + ' registro' + (card.count !== 1 ? 's' : '')}</p>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, marginBottom: 20 }}>{card.desc}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: card.color, fontWeight: 700, fontSize: 13 }}>Ver registros <span style={{ fontSize: 16 }}>→</span></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {view === 'crm-aev-folder' && (
+              <div>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 24, paddingBottom: 16, borderBottom: '2px solid #e5e7eb', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button onClick={() => setView('crm')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← CRM</button>
+                  <button style={{ padding: '8px 20px', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'default' }}><i className="bi bi-mic"></i> Área en Vivo</button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20, marginTop: 8 }}>
+                  {[
+                    { id: 'crm-aev', icon: 'bi-mic', title: 'Postulados Área en Vivo', desc: 'Artistas y DJs postulados al programa Área en Vivo. Gestiona estados, edita y exporta.', count: crmData.length, loading: crmLoading, color: '#E84338', bg: '#fee2e2' },
+                    { id: 'crm-aev-lab', icon: 'bi-headphones', title: 'Capacitación OCTAVA — Sonido, Video y Performance DJ', desc: 'Inscripciones al evento del 12 de agosto en Octava Club, Chapinero. Gestiona asistencia y estados.', count: aevLabData.length, loading: aevLabLoading, color: '#7c3aed', bg: '#ede9fe' },
+                    { id: 'crm-aev-bootcamp2', icon: 'bi-music-note-list', title: 'Bootcamp 2 — Music Business e Industria Musical', desc: 'Inscripciones al evento del 19 de agosto en Auditorio EMMAT. EMMAT + Creartech + ALQUMIA.', count: aevBoot2Data.length, loading: aevBoot2Loading, color: '#7c3aed', bg: '#ede9fe' },
+                    { id: 'crm-aev-seguridad', icon: 'bi-shield-check', title: 'Bootcamp 3 — La Seguridad También se Planifica', desc: 'Inscripciones al evento del 26 de agosto. Virtual — Canal Exclusivo Asobares. Operar, Prevenir y Cuidar.', count: aevSegData.length, loading: aevSegLoading, color: '#7c3aed', bg: '#ede9fe' },
+                    { id: 'crm-ecosistema-dj', icon: 'bi-disc', title: 'El Ecosistema DJ', desc: 'Base de datos de asistentes al evento El Ecosistema DJ. Datos de registro, check-in y perfil del asistente.', count: ecosistemaDjData.length, loading: ecosistemaDjLoading, color: '#0f766e', bg: '#ccfbf1' }
+                  ].map(card => (
+                    <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: 16, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0 }}><i className={'bi '+card.icon} style={{lineHeight:1}}></i></div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', lineHeight: 1.3 }}>{card.title}</h3>
+                          <p style={{ fontSize: 13, color: card.color, fontWeight: 700, marginTop: 4 }}>{card.loading ? '...' : card.count + ' registro' + (card.count !== 1 ? 's' : '')}</p>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, marginBottom: 20 }}>{card.desc}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: card.color, fontWeight: 700, fontSize: 13 }}>Ver registros <span style={{ fontSize: 16 }}>→</span></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {view === 'crm-armenia-folder' && (
+              <div>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 24, paddingBottom: 16, borderBottom: '2px solid #e5e7eb', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button onClick={() => setView('crm')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← CRM</button>
+                  <button style={{ padding: '8px 20px', borderRadius: 8, background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'default' }}><i className="bi bi-buildings"></i> Armenia 24</button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20, marginTop: 8 }}>
+                  {[
+                    { id: 'crm-armenia-cap', icon: 'bi-clipboard-check', title: 'Inscripción a Formación o Capacitación', desc: 'Registro Capacitación Fortalecimiento Empresarial — Cap 3: Renacer y Reactivar su Negocio · 27 ago · Virtual.', count: armeniaCapData.length, loading: armeniaCapLoading, color: '#2db84b', bg: '#f0f9f4' },
+                    { id: 'crm-armenia-diag', icon: 'bi-search', title: 'Instrumento Diagnóstico y Acompañamiento', desc: 'Diagnóstico de establecimientos de comercio — Asistencia técnica Ciudad de Armenia.', count: armeniaDiagData.length, loading: armeniaDiagLoading, color: '#1e7c34', bg: '#f0f9f4' },
+                    { id: 'crm-armenia-asistencia', icon: 'bi-pencil-square', title: 'Registro Asistencia — Ciclo de Formación', desc: 'Registro de asistentes al ciclo de formación y capacitaciones — Armenia, Quindío.', count: armeniaAsistData.length, loading: armeniaAsistLoading, color: '#2db84b', bg: '#f0f9f4' },
+                    { id: 'crm-armenia-guia', icon: 'bi-map', title: 'Inscripción Guía Gastroentretenimiento', desc: 'Establecimientos inscritos en la Guía de Gastroentretenimiento de Armenia — Alcaldía · Asobares · Bureau.', count: armeniaGuiaData.length, loading: armeniaGuiaLoading, color: '#1e7c34', bg: '#f0fdf4' },
+                    { id: 'crm-armenia-postgastro', icon: 'bi-cup-hot', title: 'Postulación Asistencia Técnica Gastroentretenimiento', desc: 'Establecimientos postulados a asistencia técnica — Solo 30 seleccionados. Alcaldía de Armenia · Bureau · Asobares.', count: armeniaPostGastroData.length, loading: armeniaPostGastroLoading, color: '#2db84b', bg: '#f0f9f4' }
+                  ].map(card => (
+                    <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: 16, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0 }}><i className={'bi '+card.icon} style={{lineHeight:1}}></i></div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <h3 style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e', lineHeight: 1.3 }}>{card.title}</h3>
+                          <p style={{ fontSize: 13, color: card.color, fontWeight: 700, marginTop: 4 }}>{card.loading ? '...' : card.count + ' registro' + (card.count !== 1 ? 's' : '')}</p>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, marginBottom: 20 }}>{card.desc}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: card.color, fontWeight: 700, fontSize: 13 }}>Ver registros <span style={{ fontSize: 16 }}>→</span></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {view === 'crm-aev' && (
+              <div>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 24, borderBottom: '2px solid #e5e7eb', paddingBottom: 16 }}>
+                  <button onClick={() => setView('crm')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← CRM</button>
+                  <button style={{ padding: '8px 20px', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'default' }}><i className="bi bi-music-note-beamed"></i> Artistas · Área en Vivo</button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 24 }}>
+                  {[{ label: 'Total', val: crmData.length, color: '#1a1a2e' }, { label: 'Nuevos', val: crmData.filter(r => r.estado === 'nuevo').length, color: '#3b82f6' }, { label: 'En revisión', val: crmData.filter(r => r.estado === 'en-revision').length, color: '#f59e0b' }, { label: 'Aceptados', val: crmData.filter(r => r.estado === 'aceptado').length, color: '#10b981' }, { label: 'Rechazados', val: crmData.filter(r => r.estado === 'rechazado').length, color: '#ef4444' }].map((s, i) => (
+                    <div key={i} style={{ background: 'white', borderRadius: 14, padding: 20, borderLeft: '4px solid ' + s.color }}><p style={{ fontSize: 28, fontWeight: 700, color: s.color }}>{s.val}</p><p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{s.label}</p></div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                  <input placeholder="Buscar por nombre artístico, nombre o email..." value={crmSearch} onChange={e => setCrmSearch(e.target.value)} style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                  <select value={crmFiltroEstado} onChange={e => setCrmFiltroEstado(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                    <option value="all">Todos los estados</option>
+                    {Object.entries(crmEstados).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                  </select>
+                  <button onClick={loadCrm} style={{ padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 14 }}><i className="bi bi-arrow-clockwise"></i></button>
+                  <button onClick={exportCrmExcel} style={{ padding: '12px 18px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                </div>
+                {crmLoading ? (
+                  <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando...</p></div>
+                ) : (
+                  <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead><tr style={{ background: '#f8f9fa' }}>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>ARTISTA</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>NOMBRE</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>CARGO</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>CIUDAD</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>ESTADO</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b' }}>REGISTRO</th>
+                        <th style={{ padding: '14px 16px' }}></th>
+                      </tr></thead>
+                      <tbody>{(() => {
+                        const filtered = crmData.filter(r => {
+                          if (crmFiltroEstado !== 'all' && r.estado !== crmFiltroEstado) return false;
+                          const q = crmSearch.toLowerCase();
+                          if (q && !r.nombre_artistico?.toLowerCase().includes(q) && !r.nombre?.toLowerCase().includes(q) && !r.email?.toLowerCase().includes(q)) return false;
+                          return true;
+                        });
+                        if (filtered.length === 0) return (<tr><td colSpan={7} style={{ padding: 48, textAlign: 'center', color: '#94a3b8' }}>{crmData.length === 0 ? 'Aún no hay registros' : 'Sin resultados para esa búsqueda'}</td></tr>);
+                        return filtered.map(r => (
+                          <tr key={r.id} style={{ borderTop: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '14px 16px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                {r.foto_url ? <img src={r.foto_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}><i className="bi bi-music-note-beamed"></i></div>}
+                                <p style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre_artistico}</p>
+                              </div>
+                            </td>
+                            <td style={{ padding: '14px 16px' }}><p style={{ fontSize: 13 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email}</p></td>
+                            <td style={{ padding: '14px 16px' }}><p style={{ fontSize: 13 }}>{r.cargo}</p></td>
+                            <td style={{ padding: '14px 16px' }}><p style={{ fontSize: 13 }}>{r.ciudad_departamento}</p></td>
+                            <td style={{ padding: '14px 16px' }}><span style={{ padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: (crmEstados[r.estado] || crmEstados['nuevo']).bg, color: (crmEstados[r.estado] || crmEstados['nuevo']).color }}>{(crmEstados[r.estado] || crmEstados['nuevo']).label}</span></td>
+                            <td style={{ padding: '14px 16px' }}><p style={{ fontSize: 12, color: '#94a3b8' }}>{new Date(r.creado_en).toLocaleDateString('es-CO')}</p></td>
+                            <td style={{ padding: '14px 16px' }}>
+                              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                <button onClick={() => setCrmDetalle(r)} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#374151', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Ver</button>
+                                <button onClick={() => setCrmEditando(r)} style={{ padding: '8px 10px', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontSize: 14, cursor: 'pointer', lineHeight: 1 }}><i className="bi bi-pencil-square"></i></button>
+                                <button onClick={() => deleteCrm(r.id)} style={{ padding: '8px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', fontSize: 14, cursor: 'pointer', lineHeight: 1 }}><i className="bi bi-trash"></i></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ));
+                      })()}</tbody>
+                    </table>
+                  </div>
+                )}
+                {crmEditando && <CrmEditModal record={crmEditando} onClose={() => setCrmEditando(null)} onSave={async (campos) => { await saveCrmEdit(crmEditando.id, campos); }} />}
+                {crmDetalle && (
+                  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+                    <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 820, maxHeight: '90vh', overflow: 'auto' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 28px', background: 'linear-gradient(135deg, #1a1a2e, #16213e)', borderRadius: '20px 20px 0 0', gap: 16 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                          {crmDetalle.foto_url ? <img src={crmDetalle.foto_url} alt="" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(255,255,255,0.2)' }} /> : <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}><i className="bi bi-music-note-beamed"></i></div>}
+                          <div><p style={{ color: 'white', fontSize: 18, fontWeight: 700 }}>{crmDetalle.nombre_artistico}</p><p style={{ color: '#94a3b8', fontSize: 13 }}>{crmDetalle.nombre} {crmDetalle.apellidos}</p></div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                          <select value={crmDetalle.estado} onChange={async e => { const newEstado = e.target.value; await updateEstadoCrm(crmDetalle.id, newEstado); setCrmDetalle({ ...crmDetalle, estado: newEstado }); }} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 13, background: (crmEstados[crmDetalle.estado] || crmEstados['nuevo']).bg, color: (crmEstados[crmDetalle.estado] || crmEstados['nuevo']).color, cursor: 'pointer' }}>
+                            {Object.entries(crmEstados).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                          </select>
+                          <button onClick={() => setCrmEditando(crmDetalle)} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}><i className="bi bi-pencil-square"></i> Editar</button>
+                          <button onClick={() => deleteCrm(crmDetalle.id)} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'rgba(239,68,68,0.35)', color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                          <button onClick={() => setCrmDetalle(null)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                        </div>
+                      </div>
+                      <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
+                        <div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>INFORMACIÓN DEL ARTISTA</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                            {[['Cargo', crmDetalle.cargo], ['Género', crmDetalle.genero], ['Perfil cargo', crmDetalle.perfil_cargo], ['Documento', crmDetalle.tipo_documento + ' · ' + crmDetalle.numero_documento], ['Teléfono', crmDetalle.telefono], ['Email', crmDetalle.email], ['Ciudad / Dpto', crmDetalle.ciudad_departamento], ['Dirección', crmDetalle.direccion || '—'], ['Precio show', crmDetalle.precio_show || '—']].map(([lbl, val]) => (
+                              <div key={lbl} style={{ padding: '12px 14px', background: '#f8f9fa', borderRadius: 10 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 3 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>{val}</p></div>
+                            ))}
+                          </div>
+                          {crmDetalle.resena && <div style={{ marginTop: 10, padding: '14px 16px', background: '#f8f9fa', borderRadius: 10 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 6 }}>RESEÑA</p><p style={{ fontSize: 13, color: '#374151', lineHeight: 1.7 }}>{crmDetalle.resena}</p></div>}
+                          {((crmDetalle.generos_dj && crmDetalle.generos_dj.length > 0) || (crmDetalle.generos_artista && crmDetalle.generos_artista.length > 0)) && (
+                            <div style={{ marginTop: 10, padding: '14px 16px', background: '#f8f9fa', borderRadius: 10 }}>
+                              <p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 8 }}>GÉNEROS MUSICALES</p>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {[...(crmDetalle.generos_dj || []), ...(crmDetalle.generos_artista || [])].map((g, i) => <span key={i} style={{ padding: '3px 10px', background: '#dbeafe', color: '#1d4ed8', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{g}</span>)}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        {(crmDetalle.epk_url || crmDetalle.epk_link || crmDetalle.link_audio) && (
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>ARCHIVOS Y LINKS</p>
+                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                              {(crmDetalle.epk_url || crmDetalle.epk_link) && <a href={crmDetalle.epk_url || crmDetalle.epk_link} target="_blank" rel="noopener noreferrer" style={{ padding: '10px 18px', borderRadius: 10, background: '#f1f5f9', color: '#374151', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>📄 Press Kit / EPK</a>}
+                              {crmDetalle.link_audio && <a href={crmDetalle.link_audio} target="_blank" rel="noopener noreferrer" style={{ padding: '10px 18px', borderRadius: 10, background: '#f1f5f9', color: '#374151', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}><i className="bi bi-music-note-beamed" style={{marginRight:4}}></i>Audio / Mix</a>}
+                            </div>
+                          </div>
+                        )}
+                        {(crmDetalle.instagram || crmDetalle.facebook || crmDetalle.youtube || crmDetalle.tiktok || crmDetalle.twitter || crmDetalle.vimeo) && (
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>REDES SOCIALES</p>
+                            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                              {[['Instagram', crmDetalle.instagram, 'bi-instagram'], ['Facebook', crmDetalle.facebook, 'bi-facebook'], ['YouTube', crmDetalle.youtube, 'bi-youtube'], ['TikTok', crmDetalle.tiktok, 'bi-tiktok'], ['Twitter/X', crmDetalle.twitter, 'bi-twitter-x'], ['Vimeo', crmDetalle.vimeo, 'bi-vimeo']].filter(([, url]) => url).map(([name, url, icon]) => (
+                                <a key={name} href={url} target="_blank" rel="noopener noreferrer" style={{ padding: '8px 16px', borderRadius: 8, background: '#f8f9fa', color: '#374151', textDecoration: 'none', fontSize: 12, fontWeight: 600 }}><i className={'bi '+icon} style={{marginRight:4}}></i>{name}</a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>EVALUACIÓN</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                            {[['Experiencia', crmDetalle.experiencia_anios ? crmDetalle.experiencia_anios + ' años' : '—'], ['Participó BOMM', crmDetalle.participo_bomm === true ? 'Sí' : crmDetalle.participo_bomm === false ? 'No' : '—'], ['Eventos masivos', crmDetalle.eventos_masivos === true ? 'Sí' : crmDetalle.eventos_masivos === false ? 'No' : '—'], ['Núm. eventos', crmDetalle.num_eventos || '—'], ['Trabaja en establecimiento', crmDetalle.trabaja_establecimiento === true ? 'Sí' : crmDetalle.trabaja_establecimiento === false ? 'No' : '—'], ['Establecimiento', crmDetalle.nombre_establecimiento || '—'], ['NIT establecimiento', crmDetalle.nit_establecimiento || '—'], ['Ruedas negocio BOMM', crmDetalle.ruedas_negocio_bomm === true ? 'Sí' : crmDetalle.ruedas_negocio_bomm === false ? 'No' : '—'], ['Capacitaciones AeV', crmDetalle.capacitaciones_aev === true ? 'Sí' : crmDetalle.capacitaciones_aev === false ? 'No' : '—']].map(([lbl, val]) => (
+                              <div key={lbl} style={{ padding: '10px 14px', background: '#f8f9fa', borderRadius: 10 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600 }}>{val}</p></div>
+                            ))}
+                          </div>
+                        </div>
+                        {crmDetalle.como_se_entero && crmDetalle.como_se_entero.length > 0 && (
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10 }}>CÓMO SE ENTERÓ</p>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                              {crmDetalle.como_se_entero.map((c, i) => <span key={i} style={{ padding: '4px 12px', background: '#d1fae5', color: '#065f46', borderRadius: 20, fontSize: 11, fontWeight: 600 }}>{c}</span>)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {view === 'fontur' && (() => {
+              const fonturFiltered = getFonturFiltered();
+              const dptos = [...new Set(fonturData.map(r => r.departamento).filter(Boolean))].sort();
+              const cargosF = [...new Set(fonturData.map(r => r.cargo).filter(Boolean))].sort();
+              const fmtDate = (d) => d ? new Date(d).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+              const thStyle = { fontSize: 11, fontWeight: 700, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' };
+              const tdStyle = { fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' };
+              const infoCell = (lbl, val) => <div key={lbl} style={{ padding: '12px 14px', background: '#f8f9fa', borderRadius: 10 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 3 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              return (
+                <div>
+                  <div style={{ marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #e5e7eb' }}>
+                    <button onClick={() => setView('crm')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← CRM</button>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                    <p style={{ fontSize: 14, color: '#64748b' }}>{fonturData.length} inscripción{fonturData.length !== 1 ? 'es' : ''} registrada{fonturData.length !== 1 ? 's' : ''}{fonturFiltered.length !== fonturData.length ? ` · ${fonturFiltered.length} filtrada${fonturFiltered.length !== 1 ? 's' : ''}` : ''}</p>
+                    <button onClick={exportFonturCsv} disabled={fonturFiltered.length === 0} aria-label="Exportar CSV" style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: fonturFiltered.length === 0 ? '#e5e7eb' : 'linear-gradient(135deg, #10b981, #059669)', color: fonturFiltered.length === 0 ? '#94a3b8' : 'white', fontWeight: 700, fontSize: 13, cursor: fonturFiltered.length === 0 ? 'default' : 'pointer', whiteSpace: 'nowrap' }}><i className="bi bi-file-earmark-spreadsheet"></i> Exportar CSV</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input id="fontur-search" type="text" placeholder="Buscar por nombre, empresa, correo o cédula..." value={fonturSearch} onChange={e => setFonturSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} aria-label="Buscar inscripciones" />
+                    <select value={fonturDpto} onChange={e => setFonturDpto(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }} aria-label="Filtrar por departamento">
+                      <option value="all">Todos los departamentos</option>
+                      {dptos.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                    <select value={fonturCargo} onChange={e => setFonturCargo(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }} aria-label="Filtrar por cargo">
+                      <option value="all">Todos los cargos</option>
+                      {cargosF.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <button onClick={loadFontur} aria-label="Recargar" style={{ padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 16 }}><i className="bi bi-arrow-clockwise"></i></button>
+                  </div>
+                  {fonturLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : fonturError ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 36, marginBottom: 12 }}><i className="bi bi-exclamation-triangle-fill" style={{color:'#f59e0b'}}></i></p>
+                      <p style={{ color: '#E84338', fontWeight: 600, fontSize: 15, marginBottom: 8 }}>Error al cargar los datos</p>
+                      <p style={{ color: '#64748b', fontSize: 13, marginBottom: 24 }}>{fonturError}</p>
+                      <button onClick={loadFontur} style={{ padding: '12px 28px', borderRadius: 10, border: 'none', background: '#E84338', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Reintentar</button>
+                    </div>
+                  ) : fonturData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p>
+                      <p style={{ fontWeight: 600, color: '#1a1a2e', fontSize: 16, marginBottom: 8 }}>Aún no hay inscripciones registradas</p>
+                      <p style={{ color: '#64748b', fontSize: 13 }}>Cuando alguien complete el formulario en la landing aparecerán aquí.</p>
+                    </div>
+                  ) : fonturFiltered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p>
+                      <p style={{ fontWeight: 600, color: '#1a1a2e', fontSize: 16, marginBottom: 8 }}>Sin resultados</p>
+                      <p style={{ color: '#64748b', fontSize: 13 }}>No se encontraron inscripciones que coincidan con los filtros aplicados. Intente ajustar los criterios.</p>
+                    </div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {fonturFiltered.map(r => (
+                        <div key={r.id} onClick={() => setFonturDetalle(r)} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
+                            <div style={{ minWidth: 0 }}><p style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#E84338', fontWeight: 600, marginTop: 2 }}>{r.empresa}</p></div>
+                            <span style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 20, background: '#f1f5f9', color: '#475569', fontSize: 11, fontWeight: 600 }}>Ver más</span>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                            {[['Cargo', r.cargo], ['Departamento', r.departamento], ['Ciudad', r.ciudad], ['Teléfono', r.telefono]].map(([lbl, val]) => (
+                              <div key={lbl}><p style={{ fontSize: 10, color: '#94a3b8' }}>{lbl}</p><p style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{val || '—'}</p></div>
+                            ))}
+                          </div>
+                          <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #f1f5f9' }}>
+                            <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '130px minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr) 110px 100px 120px minmax(0,1fr) 48px', padding: '10px 16px', background: '#f8f9fa', borderBottom: '1px solid #f1f5f9', gap: 8 }}>
+                        {['FECHA','NOMBRE COMPLETO','EMPRESA','CARGO','DEPTO.','CIUDAD','TELÉFONO','CORREO',''].map((h, i) => <span key={i} style={thStyle}>{h}</span>)}
+                      </div>
+                      {fonturFiltered.map(r => (
+                        <div key={r.id} onClick={() => setFonturDetalle(r)} style={{ display: 'grid', gridTemplateColumns: '130px minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr) 110px 100px 120px minmax(0,1fr) 48px', padding: '13px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', alignItems: 'center', gap: 8, background: 'white', transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background='#fafbfc'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4 }}>{fmtDate(r.created_at)}</p>
+                          <p style={{ ...tdStyle, fontWeight: 600 }}>{r.nombre} {r.apellidos}</p>
+                          <p style={tdStyle}>{r.empresa}</p>
+                          <p style={tdStyle}>{r.cargo}</p>
+                          <p style={{ ...tdStyle, fontSize: 12 }}>{r.departamento}</p>
+                          <p style={{ ...tdStyle, fontSize: 12 }}>{r.ciudad}</p>
+                          <p style={{ fontSize: 12 }}>{r.telefono}</p>
+                          <p style={{ ...tdStyle, fontSize: 12, color: '#64748b' }}>{r.email}</p>
+                          <button aria-label="Ver detalle" onClick={e => { e.stopPropagation(); setFonturDetalle(r); }} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#374151', fontSize: 14, cursor: 'pointer' }}><i className="bi bi-eye"></i></button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {fonturDetalle && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+                      <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 840, maxHeight: '90vh', overflow: 'auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 28px', background: 'linear-gradient(135deg, #1e3a5f, #0f2340)', borderRadius: '20px 20px 0 0', gap: 16 }}>
+                          <div>
+                            <p style={{ color: 'white', fontSize: 18, fontWeight: 700 }}>{fonturDetalle.nombre} {fonturDetalle.apellidos}</p>
+                            <p style={{ color: '#94a3b8', fontSize: 13, marginTop: 2 }}>{fonturDetalle.empresa} · {fonturDetalle.cargo}</p>
+                          </div>
+                          <button onClick={() => setFonturDetalle(null)} aria-label="Cerrar" style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                        </div>
+                        <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 24 }}>
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>DATOS PERSONALES</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+                              {[['Nombre completo', fonturDetalle.nombre + ' ' + fonturDetalle.apellidos], ['Tipo de identificación', fonturDetalle.tipo_identificacion], ['Número de identificación', fonturDetalle.numero_identificacion], ['Rango de edad', fonturDetalle.rango_edad], ['Género', fonturDetalle.genero]].map(([l, v]) => infoCell(l, v))}
+                            </div>
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>UBICACIÓN</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+                              {[['País', fonturDetalle.pais], ['Departamento', fonturDetalle.departamento], ['Ciudad', fonturDetalle.ciudad], ['Dirección', fonturDetalle.direccion], ['Complemento', fonturDetalle.direccion_complemento], ['Tipo de zona', fonturDetalle.tipo_zona]].map(([l, v]) => infoCell(l, v))}
+                            </div>
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>CONTACTO</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+                              {[['Teléfono', fonturDetalle.telefono], ['Correo electrónico', fonturDetalle.email]].map(([l, v]) => infoCell(l, v))}
+                            </div>
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>SOCIODEMOGRÁFICOS</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10 }}>
+                              {[['Grupo étnico', fonturDetalle.grupo_etnico], ['Discapacidad', fonturDetalle.discapacidad], ['Víctima del conflicto', fonturDetalle.victima_conflicto]].map(([l, v]) => infoCell(l, v))}
+                            </div>
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>INFORMACIÓN LABORAL</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10 }}>
+                              {[['Empresa', fonturDetalle.empresa], ['NIT', fonturDetalle.nit], ['Cargo', fonturDetalle.cargo]].map(([l, v]) => infoCell(l, v))}
+                            </div>
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14 }}>CONSENTIMIENTO Y METADATA</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+                              {[['Acepta tratamiento de datos', fonturDetalle.acepta_datos ? 'Sí ✓' : 'No'], ['Fecha de registro', fmtDate(fonturDetalle.created_at)], ['User agent', fonturDetalle.user_agent], ['Referrer', fonturDetalle.referer]].map(([l, v]) => infoCell(l, v))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'registros' && (() => {
+              const regFiltered = getRegistrosFiltered();
+              const tiposForm = [...new Set(registrosData.map(r => r.formulario).filter(Boolean))].sort();
+              const fmtDate = (d) => d ? new Date(d).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+              const cell = (lbl, val) => {
+                const display = Array.isArray(val) ? val.join(', ') : val;
+                return <div key={lbl} style={{ padding: '12px 14px', background: '#f8f9fa', borderRadius: 10 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 3 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: display ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{display || '—'}</p></div>;
+              };
+              const docLabels = { doc_camara_comercio: 'Cámara de Comercio', doc_cedula: 'Cédula Representante Legal', doc_rut: 'RUT' };
+              const sectionTitle = (t) => <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 14, marginTop: 8 }}>{t}</p>;
+              return (
+                <div>
+                  <div style={{ marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #e5e7eb' }}>
+                    <button onClick={() => setView('crm')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← CRM</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por establecimiento, razón social o email..." value={registrosSearch} onChange={e => setRegistrosSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} aria-label="Buscar registros" />
+                    <select value={registrosFiltroForm} onChange={e => setRegistrosFiltroForm(e.target.value)} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }} aria-label="Filtrar por formulario">
+                      <option value="all">Todos los formularios</option>
+                      {tiposForm.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <button onClick={loadRegistros} aria-label="Actualizar" style={{ padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 16 }}><i className="bi bi-arrow-clockwise"></i></button>
+                    <button onClick={downloadExcelRegistros} style={{ padding: '12px 18px', borderRadius: 10, border: '2px solid #059669', background: '#f0fdf4', color: '#059669', cursor: 'pointer', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>⬇️ Descargar Excel</button>
+                  </div>
+                  {registrosLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando registros...</p></div>
+                  ) : registrosError ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 36, marginBottom: 12 }}><i className="bi bi-exclamation-triangle-fill" style={{color:'#f59e0b'}}></i></p>
+                      <p style={{ color: '#E84338', fontWeight: 600, marginBottom: 8 }}>Error al cargar los datos</p>
+                      <p style={{ color: '#64748b', fontSize: 13, marginBottom: 24 }}>{registrosError}</p>
+                      <button onClick={loadRegistros} style={{ padding: '12px 28px', borderRadius: 10, border: 'none', background: '#E84338', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Reintentar</button>
+                    </div>
+                  ) : registrosData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p>
+                      <p style={{ fontWeight: 600, color: '#1a1a2e', fontSize: 16, marginBottom: 8 }}>Aún no hay registros</p>
+                      <p style={{ color: '#64748b', fontSize: 13 }}>Los envíos del formulario de afiliación aparecerán aquí.</p>
+                    </div>
+                  ) : regFiltered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p>
+                      <p style={{ fontWeight: 600, color: '#1a1a2e', fontSize: 16, marginBottom: 8 }}>Sin resultados</p>
+                      <p style={{ color: '#64748b', fontSize: 13 }}>No hay registros que coincidan con los filtros. Intente ajustar los criterios.</p>
+                    </div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {regFiltered.map(r => {
+                        const d = r.datos || {};
+                        return (
+                          <div key={r.id} onClick={() => setRegistrosDetalle(r)} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
+                              <div style={{ minWidth: 0 }}><p style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e' }}>{d.nombre_establecimiento || '—'}</p><p style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginTop: 2 }}>{d.razon_social || '—'}</p></div>
+                              <span style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 20, background: '#f1f5f9', color: '#475569', fontSize: 11, fontWeight: 600 }}>Ver más</span>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                              {[['Departamento', d.departamento_establecimiento], ['Email', d.email_empresa]].map(([l, v]) => (
+                                <div key={l}><p style={{ fontSize: 10, color: '#94a3b8' }}>{l}</p><p style={{ fontSize: 12, fontWeight: 600, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v || '—'}</p></div>
+                              ))}
+                            </div>
+                            <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #f1f5f9' }}>
+                              <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.formulario} · {fmtDate(r.creado_en)}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '150px 40px minmax(0,1.2fr) minmax(0,1fr) 130px minmax(0,1fr) 88px', padding: '10px 16px', background: '#f8f9fa', borderBottom: '1px solid #f1f5f9', gap: 8 }}>
+                        {['FECHA','','ESTABLECIMIENTO','RAZÓN SOCIAL','DEPARTAMENTO','EMAIL',''].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h}</span>)}
+                      </div>
+                      {regFiltered.map(r => {
+                        const d = r.datos || {};
+                        return (
+                          <div key={r.id} onClick={() => setRegistrosDetalle(r)} style={{ display: 'grid', gridTemplateColumns: '150px 40px minmax(0,1.2fr) minmax(0,1fr) 130px minmax(0,1fr) 88px', padding: '13px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', alignItems: 'center', gap: 8, background: 'white', transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background='#fafbfc'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                            <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4 }}>{fmtDate(r.creado_en)}</p>
+                            <div>{r.logo_url ? <img src={r.logo_url} style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6, border: '1px solid #e5e7eb' }} alt="Logo" /> : <div style={{ width: 32, height: 32, borderRadius: 6, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}><i className="bi bi-building"></i></div>}</div>
+                            <p style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.nombre_establecimiento || '—'}</p>
+                            <p style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.razon_social || '—'}</p>
+                            <p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.departamento_establecimiento || '—'}</p>
+                            <p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#64748b' }}>{d.email_empresa || '—'}</p>
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              <button aria-label="Ver detalle" onClick={e => { e.stopPropagation(); setRegistrosDetalle(r); }} style={{ padding: '6px 8px', borderRadius: 8, border: 'none', background: '#f1f5f9', color: '#374151', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-eye"></i></button>
+                              {currentUser.role !== 'invitado' && <button aria-label="Editar" onClick={e => { e.stopPropagation(); setRegistrosEditando({ id: r.id, datos: { ...(r.datos||{}) }, notas: r.notas||'', logo_url: r.logo_url||'' }); }} style={{ padding: '6px 8px', borderRadius: 8, border: 'none', background: '#dbeafe', color: '#1d4ed8', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-pencil-square"></i></button>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {registrosEditando && (() => {
+                    const re = registrosEditando;
+                    const setRe = fn => setRegistrosEditando(prev => fn(prev));
+                    const setD = (k, v) => setRe(prev => ({ ...prev, datos: { ...prev.datos, [k]: v } }));
+                    const inpSt = { padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13, width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' };
+                    const lbl = t => <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 4, marginTop: 12 }}>{t}</label>;
+                    return (
+                      <div onClick={e => e.target === e.currentTarget && setRegistrosEditando(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+                        <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 800, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 28px', borderBottom: '1px solid #f1f5f9', flexShrink: 0 }}>
+                            <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Editar registro</h2>
+                            <button onClick={() => setRegistrosEditando(null)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: '#f1f5f9', cursor: 'pointer', fontSize: 18 }}>×</button>
+                          </div>
+                          <div style={{ padding: '20px 28px', overflowY: 'auto', flex: 1 }}>
+                            {/* Logo */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+                              {re.logo_url ? <img src={re.logo_url} style={{ width: 72, height: 72, objectFit: 'contain', borderRadius: 12, border: '2px solid #e5e7eb', padding: 4 }} alt="Logo actual" /> : <div style={{ width: 72, height: 72, borderRadius: 12, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, border: '2px dashed #e5e7eb' }}><i className="bi bi-building"></i></div>}
+                              <div>
+                                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Logo del establecimiento</p>
+                                <label style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                                  <i className="bi bi-upload"></i> Subir imagen
+                                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => uploadLogoRegistro(e.target.files[0], url => setRe(p => ({ ...p, logo_url: url })))} />
+                                </label>
+                                {re.logo_url && <button onClick={() => setRe(p => ({ ...p, logo_url: '' }))} style={{ marginLeft: 8, padding: '8px 12px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', cursor: 'pointer', fontSize: 12 }}>Quitar</button>}
+                              </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                              {/* DATOS GENERALES */}
+                              <div style={{ gridColumn:'1/-1' }}><p style={{ fontSize:10, fontWeight:700, color:'#94a3b8', letterSpacing:1, padding:'6px 0', borderBottom:'1px solid #f1f5f9', marginTop:4 }}>DATOS GENERALES DEL FORMULARIO</p></div>
+                              <div>{lbl('N° formulario')}<input style={inpSt} value={re.datos.formulario_n||''} onChange={e=>setD('formulario_n',e.target.value)}/></div>
+                              <div>{lbl('Afiliación')}<input style={inpSt} value={re.datos.afiliacion||''} onChange={e=>setD('afiliacion',e.target.value)}/></div>
+                              <div>{lbl('Fecha')}<input type="date" style={inpSt} value={re.datos.fecha||''} onChange={e=>setD('fecha',e.target.value)}/></div>
+                              <div>{lbl('Inscrito por')}<input style={inpSt} value={re.datos.inscrito_por||''} onChange={e=>setD('inscrito_por',e.target.value)}/></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Plataformas a activar')}<input style={inpSt} value={(Array.isArray(re.datos.plataformas)?re.datos.plataformas.join(', '):re.datos.plataformas)||''} onChange={e=>setD('plataformas',e.target.value)}/></div>
+                              {/* I. DATOS DE LA EMPRESA */}
+                              <div style={{ gridColumn:'1/-1' }}><p style={{ fontSize:10, fontWeight:700, color:'#94a3b8', letterSpacing:1, padding:'6px 0', borderBottom:'1px solid #f1f5f9', marginTop:8 }}>I. DATOS DE LA EMPRESA</p></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Razón social')}<input style={inpSt} value={re.datos.razon_social||''} onChange={e=>setD('razon_social',e.target.value)}/></div>
+                              <div>{lbl('Tipo de identificación')}<input style={inpSt} value={re.datos.identificacion||''} onChange={e=>setD('identificacion',e.target.value)}/></div>
+                              <div>{lbl('Número de identificación')}<input style={inpSt} value={re.datos.num_identificacion||''} onChange={e=>setD('num_identificacion',e.target.value)}/></div>
+                              <div>{lbl('Nombre representante legal')}<input style={inpSt} value={re.datos.nombre_representante||''} onChange={e=>setD('nombre_representante',e.target.value)}/></div>
+                              <div>{lbl('Apellido representante legal')}<input style={inpSt} value={re.datos.apellido_representante||''} onChange={e=>setD('apellido_representante',e.target.value)}/></div>
+                              <div>{lbl('Departamento empresa')}<input style={inpSt} value={re.datos.departamento_empresa||''} onChange={e=>setD('departamento_empresa',e.target.value)}/></div>
+                              <div>{lbl('Dirección empresa')}<input style={inpSt} value={re.datos.direccion_empresa||''} onChange={e=>setD('direccion_empresa',e.target.value)}/></div>
+                              <div>{lbl('Teléfono empresa')}<input style={inpSt} value={re.datos.telefono_empresa||''} onChange={e=>setD('telefono_empresa',e.target.value)}/></div>
+                              <div>{lbl('Email empresa')}<input style={inpSt} value={re.datos.email_empresa||''} onChange={e=>setD('email_empresa',e.target.value)}/></div>
+                              <div>{lbl('Régimen')}<input style={inpSt} value={re.datos.regimen||''} onChange={e=>setD('regimen',e.target.value)}/></div>
+                              <div>{lbl('Régimen (cuál)')}<input style={inpSt} value={re.datos.regimen_cual||''} onChange={e=>setD('regimen_cual',e.target.value)}/></div>
+                              {/* II. DATOS DEL ESTABLECIMIENTO */}
+                              <div style={{ gridColumn:'1/-1' }}><p style={{ fontSize:10, fontWeight:700, color:'#94a3b8', letterSpacing:1, padding:'6px 0', borderBottom:'1px solid #f1f5f9', marginTop:8 }}>II. DATOS DEL ESTABLECIMIENTO</p></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Nombre del establecimiento')}<input style={inpSt} value={re.datos.nombre_establecimiento||''} onChange={e=>setD('nombre_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Departamento')}<input style={inpSt} value={re.datos.departamento_establecimiento||''} onChange={e=>setD('departamento_establecimiento',e.target.value)}/></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Dirección establecimiento')}<input style={inpSt} value={re.datos.direccion_establecimiento||''} onChange={e=>setD('direccion_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Celular')}<input style={inpSt} value={re.datos.celular_establecimiento||''} onChange={e=>setD('celular_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Localidad')}<input style={inpSt} value={re.datos.localidad||''} onChange={e=>setD('localidad',e.target.value)}/></div>
+                              <div>{lbl('Estrato')}<input style={inpSt} value={re.datos.estrato||''} onChange={e=>setD('estrato',e.target.value)}/></div>
+                              <div>{lbl('Email establecimiento')}<input style={inpSt} value={re.datos.email_establecimiento||''} onChange={e=>setD('email_establecimiento',e.target.value)}/></div>
+                              <div>{lbl('Tipo de negocio')}<input style={inpSt} value={(Array.isArray(re.datos.tipo_negocio)?re.datos.tipo_negocio.join(', '):re.datos.tipo_negocio)||''} onChange={e=>setD('tipo_negocio',e.target.value)}/></div>
+                              <div>{lbl('Concepto')}<input style={inpSt} value={(Array.isArray(re.datos.concepto)?re.datos.concepto.join(', '):re.datos.concepto)||''} onChange={e=>setD('concepto',e.target.value)}/></div>
+                              <div>{lbl('Música en vivo')}<input style={inpSt} value={re.datos.musica_en_vivo||''} onChange={e=>setD('musica_en_vivo',e.target.value)}/></div>
+                              <div>{lbl('Horario desde')}<input type="time" style={inpSt} value={re.datos.horario_desde||''} onChange={e=>setD('horario_desde',e.target.value)}/></div>
+                              <div>{lbl('Horario hasta')}<input type="time" style={inpSt} value={re.datos.horario_hasta||''} onChange={e=>setD('horario_hasta',e.target.value)}/></div>
+                              <div>{lbl('Días de operación')}<input style={inpSt} value={re.datos.dias_operacion||''} onChange={e=>setD('dias_operacion',e.target.value)}/></div>
+                              <div>{lbl('Aforo')}<input style={inpSt} value={re.datos.aforo||''} onChange={e=>setD('aforo',e.target.value)}/></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Tel / Link de reservas')}<input style={inpSt} value={re.datos.telefono_reservas||''} onChange={e=>setD('telefono_reservas',e.target.value)}/></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Descripción de la oferta')}<textarea style={{ ...inpSt, minHeight:80, resize:'vertical' }} value={re.datos.descripcion_oferta||''} onChange={e=>setD('descripcion_oferta',e.target.value)}/></div>
+                              <div>{lbl('Página web')}<input style={inpSt} value={re.datos.pagina_web||''} onChange={e=>setD('pagina_web',e.target.value)}/></div>
+                              <div>{lbl('X / Twitter')}<input style={inpSt} value={re.datos.x||''} onChange={e=>setD('x',e.target.value)}/></div>
+                              <div>{lbl('Facebook')}<input style={inpSt} value={re.datos.facebook||''} onChange={e=>setD('facebook',e.target.value)}/></div>
+                              <div>{lbl('Instagram')}<input style={inpSt} value={re.datos.instagram||''} onChange={e=>setD('instagram',e.target.value)}/></div>
+                              {/* CONTACTOS */}
+                              {[['rrhh','RECURSOS HUMANOS'],['contable','CONTABLE'],['operaciones','OPERACIONES']].map(([ck,cT])=>(
+                                <React.Fragment key={ck}>
+                                  <div style={{ gridColumn:'1/-1' }}><p style={{ fontSize:10, fontWeight:700, color:'#94a3b8', letterSpacing:1, padding:'6px 0', borderBottom:'1px solid #f1f5f9', marginTop:8 }}>CONTACTO {cT}</p></div>
+                                  <div>{lbl('Nombre')}<input style={inpSt} value={re.datos[ck+'_nombre']||''} onChange={e=>setD(ck+'_nombre',e.target.value)}/></div>
+                                  <div>{lbl('Apellido')}<input style={inpSt} value={re.datos[ck+'_apellido']||''} onChange={e=>setD(ck+'_apellido',e.target.value)}/></div>
+                                  <div>{lbl('Género')}<input style={inpSt} value={re.datos[ck+'_genero']||''} onChange={e=>setD(ck+'_genero',e.target.value)}/></div>
+                                  <div>{lbl('Departamento')}<input style={inpSt} value={re.datos[ck+'_departamento']||''} onChange={e=>setD(ck+'_departamento',e.target.value)}/></div>
+                                  <div>{lbl('Perfil del cargo')}<input style={inpSt} value={re.datos[ck+'_perfil']||''} onChange={e=>setD(ck+'_perfil',e.target.value)}/></div>
+                                  <div>{lbl('Profesión')}<input style={inpSt} value={re.datos[ck+'_profesion']||''} onChange={e=>setD(ck+'_profesion',e.target.value)}/></div>
+                                  <div>{lbl('Tipo de documento')}<input style={inpSt} value={re.datos[ck+'_tipo_documento']||''} onChange={e=>setD(ck+'_tipo_documento',e.target.value)}/></div>
+                                  <div>{lbl('Número de documento')}<input style={inpSt} value={re.datos[ck+'_numero_documento']||''} onChange={e=>setD(ck+'_numero_documento',e.target.value)}/></div>
+                                  <div>{lbl('Correo electrónico')}<input style={inpSt} value={re.datos[ck+'_correo']||''} onChange={e=>setD(ck+'_correo',e.target.value)}/></div>
+                                  <div>{lbl('Teléfono celular')}<input style={inpSt} value={re.datos[ck+'_celular']||''} onChange={e=>setD(ck+'_celular',e.target.value)}/></div>
+                                </React.Fragment>
+                              ))}
+                              {/* FIRMAS Y ACEPTACIONES */}
+                              <div style={{ gridColumn:'1/-1' }}><p style={{ fontSize:10, fontWeight:700, color:'#94a3b8', letterSpacing:1, padding:'6px 0', borderBottom:'1px solid #f1f5f9', marginTop:8 }}>FIRMAS Y ACEPTACIONES</p></div>
+                              <div>{lbl('Firma — Nombre rep. legal')}<input style={inpSt} value={re.datos.firma_rep_nombre||''} onChange={e=>setD('firma_rep_nombre',e.target.value)}/></div>
+                              <div>{lbl('Firma — Documento rep. legal')}<input style={inpSt} value={re.datos.firma_rep_documento||''} onChange={e=>setD('firma_rep_documento',e.target.value)}/></div>
+                              <div style={{ gridColumn:'1/-1' }}>{lbl('Firma — Nombre funcionario Asobares')}<input style={inpSt} value={re.datos.firma_func_nombre||''} onChange={e=>setD('firma_func_nombre',e.target.value)}/></div>
+                              <div>{lbl('Acepta anticorrupción')}<input style={inpSt} value={re.datos.acepta_anticorrupcion||''} onChange={e=>setD('acepta_anticorrupcion',e.target.value)}/></div>
+                              <div>{lbl('Acepta uso de marca')}<input style={inpSt} value={re.datos.acepta_uso_marca||''} onChange={e=>setD('acepta_uso_marca',e.target.value)}/></div>
+                              {/* NOTAS */}
+                              <div style={{ gridColumn:'1/-1', marginTop:4 }}>{lbl('Notas internas (solo equipo Asobares)')}<textarea style={{ ...inpSt, minHeight:80, resize:'vertical' }} value={re.notas||''} onChange={e=>setRe(p=>({...p,notas:e.target.value}))}/></div>
+                            </div>
+                          </div>
+                          <div style={{ padding: '16px 28px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+                            <button onClick={() => setRegistrosEditando(null)} style={{ padding: '10px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                            <button onClick={() => saveRegistroEdit(re)} style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #065f46, #047857)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {registrosDetalle && (() => {
+                    const d = registrosDetalle.datos || {};
+                    const arch = registrosDetalle.archivos || {};
+                    const grid2 = { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 };
+                    const grid3 = { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10 };
+                    const rrhh = Object.entries(d).filter(([k]) => k.startsWith('rrhh_'));
+                    const contable = Object.entries(d).filter(([k]) => k.startsWith('contable_'));
+                    const operaciones = Object.entries(d).filter(([k]) => k.startsWith('operaciones_'));
+                    const fmtKey = k => k.replace(/^(rrhh_|contable_|operaciones_)/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    return (
+                      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+                        <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 860, maxHeight: '90vh', overflow: 'auto' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 28px', background: 'linear-gradient(135deg, #065f46, #047857)', borderRadius: '20px 20px 0 0', gap: 16 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 0 }}>
+                              {registrosDetalle.logo_url && <img src={registrosDetalle.logo_url} style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 10, background: 'white', padding: 4, flexShrink: 0 }} alt="Logo" />}
+                              <div><p style={{ color: 'white', fontSize: 18, fontWeight: 700 }}>{d.nombre_establecimiento || 'Sin nombre'}</p><p style={{ color: '#a7f3d0', fontSize: 13, marginTop: 2 }}>{d.razon_social || '—'} · {registrosDetalle.formulario}</p></div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                              {currentUser.role !== 'invitado' && <button onClick={() => { setRegistrosDetalle(null); setRegistrosEditando({ id: registrosDetalle.id, datos: { ...(registrosDetalle.datos||{}) }, notas: registrosDetalle.notas||'', logo_url: registrosDetalle.logo_url||'' }); }} style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}><i className="bi bi-pencil-square"></i> Editar</button>}
+                              <button onClick={() => setRegistrosDetalle(null)} aria-label="Cerrar" style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', color: 'white', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                            </div>
+                          </div>
+                          <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                            {sectionTitle('DATOS DE LA EMPRESA')}
+                            <div style={grid2}>{[['Razón social', d.razon_social],['Identificación', d.identificacion],['Núm. identificación', d.num_identificacion],['Representante', (d.nombre_representante||'') + ' ' + (d.apellido_representante||'')],['Departamento empresa', d.departamento_empresa],['Dirección empresa', d.direccion_empresa],['Teléfono empresa', d.telefono_empresa],['Email empresa', d.email_empresa],['Régimen', d.regimen],['Régimen (cuál)', d.regimen_cual]].map(([l,v]) => cell(l,v))}</div>
+                            {sectionTitle('DATOS DEL ESTABLECIMIENTO')}
+                            <div style={grid2}>{[['Nombre establecimiento', d.nombre_establecimiento],['Departamento', d.departamento_establecimiento],['Dirección', d.direccion_establecimiento],['Celular', d.celular_establecimiento],['Localidad', d.localidad],['Estrato', d.estrato],['Email establecimiento', d.email_establecimiento],['Tipo de negocio', d.tipo_negocio],['Concepto', d.concepto],['Música en vivo', d.musica_en_vivo],['Horario desde', d.horario_desde],['Horario hasta', d.horario_hasta],['Días de operación', d.dias_operacion],['Aforo', d.aforo],['Tel / Link de reservas', d.telefono_reservas],['Página web', d.pagina_web],['X / Twitter', d.x],['Facebook', d.facebook],['Instagram', d.instagram]].map(([l,v]) => cell(l,v))}
+                              {d.descripcion_oferta && <div style={{ gridColumn: '1/-1' }}>{cell('Descripción de la oferta', d.descripcion_oferta)}</div>}</div>
+                            {rrhh.length > 0 && <>{sectionTitle('CONTACTO RRHH')}<div style={grid3}>{rrhh.map(([k,v]) => cell(fmtKey(k), v))}</div></>}
+                            {contable.length > 0 && <>{sectionTitle('CONTACTO CONTABLE')}<div style={grid3}>{contable.map(([k,v]) => cell(fmtKey(k), v))}</div></>}
+                            {operaciones.length > 0 && <>{sectionTitle('CONTACTO OPERACIONES')}<div style={grid3}>{operaciones.map(([k,v]) => cell(fmtKey(k), v))}</div></>}
+                            {sectionTitle('ACEPTACIONES Y FIRMAS')}
+                            <div style={grid2}>{[['Acepta anticorrupción', d.acepta_anticorrupcion ? 'Sí ✓' : 'No'],['Acepta uso de marca', d.acepta_uso_marca ? 'Sí ✓' : 'No'],['Firma — Nombre rep.', d.firma_rep_nombre],['Firma — Documento rep.', d.firma_rep_documento],['Firma — Nombre func.', d.firma_func_nombre]].map(([l,v]) => cell(l,v))}</div>
+                            {sectionTitle('DATOS GENERALES')}
+                            <div style={grid3}>{[['N° formulario', d.formulario_n],['Afiliación', d.afiliacion],['Fecha formulario', d.fecha],['Fecha envío', fmtDate(registrosDetalle.creado_en)],['Inscrito por', d.inscrito_por],['Plataformas a activar', d.plataformas]].map(([l,v]) => cell(l,v))}</div>
+                            {registrosDetalle.notas && <><div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 16px' }}><p style={{ fontSize: 11, fontWeight: 700, color: '#92400e', marginBottom: 4 }}>NOTAS INTERNAS</p><p style={{ fontSize: 13, color: '#78350f', whiteSpace: 'pre-wrap' }}>{registrosDetalle.notas}</p></div></>}
+                            {Object.keys(arch).length > 0 && (
+                              <>{sectionTitle('DOCUMENTOS ADJUNTOS')}
+                              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                                {Object.entries(arch).map(([key, ruta]) => (
+                                  <button key={key} onClick={() => openDocFirmado(ruta)} style={{ padding: '10px 18px', borderRadius: 10, border: '2px solid #d1fae5', background: '#f0fdf4', color: '#065f46', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                                    📄 {docLabels[key] || key}
+                                  </button>
+                                ))}
+                              </div></>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              );
+            })()}
+
+            {view === 'certificaciones' && (() => {
+              const certEstados = { pendiente: { label: 'Pendiente', color: '#64748b', bg: '#f1f5f9' }, generado: { label: 'Generado', color: '#7c3aed', bg: '#ede9fe' }, enviado: { label: 'Enviado', color: '#10b981', bg: '#d1fae5' }, error: { label: 'Error', color: '#E84338', bg: '#fee2e2' } };
+              const backBtn = (label, target) => (
+                <button onClick={() => setCertSubView(target)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>← {label}</button>
+              );
+
+              if (certSubView === 'hub') return (
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 20, marginTop: 8 }}>
+                  {[
+                    { id: 'plantillas', icon: 'bi-image', title: 'Plantillas', desc: 'Tipos de certificado. Cada plantilla define el diseño, la imagen y la posición de cada campo.', color: '#7c3aed', bg: '#ede9fe', count: certPlantillas.length, lbl: 'plantilla' },
+                    { id: 'lotes', icon: 'bi-box-seam', title: 'Lotes', desc: 'Grupos de certificados por evento o curso. Cada lote tiene su propia lista de participantes.', color: '#0284c7', bg: '#e0f2fe', count: certLotes.length, lbl: 'lote' },
+                  ].map(card => (
+                    <div key={card.id} onClick={() => setCertSubView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}33`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: 16, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}><i className={'bi '+card.icon} style={{lineHeight:1}}></i></div>
+                        <div>
+                          <h3 style={{ fontSize: 17, fontWeight: 700, color: '#1a1a2e' }}>{card.title}</h3>
+                          <p style={{ fontSize: 13, color: card.color, fontWeight: 700, marginTop: 2 }}>{certLoading ? '...' : `${card.count} ${card.lbl}${card.count !== 1 ? 's' : ''}`}</p>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, marginBottom: 20 }}>{card.desc}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: card.color, fontWeight: 700, fontSize: 13 }}>Ver {card.title.toLowerCase()} <span>→</span></div>
+                    </div>
+                  ))}
+                </div>
+              );
+
+              if (certSubView === 'plantillas') return (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', gap: 10 }}>
+                    {backBtn('Certificaciones', 'hub')}
+                    <button onClick={() => setCertShowPlantillaModal(true)} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>+ Nueva plantilla</button>
+                  </div>
+                  {certPlantillas.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-image"></i></p>
+                      <p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin plantillas todavía</p>
+                      <p style={{ color: '#64748b', fontSize: 13 }}>Crea la primera plantilla subiendo la imagen del diseño de certificado.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
+                      {certPlantillas.map(p => (
+                        <div key={p.id} style={{ background: 'white', borderRadius: 16, overflow: 'hidden', border: '1px solid #f1f5f9' }}>
+                          <CertImgPreview imagePath={p.imagen_path} />
+                          <div style={{ padding: 16 }}>
+                            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{p.nombre}</h3>
+                            {p.descripcion && <p style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>{p.descripcion}</p>}
+                            <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>{(p.campos || []).length} campos · {new Date(p.created_at).toLocaleDateString('es-CO')}</p>
+                            <button onClick={e => { e.stopPropagation(); setCertPlantillaActiva(p); setCertEditorCampos(JSON.parse(JSON.stringify(p.campos || []))); setCertSubView('editor-plantilla'); }} style={{ width: '100%', padding: '7px 0', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}><i className="bi bi-pencil-square"></i> Editar campos</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {certShowPlantillaModal && <PlantillaModal onClose={() => setCertShowPlantillaModal(false)} onSave={async (data) => { await savePlantilla(data); setCertShowPlantillaModal(false); }} />}
+                </div>
+              );
+
+              if (certSubView === 'lotes') return (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', gap: 10 }}>
+                    {backBtn('Certificaciones', 'hub')}
+                    <button onClick={() => certPlantillas.length > 0 ? setCertShowLoteModal(true) : showNotif('Crea una plantilla primero')} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>+ Nuevo lote</button>
+                  </div>
+                  {certLotes.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-box-seam"></i></p>
+                      <p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin lotes todavía</p>
+                      <p style={{ color: '#64748b', fontSize: 13 }}>Crea un lote para cada evento o curso. Cada lote usa una plantilla y tiene su lista de participantes.</p>
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      {certLotes.map((lote, i) => (
+                        <div key={lote.id} onClick={async () => { setCertLoteActivo(lote); await loadCertPersonas(lote.id); setCertSubView('lote-detalle'); }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderTop: i > 0 ? '1px solid #f1f5f9' : 'none', cursor: 'pointer', transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background = '#fafbfc'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lote.nombre}</p>
+                            <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 3 }}>{lote.cert_plantillas?.nombre || '—'} · {lote.ciudad || '—'} · {lote.fecha ? new Date(lote.fecha + 'T12:00:00').toLocaleDateString('es-CO') : '—'}{lote.horas ? ` · ${lote.horas}h` : ''}</p>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20, background: lote.estado === 'enviado' ? '#d1fae5' : lote.estado === 'generado' ? '#ede9fe' : '#f1f5f9', color: lote.estado === 'enviado' ? '#065f46' : lote.estado === 'generado' ? '#7c3aed' : '#64748b' }}>{lote.estado === 'enviado' ? 'Enviado' : lote.estado === 'generado' ? 'Generado' : 'Borrador'}</span>
+                            <span style={{ color: '#cbd5e1', fontSize: 18 }}>›</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {certShowLoteModal && <LoteModal plantillas={certPlantillas} onClose={() => setCertShowLoteModal(false)} onSave={async (data) => { await saveLote(data); setCertShowLoteModal(false); }} />}
+                </div>
+              );
+
+              if (certSubView === 'lote-detalle' && certLoteActivo) {
+                const plantilla = certPlantillas.find(p => p.id === certLoteActivo.plantilla_id);
+                const pendientes = certPersonas.filter(p => p.estado === 'pendiente').length;
+                const generados = certPersonas.filter(p => p.estado === 'generado' || p.estado === 'enviado').length;
+                const errores = certPersonas.filter(p => p.estado === 'error').length;
+                return (
+                  <div>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      {backBtn('Lotes', 'lotes')}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{certLoteActivo.nombre}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{plantilla?.nombre || 'Sin plantilla'}{certLoteActivo.ciudad ? ` · ${certLoteActivo.ciudad}` : ''}{certLoteActivo.horas ? ` · ${certLoteActivo.horas}h` : ''}{certLoteActivo.fecha ? ` · ${new Date(certLoteActivo.fecha + 'T12:00:00').toLocaleDateString('es-CO')}` : ''}</p>
+                      </div>
+                      <button onClick={() => setCertEditLote(certLoteActivo)} style={{ padding: '9px 16px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer', flexShrink: 0 }}><i className="bi bi-pencil-square"></i> Editar lote</button>
+                    </div>
+                    {certEditLote && <EditLoteModal lote={certEditLote} plantillas={certPlantillas} onClose={() => setCertEditLote(null)} onSave={data => saveLoteEdit(certEditLote.id, data)} />}
+
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
+                      {[['Total', certPersonas.length, '#1a1a2e'], ['Pendientes', pendientes, '#f59e0b'], ['Generados', generados, '#7c3aed'], ['Errores', errores, '#E84338']].map(([lbl, val, color]) => (
+                        <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 16px', borderLeft: `3px solid ${color}` }}>
+                          <p style={{ fontSize: 24, fontWeight: 700, color }}>{val}</p>
+                          <p style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{lbl}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+                      <button onClick={() => setCertShowPersonaModal(true)} style={{ padding: '10px 16px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>+ Agregar persona</button>
+                      <label style={{ padding: '10px 16px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <i className="bi bi-upload"></i> Cargar CSV
+                        <input type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) { parseCsvPersonas(e.target.files[0], certLoteActivo.id); e.target.value = ''; } }} />
+                      </label>
+                      <select
+                        value=""
+                        disabled={certImportando}
+                        onChange={e => { importarDesdeCRM(certLoteActivo.id, e.target.value); e.target.value = ''; }}
+                        style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #7c3aed', background: certImportando ? '#f5f3ff' : '#faf5ff', color: '#7c3aed', fontWeight: 600, fontSize: 13, cursor: certImportando ? 'default' : 'pointer' }}
+                      >
+                        <option value="">{certImportando ? '⏳ Importando...' : 'Importar desde CRM'}</option>
+                        <option value="aev-lab">AeV Lab — Capacitación Octava (asistió)</option>
+                        <option value="aev-bootcamp2">AeV — Bootcamp 2 (asistió)</option>
+                        <option value="armenia-cap">Armenia — Inscripción Capacitación (asistió)</option>
+                        <option value="armenia-asist">Armenia — Registro Asistencia (asistió)</option>
+                      </select>
+                      {certPersonas.length > 0 && !certGenerando && !certEnviando && !certDescargando && (
+                        <button onClick={() => plantilla && setCertPreviewData({ persona: certPersonas[0], lote: certLoteActivo, plantilla, batchPersonas: certPersonas })} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>⚡ Generar todos ({certPersonas.length})</button>
+                      )}
+                      {certPersonas.length > 0 && !certGenerando && !certEnviando && !certDescargando && (
+                        <button onClick={() => plantilla && descargarTodos(certPersonas, certLoteActivo, plantilla)} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #0ea5e9, #0284c7)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>⬇️ Descargar todos ({certPersonas.length})</button>
+                      )}
+                      {(() => { const sinEnviar = certPersonas.filter(p => p.email && p.estado !== 'enviado'); return sinEnviar.length > 0 && !certGenerando && !certEnviando && !certDescargando ? (
+                        <button onClick={() => { if (plantilla) enviarTodos(certPersonas, certLoteActivo, plantilla); }} disabled={!plantilla} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: plantilla ? 'linear-gradient(135deg, #059669, #065f46)' : '#e5e7eb', color: plantilla ? 'white' : '#94a3b8', fontWeight: 700, fontSize: 13, cursor: plantilla ? 'pointer' : 'default' }}>✉️ Enviar a todos ({sinEnviar.length})</button>
+                      ) : null; })()}
+                      {certPersonas.filter(p => p.estado === 'enviado').length > 0 && (
+                        <button onClick={() => setCertInformeOpen(true)} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #0369a1)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-bar-chart"></i> Informe</button>
+                      )}
+                    </div>
+
+                    {certGenerando && (
+                      <div style={{ background: 'white', borderRadius: 12, padding: '16px 20px', marginBottom: 16 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>Generando certificados...</span>
+                          <span style={{ fontSize: 13, color: '#7c3aed', fontWeight: 700 }}>{certProgreso.done} / {certProgreso.total}</span>
+                        </div>
+                        <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${certProgreso.total > 0 ? (certProgreso.done / certProgreso.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #7c3aed, #5b21b6)', borderRadius: 4, transition: 'width 0.4s ease' }} />
+                        </div>
+                      </div>
+                    )}
+                    {certEnviando && (
+                      <div style={{ background: 'white', borderRadius: 12, padding: '16px 20px', marginBottom: 16 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>Enviando certificados por correo...</span>
+                          <span style={{ fontSize: 13, color: '#059669', fontWeight: 700 }}>{certProgresoEnvio.done} / {certProgresoEnvio.total}</span>
+                        </div>
+                        <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${certProgresoEnvio.total > 0 ? (certProgresoEnvio.done / certProgresoEnvio.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #059669, #065f46)', borderRadius: 4, transition: 'width 0.4s ease' }} />
+                        </div>
+                      </div>
+                    )}
+                    {certDescargando && (
+                      <div style={{ background: 'white', borderRadius: 12, padding: '16px 20px', marginBottom: 16 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>Preparando ZIP con certificados...</span>
+                          <span style={{ fontSize: 13, color: '#0284c7', fontWeight: 700 }}>{certProgresoDescarga.done} / {certProgresoDescarga.total}</span>
+                        </div>
+                        <div style={{ height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${certProgresoDescarga.total > 0 ? (certProgresoDescarga.done / certProgresoDescarga.total) * 100 : 0}%`, background: 'linear-gradient(90deg, #0ea5e9, #0284c7)', borderRadius: 4, transition: 'width 0.4s ease' }} />
+                        </div>
+                      </div>
+                    )}
+
+                    {certPersonas.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: 48, background: 'white', borderRadius: 16 }}>
+                        <p style={{ fontSize: 36, marginBottom: 12 }}>👤</p>
+                        <p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin participantes</p>
+                        <p style={{ color: '#64748b', fontSize: 13 }}>Agrega personas manualmente o carga un CSV con columnas: nombre, apellidos, empresa, documento, email.</p>
+                      </div>
+                    ) : (
+                      <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                        {!isMobile && (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1.2fr) 110px 100px 90px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                            {['NOMBRE', 'EMPRESA / EMAIL', 'DOCUMENTO', 'ESTADO', ''].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                          </div>
+                        )}
+                        {certPersonas.map(p => {
+                          const est = certEstados[p.estado] || certEstados.pendiente;
+                          return isMobile ? (
+                            <div key={p.id} style={{ padding: '14px 16px', borderTop: '1px solid #f1f5f9' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                                <div><p style={{ fontSize: 14, fontWeight: 600 }}>{p.nombre} {p.apellidos || ''}</p><p style={{ fontSize: 12, color: '#64748b' }}>{p.empresa || p.email}</p></div>
+                                <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: est.bg, color: est.color, flexShrink: 0 }}>{est.label}</span>
+                              </div>
+                              <div style={{ display: 'flex', gap: 6 }}>
+                                {plantilla && <button onClick={() => setCertPreviewData({ persona: p, lote: certLoteActivo, plantilla })} style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>📥 PDF</button>}
+                                {plantilla && p.email && <button onClick={() => enviarCertificado(p, certLoteActivo, plantilla)} title={`Enviar a ${p.email}`} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#d1fae5', color: '#065f46', fontSize: 12, cursor: 'pointer' }}>✉️</button>}
+                                <button onClick={() => deletePersona(p.id, certLoteActivo.id)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', fontSize: 12, cursor: 'pointer' }}><i className="bi bi-trash"></i></button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div key={p.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1.2fr) 110px 100px 90px', padding: '13px 16px', borderTop: '1px solid #f1f5f9', alignItems: 'center', gap: 8 }}>
+                              <p style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nombre} {p.apellidos || ''}</p>
+                              <div style={{ minWidth: 0 }}><p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.empresa || '—'}</p><p style={{ fontSize: 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.email}</p></div>
+                              <p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#475569' }}>{p.documento || '—'}</p>
+                              <span style={{ padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: est.bg, color: est.color, display: 'inline-block', width: 'fit-content' }}>{est.label}</span>
+                              <div style={{ display: 'flex', gap: 6 }}>
+                                {plantilla && <button onClick={() => setCertPreviewData({ persona: p, lote: certLoteActivo, plantilla })} title="Previsualizar y descargar PDF" style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#ede9fe', color: '#7c3aed', fontSize: 14, cursor: 'pointer' }}>📥</button>}
+                                {plantilla && p.email && <button onClick={() => enviarCertificado(p, certLoteActivo, plantilla)} title={`Enviar a ${p.email}`} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#d1fae5', color: '#065f46', fontSize: 14, cursor: 'pointer' }}>✉️</button>}
+                                <button onClick={() => deletePersona(p.id, certLoteActivo.id)} title="Eliminar" style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', fontSize: 14, cursor: 'pointer' }}><i className="bi bi-trash"></i></button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {certShowPersonaModal && <PersonaModal loteId={certLoteActivo.id} onClose={() => setCertShowPersonaModal(false)} onSave={async (data) => { await savePersona(data); setCertShowPersonaModal(false); }} />}
+                  </div>
+                );
+              }
+
+              if (certSubView === 'editor-plantilla' && certPlantillaActiva) return (
+                <CertEditor
+                  plantilla={certPlantillaActiva}
+                  campos={certEditorCampos}
+                  onCamposChange={setCertEditorCampos}
+                  onSave={async (campos) => {
+                    const ok = await saveEditorCampos(certPlantillaActiva.id, campos);
+                    if (ok) setCertPlantillaActiva(prev => ({ ...prev, campos }));
+                  }}
+                  onBack={() => setCertSubView('plantillas')}
+                />
+              );
+
+              return null;
+            })()}
+
+            {view === 'crm-gastro' && (() => {
+              const gastroEstados = { postulado: { label: 'Postulado', color: '#3b82f6', bg: '#dbeafe' }, en_revision: { label: 'En revisión', color: '#f59e0b', bg: '#fef3c7' }, aprobado: { label: 'Aprobado', color: '#10b981', bg: '#d1fae5' }, qr_enviado: { label: 'QR Enviado', color: '#8b5cf6', bg: '#ede9fe' }, rechazado: { label: 'Rechazado', color: '#E84338', bg: '#fee2e2' } };
+              const filtered = getGastroFiltered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = gastroEstados[estado] || gastroEstados.postulado; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+
+              if (gastroDetalle) {
+                const r = gastroDetalle;
+                const inp = (lbl, key, type='text') => (
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 4 }}>{lbl}</label>
+                    <input type={type} value={gastroEditData[key] ?? ''} onChange={e => setGastroEditData(p => ({ ...p, [key]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: '2px solid #e5e7eb', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                  </div>
+                );
+                return (
+                  <div>
+                  {gastroEditModal && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 20 }}>
+                      <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 620, maxHeight: '90vh', overflow: 'auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', borderRadius: '20px 20px 0 0' }}>
+                          <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}><i className="bi bi-pencil-square"></i> Editar postulación</h2>
+                          <button onClick={() => setGastroEditModal(false)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 18, color: 'white', cursor: 'pointer' }}>×</button>
+                        </div>
+                        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>DATOS PERSONALES</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            {inp('Nombre', 'nombre')}{inp('Apellidos', 'apellidos')}
+                            {inp('Email', 'email', 'email')}{inp('Teléfono', 'telefono', 'tel')}
+                          </div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>IDENTIFICACIÓN</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            {inp('Tipo de identificación', 'tipo_identificacion')}{inp('Número de identificación', 'numero_identificacion')}
+                          </div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>EMPRESA</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                            {inp('Empresa', 'empresa')}{inp('NIT Empresa', 'nit_empresa')}{inp('Cargo', 'cargo')}
+                          </div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>UBICACIÓN</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            {inp('País', 'pais')}{inp('Departamento', 'departamento')}
+                            {inp('Ciudad', 'ciudad')}{inp('Dirección', 'direccion')}
+                          </div>
+                          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 4 }}>
+                            <button onClick={() => setGastroEditModal(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                            <button onClick={() => updateGastroPersona(r.id, gastroEditData)} style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setGastroDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Postulados</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.cargo} · {r.empresa} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { setGastroEditData({ nombre: r.nombre, apellidos: r.apellidos, email: r.email, telefono: r.telefono, tipo_identificacion: r.tipo_identificacion, numero_identificacion: r.numero_identificacion, empresa: r.empresa, nit_empresa: r.nit_empresa, cargo: r.cargo, pais: r.pais, departamento: r.departamento, ciudad: r.ciudad, direccion: r.direccion }); setGastroEditModal(true); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#dbeafe', color: '#2563eb', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-pencil-square"></i> Editar</button>
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}? Esta acción no se puede deshacer.`)) deleteGastroPersona(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Rango de edad', r.rango_edad)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo', r.tipo_identificacion)}{cell('Número', r.numero_identificacion)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('UBICACIÓN')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('País', r.pais)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}{cell('Dirección', r.direccion)}{r.direccion2 && cell('Dirección 2', r.direccion2)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('EMPRESA')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Empresa', r.empresa)}{cell('NIT', r.nit_empresa)}{cell('Cargo', r.cargo)}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('GESTIÓN')}
+                          <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Estado</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
+                            {Object.entries(gastroEstados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateGastroEstado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: `2px solid ${r.estado === key ? e.color : '#e5e7eb'}`, background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: r.estado === key ? 700 : 400, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>
+                                {r.estado === key ? '● ' : '○ '}{e.label}
+                              </button>
+                            ))}
+                          </div>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Notas internas</p>
+                          <textarea
+                            value={gastroNotasEdit !== '' ? gastroNotasEdit : (r.notas || '')}
+                            onChange={e => setGastroNotasEdit(e.target.value)}
+                            onFocus={() => setGastroNotasEdit(r.notas || '')}
+                            rows={5}
+                            placeholder="Agrega notas internas sobre esta postulación..."
+                            style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                          />
+                          <button onClick={() => { saveGastroNotas(r.id, gastroNotasEdit !== '' ? gastroNotasEdit : (r.notas || '')); setGastroNotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              const counts = { postulado: 0, en_revision: 0, aprobado: 0, qr_enviado: 0, rechazado: 0 };
+              gastroData.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(6,1fr)', gap: 12, marginBottom: 20 }}>
+                    {[['Total', gastroData.length, '#f59e0b'], ['Postulado', counts.postulado, '#3b82f6'], ['En revisión', counts.en_revision, '#f59e0b'], ['Aprobado', counts.aprobado, '#10b981'], ['QR Enviado', counts.qr_enviado, '#8b5cf6'], ['Rechazado', counts.rechazado, '#E84338']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 16px', borderLeft: `3px solid ${color}` }}>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{gastroLoading ? '…' : val}</p>
+                        <p style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{lbl}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, identificación, email, empresa, cargo o ciudad..." value={gastroSearch} onChange={e => setGastroSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={gastroFiltroEstado} onChange={e => setGastroFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(gastroEstados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                    <button onClick={loadGastromarketing} style={{ padding: '11px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 16 }}><i className="bi bi-arrow-clockwise"></i></button>
+                    <button onClick={exportGastroExcel} disabled={filtered.length === 0} style={{ padding: '11px 18px', borderRadius: 10, border: 'none', background: filtered.length === 0 ? '#e5e7eb' : 'linear-gradient(135deg, #10b981, #059669)', color: filtered.length === 0 ? '#94a3b8' : 'white', fontWeight: 700, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  {gastroLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando postulaciones...</p></div>
+                  ) : gastroData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin postulaciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los envíos del formulario de Gastromarketing Day.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin resultados</p><p style={{ color: '#64748b', fontSize: 13 }}>Ajusta los filtros.</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setGastroDetalle(r); setGastroNotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.cargo} · {r.empresa}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}, {r.departamento} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '130px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 100px 110px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMPRESA / CARGO','CIUDAD','ESTADO',''].map((h,i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setGastroDetalle(r); setGastroNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '130px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 100px 110px', padding: '12px 16px', borderTop: '1px solid #f1f5f9', cursor: 'pointer', alignItems: 'center', gap: 8, transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background='#fafbfc'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                          <p style={{ fontSize: 11, color: '#64748b' }}>{fmtDate(r.created_at)}</p>
+                          <div><p style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</p></div>
+                          <div><p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.empresa}</p><p style={{ fontSize: 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.cargo}</p></div>
+                          <p style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#475569' }}>{r.ciudad}, {r.departamento}</p>
+                          {badge(r.estado)}
+                          <span style={{ color: '#cbd5e1', fontSize: 18, textAlign: 'right' }}>›</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-aev-lab' && (() => {
+              const aevEstados = { inscrito: { label: 'Inscrito', color: '#3b82f6', bg: '#dbeafe' }, confirmado: { label: 'Confirmado', color: '#10b981', bg: '#d1fae5' }, asistio: { label: 'Asistió', color: '#7c3aed', bg: '#ede9fe' }, no_asistio: { label: 'No asistió', color: '#E84338', bg: '#fee2e2' } };
+              const filtered = getAevLabFiltered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = aevEstados[estado] || aevEstados.inscrito; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+              if (aevLabDetalle) {
+                const r = aevLabDetalle;
+                const inp = (lbl, key, type='text') => (
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 4 }}>{lbl}</label>
+                    <input type={type} value={aevLabEditData[key] ?? ''} onChange={e => setAevLabEditData(p => ({ ...p, [key]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: '2px solid #e5e7eb', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                  </div>
+                );
+                return (
+                  <div>
+                  {aevLabEditModal && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 20 }}>
+                      <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 620, maxHeight: '90vh', overflow: 'auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', borderRadius: '20px 20px 0 0' }}>
+                          <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}><i className="bi bi-pencil-square"></i> Editar inscripción</h2>
+                          <button onClick={() => setAevLabEditModal(false)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 18, color: 'white', cursor: 'pointer' }}>×</button>
+                        </div>
+                        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>DATOS PERSONALES</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            {inp('Nombre', 'nombre')}{inp('Apellidos', 'apellidos')}
+                            {inp('Email', 'email', 'email')}{inp('Teléfono', 'telefono', 'tel')}
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                            {inp('Tipo ID', 'tipo_identificacion')}{inp('Nº ID', 'numero_identificacion')}{inp('Profesión', 'profesion')}
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            {inp('Departamento', 'departamento')}{inp('Ciudad', 'ciudad')}{inp('Género', 'genero')}
+                          </div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>EMPRESA</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            {inp('Empresa', 'empresa_nombre')}{inp('NIT', 'empresa_nit')}
+                            {inp('Dirección', 'empresa_direccion')}{inp('Tel. Empresa', 'empresa_telefono')}
+                          </div>
+                          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 4 }}>
+                            <button onClick={() => setAevLabEditModal(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                            <button onClick={() => updateAevLabPersona(r.id, aevLabEditData)} style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setAevLabDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Capacitación Octava</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.profesion} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { setAevLabEditData({ nombre: r.nombre, apellidos: r.apellidos, email: r.email, telefono: r.telefono, tipo_identificacion: r.tipo_identificacion, numero_identificacion: r.numero_identificacion, profesion: r.profesion, departamento: r.departamento, ciudad: r.ciudad, genero: r.genero, empresa_nombre: r.empresa_nombre, empresa_nit: r.empresa_nit, empresa_direccion: r.empresa_direccion, empresa_telefono: r.empresa_telefono }); setAevLabEditModal(true); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#ede9fe', color: '#7c3aed', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-pencil-square"></i> Editar</button>
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteAevLabPersona(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN Y PROFESIÓN')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo ID', r.tipo_identificacion)}{cell('Nº ID', r.numero_identificacion)}{cell('Profesión', r.profesion)}
+                          </div>
+                        </div>
+                        {(r.empresa_nombre || r.empresa_nit) && (
+                          <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                            {sec('EMPRESA')}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                              {cell('Empresa', r.empresa_nombre)}{cell('NIT', r.empresa_nit)}{cell('Dirección', r.empresa_direccion)}{cell('Tel. Empresa', r.empresa_telefono)}{cell('Representante', r.empresa_representante)}{cell('Cédula Rep.', r.empresa_cedula_rep)}{cell('Email Empresa', r.empresa_email)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('GESTIÓN')}
+                          <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Estado</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
+                            {Object.entries(aevEstados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateAevLabEstado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: `2px solid ${r.estado === key ? e.color : '#e5e7eb'}`, background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: r.estado === key ? 700 : 400, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>
+                                {r.estado === key ? '● ' : '○ '}{e.label}
+                              </button>
+                            ))}
+                          </div>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Notas internas</p>
+                          <textarea value={aevLabNotasEdit !== '' ? aevLabNotasEdit : (r.notas || '')} onChange={e => setAevLabNotasEdit(e.target.value)} onFocus={() => setAevLabNotasEdit(r.notas || '')} rows={5} placeholder="Agrega notas internas..." style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          <button onClick={() => { saveAevLabNotas(r.id, aevLabNotasEdit !== '' ? aevLabNotasEdit : (r.notas || '')); setAevLabNotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              const counts = { inscrito: 0, confirmado: 0, asistio: 0, no_asistio: 0 };
+              aevLabData.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(5,1fr)', gap: 12, marginBottom: 20 }}>
+                    {[['Total', aevLabData.length, '#7c3aed'], ['Inscrito', counts.inscrito, '#3b82f6'], ['Confirmado', counts.confirmado, '#10b981'], ['Asistió', counts.asistio, '#7c3aed'], ['No asistió', counts.no_asistio, '#E84338']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 16px', borderLeft: `3px solid ${color}` }}>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{aevLabLoading ? '…' : val}</p>
+                        <p style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{lbl}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, ID, email, profesión, ciudad o empresa..." value={aevLabSearch} onChange={e => setAevLabSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={aevLabFiltroEstado} onChange={e => setAevLabFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(aevEstados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                    <button onClick={loadAevLab} style={{ padding: '11px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 16 }}><i className="bi bi-arrow-clockwise"></i></button>
+                    <button onClick={exportAevLabExcel} disabled={filtered.length === 0} style={{ padding: '11px 18px', borderRadius: 10, border: 'none', background: filtered.length === 0 ? '#e5e7eb' : 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: filtered.length === 0 ? '#94a3b8' : 'white', fontWeight: 700, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  {aevLabLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : aevLabData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin inscripciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los registros del formulario de Área en Vivo Lab.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setAevLabDetalle(r); setAevLabNotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.profesion} · {r.ciudad}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMAIL','PROFESIÓN / CIUDAD','ESTADO',''].map((h,i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setAevLabDetalle(r); setAevLabNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#faf5ff'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 13 }}>{r.profesion}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
+                          {badge(r.estado)}
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-aev-bootcamp2' && (() => {
+              const boot2Estados = { inscrito: { label: 'Inscrito', color: '#3b82f6', bg: '#dbeafe' }, confirmado: { label: 'Confirmado', color: '#10b981', bg: '#d1fae5' }, asistio: { label: 'Asistió', color: '#7c3aed', bg: '#ede9fe' }, no_asistio: { label: 'No asistió', color: '#E84338', bg: '#fee2e2' } };
+              const filtered = getAevBoot2Filtered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = boot2Estados[estado] || boot2Estados.inscrito; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+              const inp = (lbl, key, type='text') => (
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 4 }}>{lbl}</label>
+                  <input type={type} value={aevBoot2EditData[key] ?? ''} onChange={e => setAevBoot2EditData(p => ({ ...p, [key]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: '2px solid #e5e7eb', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                </div>
+              );
+
+              if (aevBoot2Detalle) {
+                const r = aevBoot2Detalle;
+                return (
+                  <div>
+                    {aevBoot2EditModal && (
+                      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 580, maxHeight: '90vh', overflow: 'auto' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', borderRadius: '20px 20px 0 0' }}>
+                            <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}><i className="bi bi-pencil-square"></i> Editar inscripción</h2>
+                            <button onClick={() => setAevBoot2EditModal(false)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 18, color: 'white', cursor: 'pointer' }}>×</button>
+                          </div>
+                          <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>DATOS PERSONALES</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                              {inp('Nombre', 'nombre')}{inp('Apellidos', 'apellidos')}
+                              {inp('Email', 'email', 'email')}{inp('Teléfono', 'telefono', 'tel')}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                              {inp('Tipo ID', 'tipo_identificacion')}{inp('Nº ID', 'numero_identificacion')}{inp('Género', 'genero')}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                              {inp('Departamento', 'departamento')}{inp('Ciudad', 'ciudad')}{inp('Profesión', 'profesion')}
+                            </div>
+                            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 4 }}>
+                              <button onClick={() => setAevBoot2EditModal(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                              <button onClick={() => updateAevBoot2Persona(r.id, aevBoot2EditData)} style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setAevBoot2Detalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Inscripciones</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.profesion} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { setAevBoot2EditData({ nombre: r.nombre, apellidos: r.apellidos, email: r.email, telefono: r.telefono, tipo_identificacion: r.tipo_identificacion, numero_identificacion: r.numero_identificacion, genero: r.genero, departamento: r.departamento, ciudad: r.ciudad, profesion: r.profesion }); setAevBoot2EditModal(true); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#ede9fe', color: '#7c3aed', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-pencil-square"></i> Editar</button>
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteAevBoot2Persona(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN Y PROFESIÓN')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo ID', r.tipo_identificacion)}{cell('Nº ID', r.numero_identificacion)}{cell('Profesión', r.profesion)}
+                          </div>
+                        </div>
+                        {(r.empresa_nombre || r.empresa_nit) && (
+                          <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                            {sec('EMPRESA')}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                              {cell('Empresa', r.empresa_nombre)}{cell('NIT', r.empresa_nit)}{cell('Dirección', r.empresa_direccion)}{cell('Tel. Empresa', r.empresa_telefono)}{cell('Representante', r.empresa_representante)}{cell('Cédula Rep.', r.empresa_cedula_rep)}{cell('Email Empresa', r.empresa_email)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>ESTADO</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {Object.entries(boot2Estados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateAevBoot2Estado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid', borderColor: r.estado === key ? e.color : '#e5e7eb', background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>{e.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>NOTAS INTERNAS</p>
+                          <textarea value={aevBoot2NotasEdit !== '' ? aevBoot2NotasEdit : (r.notas || '')} onChange={e => setAevBoot2NotasEdit(e.target.value)} onFocus={() => setAevBoot2NotasEdit(r.notas || '')} rows={5} placeholder="Agrega notas internas..." style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          <button onClick={() => { saveAevBoot2Notas(r.id, aevBoot2NotasEdit !== '' ? aevBoot2NotasEdit : (r.notas || '')); setAevBoot2NotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              const counts = { inscrito: 0, confirmado: 0, asistio: 0, no_asistio: 0 };
+              aevBoot2Data.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    {[['Total', aevBoot2Data.length, '#7c3aed'], ['Inscrito', counts.inscrito, '#3b82f6'], ['Confirmado', counts.confirmado, '#10b981'], ['Asistió', counts.asistio, '#7c3aed'], ['No asistió', counts.no_asistio, '#E84338']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '12px 20px', minWidth: 100 }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>{lbl}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{aevBoot2Loading ? '…' : val}</p>
+                      </div>
+                    ))}
+                    <button onClick={exportAevBoot2Excel} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, ID, email, profesión, ciudad o empresa..." value={aevBoot2Search} onChange={e => setAevBoot2Search(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={aevBoot2FiltroEstado} onChange={e => setAevBoot2FiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(boot2Estados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                  </div>
+                  {aevBoot2Loading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : aevBoot2Data.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin inscripciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los registros del Bootcamp 2.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setAevBoot2Detalle(r); setAevBoot2NotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.profesion} · {r.ciudad}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMAIL','PROFESIÓN / CIUDAD','ESTADO',''].map((h,i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setAevBoot2Detalle(r); setAevBoot2NotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#faf5ff'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 13 }}>{r.profesion}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
+                          {badge(r.estado)}
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-aev-seguridad' && (() => {
+              const segEstados = { inscrito: { label: 'Inscrito', color: '#3b82f6', bg: '#dbeafe' }, confirmado: { label: 'Confirmado', color: '#10b981', bg: '#d1fae5' }, asistio: { label: 'Asistió', color: '#7c3aed', bg: '#ede9fe' }, no_asistio: { label: 'No asistió', color: '#E84338', bg: '#fee2e2' } };
+              const filtered = getAevSegFiltered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = segEstados[estado] || segEstados.inscrito; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+              const inp = (lbl, key, type='text') => (
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 4 }}>{lbl}</label>
+                  <input type={type} value={aevSegEditData[key] ?? ''} onChange={e => setAevSegEditData(p => ({ ...p, [key]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: '2px solid #e5e7eb', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                </div>
+              );
+              if (aevSegDetalle) {
+                const r = aevSegDetalle;
+                return (
+                  <div>
+                    {aevSegEditModal && (
+                      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 580, maxHeight: '90vh', overflow: 'auto' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', borderRadius: '20px 20px 0 0' }}>
+                            <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}><i className="bi bi-pencil-square"></i> Editar inscripción</h2>
+                            <button onClick={() => setAevSegEditModal(false)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 18, color: 'white', cursor: 'pointer' }}>×</button>
+                          </div>
+                          <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>DATOS PERSONALES</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                              {inp('Nombre', 'nombre')}{inp('Apellidos', 'apellidos')}
+                              {inp('Email', 'email', 'email')}{inp('Teléfono', 'telefono', 'tel')}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                              {inp('Tipo ID', 'tipo_identificacion')}{inp('Nº ID', 'numero_identificacion')}{inp('Género', 'genero')}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                              {inp('Departamento', 'departamento')}{inp('Ciudad', 'ciudad')}{inp('Profesión', 'profesion')}
+                            </div>
+                            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 4 }}>
+                              <button onClick={() => setAevSegEditModal(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                              <button onClick={() => updateAevSegPersona(r.id, aevSegEditData)} style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setAevSegDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Inscripciones</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.profesion} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { setAevSegEditData({ nombre: r.nombre, apellidos: r.apellidos, email: r.email, telefono: r.telefono, tipo_identificacion: r.tipo_identificacion, numero_identificacion: r.numero_identificacion, genero: r.genero, departamento: r.departamento, ciudad: r.ciudad, profesion: r.profesion }); setAevSegEditModal(true); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#ede9fe', color: '#7c3aed', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-pencil-square"></i> Editar</button>
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteAevSegPersona(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN Y PROFESIÓN')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo ID', r.tipo_identificacion)}{cell('Nº ID', r.numero_identificacion)}{cell('Profesión', r.profesion)}
+                          </div>
+                        </div>
+                        {(r.empresa_nombre || r.empresa_nit) && (
+                          <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                            {sec('EMPRESA')}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                              {cell('Empresa', r.empresa_nombre)}{cell('NIT', r.empresa_nit)}{cell('Dirección', r.empresa_direccion)}{cell('Tel. Empresa', r.empresa_telefono)}{cell('Representante', r.empresa_representante)}{cell('Cédula Rep.', r.empresa_cedula_rep)}{cell('Email Empresa', r.empresa_email)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>ESTADO</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {Object.entries(segEstados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateAevSegEstado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid', borderColor: r.estado === key ? e.color : '#e5e7eb', background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>{e.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>NOTAS INTERNAS</p>
+                          <textarea value={aevSegNotasEdit !== '' ? aevSegNotasEdit : (r.notas || '')} onChange={e => setAevSegNotasEdit(e.target.value)} onFocus={() => setAevSegNotasEdit(r.notas || '')} rows={5} placeholder="Agrega notas internas..." style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          <button onClick={() => { saveAevSegNotas(r.id, aevSegNotasEdit !== '' ? aevSegNotasEdit : (r.notas || '')); setAevSegNotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              const counts = { inscrito: 0, confirmado: 0, asistio: 0, no_asistio: 0 };
+              aevSegData.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    {[['Total', aevSegData.length, '#7c3aed'], ['Inscrito', counts.inscrito, '#3b82f6'], ['Confirmado', counts.confirmado, '#10b981'], ['Asistió', counts.asistio, '#7c3aed'], ['No asistió', counts.no_asistio, '#E84338']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '12px 20px', minWidth: 100 }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>{lbl}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{aevSegLoading ? '…' : val}</p>
+                      </div>
+                    ))}
+                    <button onClick={exportAevSegExcel} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, ID, email, profesión, ciudad o empresa..." value={aevSegSearch} onChange={e => setAevSegSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={aevSegFiltroEstado} onChange={e => setAevSegFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(segEstados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                  </div>
+                  {aevSegLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : aevSegData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin inscripciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los registros del Bootcamp 3.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setAevSegDetalle(r); setAevSegNotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.profesion} · {r.ciudad}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMAIL','PROFESIÓN / CIUDAD','ESTADO',''].map((h,i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setAevSegDetalle(r); setAevSegNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#faf5ff'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 13 }}>{r.profesion}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
+                          {badge(r.estado)}
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-ecosistema-dj' && (() => {
+              const estadosEntrada = { 'Not Checked In': { label: 'No registrado', color: '#f59e0b', bg: '#fef3c7' }, 'Checked In': { label: 'Registrado', color: '#10b981', bg: '#d1fae5' } };
+              const filtered = getEcosistemaDjFiltered();
+              const badge = (estado) => {
+                const e = estadosEntrada[estado];
+                if (!e) return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: '#f1f5f9', color: '#64748b' }}>{estado || '—'}</span>;
+                return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>;
+              };
+              const badgePedido = (estado) => {
+                if (estado === 'Processing') return <span style={{ padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, background: '#d1fae5', color: '#10b981' }}>Pagado</span>;
+                if (estado === 'Unpaid') return <span style={{ padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, background: '#fee2e2', color: '#E84338' }}>Impago</span>;
+                return <span style={{ padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 700, background: '#f1f5f9', color: '#64748b' }}>{estado || '—'}</span>;
+              };
+              const totalCheckedIn = ecosistemaDjData.filter(r => r.estado_entrada === 'Checked In').length;
+              const totalNot = ecosistemaDjData.filter(r => r.estado_entrada === 'Not Checked In').length;
+              const totalPagado = ecosistemaDjData.filter(r => r.estado_pedido === 'Processing').length;
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <button onClick={() => setView('crm-aev-folder')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Área en Vivo</button>
+                    <div style={{ flex: 1 }} />
+                    <button onClick={loadEcosistemaDj} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
+                    <button onClick={exportEcosistemaDjExcel} disabled={filtered.length === 0} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: filtered.length === 0 ? '#e5e7eb' : 'linear-gradient(135deg, #0f766e, #0d9488)', color: filtered.length === 0 ? '#94a3b8' : 'white', fontWeight: 700, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    {[['Total', ecosistemaDjData.length, '#0f766e'], ['Registrados', totalCheckedIn, '#10b981'], ['Sin registrar', totalNot, '#f59e0b'], ['Pagados', totalPagado, '#3b82f6']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '12px 20px', minWidth: 100 }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>{lbl}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{ecosistemaDjLoading ? '…' : val}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, email, empresa, ID, cargo..." value={ecosistemaDjSearch} onChange={e => setEcosistemaDjSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={ecosistemaDjFiltroEstado} onChange={e => setEcosistemaDjFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      <option value="Checked In">Registrado (Checked In)</option>
+                      <option value="Not Checked In">Sin registrar</option>
+                    </select>
+                  </div>
+                  {ecosistemaDjLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando datos...</p></div>
+                  ) : ecosistemaDjData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin datos aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Importa el CSV de El Ecosistema DJ a la tabla <code>ecosistema_dj</code> en Supabase.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map((r, i) => (
+                        <div key={r.id || i} style={{ background: 'white', borderRadius: 14, padding: 16, border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellido}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.empresa || r.empresa_actual || '—'} · {r.cargo || '—'}</p></div>
+                            {badge(r.estado_entrada)}
+                          </div>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email}</p>
+                            {badgePedido(r.estado_pedido)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>Ticket: {r.ticket_id} · {r.tipo_entrada || '—'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '110px minmax(0,1.4fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,0.9fr) 110px 90px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['TICKET ID','NOMBRE','EMAIL','EMPRESA / CARGO','TIPO ENTRADA','CHECK-IN','PEDIDO'].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map((r, i) => (
+                        <div key={r.id || i} style={{ display: 'grid', gridTemplateColumns: '110px minmax(0,1.4fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,0.9fr) 110px 90px', padding: '13px 16px', gap: 8, borderTop: '1px solid #f8f9fa', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#f0fdfa'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.ticket_id}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellido}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion || r.telefono || ''}</p></div>
+                          <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 12 }}>{r.empresa || r.empresa_actual || '—'}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.cargo || r.designacion || '—'}</p></div>
+                          <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.tipo_entrada || '—'}</span>
+                          {badge(r.estado_entrada)}
+                          {badgePedido(r.estado_pedido)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-armenia-cap' && (() => {
+              const armEstados = { inscrito: { label: 'Inscrito', color: '#3b82f6', bg: '#dbeafe' }, confirmado: { label: 'Confirmado', color: '#10b981', bg: '#d1fae5' }, asistio: { label: 'Asistió', color: '#2db84b', bg: '#f0f9f4' }, no_asistio: { label: 'No asistió', color: '#E84338', bg: '#fee2e2' } };
+              const filtered = getArmeniaCapFiltered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = armEstados[estado] || armEstados.inscrito; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+              if (armeniaCapDetalle) {
+                const r = armeniaCapDetalle;
+                const inp = (lbl, key, type='text') => (
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 4 }}>{lbl}</label>
+                    <input type={type} value={armeniaCapEditData[key] ?? ''} onChange={e => setArmeniaCapEditData(p => ({ ...p, [key]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: '2px solid #e5e7eb', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                  </div>
+                );
+                return (
+                  <div>
+                  {armeniaCapEditModal && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 20 }}>
+                      <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 580, maxHeight: '90vh', overflow: 'auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', borderRadius: '20px 20px 0 0' }}>
+                          <h2 style={{ fontSize: 17, fontWeight: 700, color: 'white' }}><i className="bi bi-pencil-square"></i> Editar inscripción</h2>
+                          <button onClick={() => setArmeniaCapEditModal(false)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 18, color: 'white', cursor: 'pointer' }}>×</button>
+                        </div>
+                        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, margin: 0 }}>DATOS PERSONALES</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            {inp('Nombre', 'nombre')}{inp('Apellidos', 'apellidos')}
+                            {inp('Email', 'email', 'email')}{inp('Teléfono', 'telefono', 'tel')}
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                            {inp('Tipo ID', 'tipo_identificacion')}{inp('Nº ID', 'numero_identificacion')}{inp('Género', 'genero')}
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                            {inp('Departamento', 'departamento')}{inp('Ciudad', 'ciudad')}{inp('Cargo', 'cargo')}
+                          </div>
+                          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 4 }}>
+                            <button onClick={() => setArmeniaCapEditModal(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                            <button onClick={() => updateArmeniaCapPersona(r.id, armeniaCapEditData)} style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setArmeniaCapDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Inscripciones</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.cargo} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { setArmeniaCapEditData({ nombre: r.nombre, apellidos: r.apellidos, email: r.email, telefono: r.telefono, tipo_identificacion: r.tipo_identificacion, numero_identificacion: r.numero_identificacion, genero: r.genero, departamento: r.departamento, ciudad: r.ciudad, cargo: r.cargo }); setArmeniaCapEditModal(true); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#f0f9f4', color: '#2db84b', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-pencil-square"></i> Editar</button>
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteArmeniaCapPersona(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN Y CARGO')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo ID', r.tipo_identificacion)}{cell('Nº ID', r.numero_identificacion)}{cell('Cargo', r.cargo)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('CAPACITACIONES SELECCIONADAS')}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {(r.capacitaciones || '').split(' | ').filter(Boolean).map((c, i) => (
+                              <div key={i} style={{ padding: '10px 14px', background: '#f0f9f4', borderRadius: 8, borderLeft: '3px solid #2db84b' }}>
+                                <p style={{ fontSize: 13, color: '#1a2e1a', fontWeight: 500 }}>{c}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('GESTIÓN')}
+                          <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Estado</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
+                            {Object.entries(armEstados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateArmeniaCapEstado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: `2px solid ${r.estado === key ? e.color : '#e5e7eb'}`, background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: r.estado === key ? 700 : 400, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>
+                                {r.estado === key ? '● ' : '○ '}{e.label}
+                              </button>
+                            ))}
+                          </div>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Notas internas</p>
+                          <textarea value={armeniaCapNotasEdit !== '' ? armeniaCapNotasEdit : (r.notas || '')} onChange={e => setArmeniaCapNotasEdit(e.target.value)} onFocus={() => setArmeniaCapNotasEdit(r.notas || '')} rows={5} placeholder="Agrega notas internas..." style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          <button onClick={() => { saveArmeniaCapNotas(r.id, armeniaCapNotasEdit !== '' ? armeniaCapNotasEdit : (r.notas || '')); setArmeniaCapNotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              const counts = { inscrito: 0, confirmado: 0, asistio: 0, no_asistio: 0 };
+              armeniaCapData.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <button onClick={() => setView('crm-armenia-folder')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Armenia 24</button>
+                    <button style={{ padding: '8px 20px', borderRadius: 8, background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'default' }}><i className="bi bi-clipboard-check"></i> Inscripciones Capacitación</button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(5,1fr)', gap: 12, marginBottom: 20 }}>
+                    {[['Total', armeniaCapData.length, '#2db84b'], ['Inscrito', counts.inscrito, '#3b82f6'], ['Confirmado', counts.confirmado, '#10b981'], ['Asistió', counts.asistio, '#2db84b'], ['No asistió', counts.no_asistio, '#E84338']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 16px', borderLeft: `3px solid ${color}` }}>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{armeniaCapLoading ? '…' : val}</p>
+                        <p style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{lbl}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, ID, email, cargo, ciudad o capacitación..." value={armeniaCapSearch} onChange={e => setArmeniaCapSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={armeniaCapFiltroEstado} onChange={e => setArmeniaCapFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(armEstados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                    <button onClick={loadArmeniaCap} style={{ padding: '11px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 16 }}><i className="bi bi-arrow-clockwise"></i></button>
+                    <button onClick={exportArmeniaCapExcel} disabled={filtered.length === 0} style={{ padding: '11px 18px', borderRadius: 10, border: 'none', background: filtered.length === 0 ? '#e5e7eb' : 'linear-gradient(135deg, #2db84b, #1e7c34)', color: filtered.length === 0 ? '#94a3b8' : 'white', fontWeight: 700, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  {armeniaCapLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : armeniaCapData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin inscripciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los registros del formulario de Capacitación Armenia.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setArmeniaCapDetalle(r); setArmeniaCapNotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.cargo} · {r.ciudad}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '110px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.4fr) 110px 60px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMAIL','CARGO / CIUDAD','ESTADO',''].map((h,i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setArmeniaCapDetalle(r); setArmeniaCapNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '110px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.4fr) 110px 60px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#f0f9f4'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 13 }}>{r.cargo}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}{r.departamento ? ', ' + r.departamento : ''}</p></div>
+                          {badge(r.estado)}
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-armenia-diag' && (() => {
+              const diagEstados = { visitado: '#3b82f6', en_proceso: '#f59e0b', completado: '#2db84b', cancelado: '#E84338' };
+              const diagBadge = (estado) => { const map = { visitado: { bg: '#dbeafe', color: '#1d4ed8', label: 'Visitado' }, en_proceso: { bg: '#fef3c7', color: '#92400e', label: 'En Proceso' }, completado: { bg: '#dcfce7', color: '#166534', label: 'Completado' }, cancelado: { bg: '#fee2e2', color: '#991b1b', label: 'Cancelado' } }; const s = map[estado] || { bg: '#f1f5f9', color: '#475569', label: estado || 'Registrado' }; return React.createElement('span', { style: { padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color } }, s.label); };
+              const filtered = getArmeniaDiagFiltered();
+              return (
+                <div>
+                  {armeniaDiagEditModal && armeniaDiagDetalle && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+                      <div style={{ background: 'white', borderRadius: 16, padding: 28, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                          <h3 style={{ fontSize: 18, fontWeight: 700 }}>Editar Registro</h3>
+                          <button onClick={() => setArmeniaDiagEditModal(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#94a3b8' }}>✕</button>
+                        </div>
+                        {[['nombre_establecimiento','Nombre Establecimiento','text'],['razon_social','Razón Social','text'],['nombre_representante','Representante Legal','text'],['correo_representante','Correo Representante','email'],['correo_informe','Correo Informe','email'],['telefono_representante','Teléfono','text'],['ciudad_empresa','Ciudad','text'],['tipo_negocio','Tipo Negocio','text'],['horario_servicio','Horario','text'],['aforo','Aforo','text']].map(([key, label, type]) => (
+                          <div key={key} style={{ marginBottom: 14 }}>
+                            <label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: '.5px', textTransform: 'uppercase', display: 'block', marginBottom: 5 }}>{label}</label>
+                            <input type={type} value={armeniaDiagEditData[key] ?? ''} onChange={e => setArmeniaDiagEditData(p => ({ ...p, [key]: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: '2px solid #e5e7eb', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+                          </div>
+                        ))}
+                        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
+                          <button onClick={() => setArmeniaDiagEditModal(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '1px solid #e5e7eb', background: 'white', color: '#64748b', cursor: 'pointer' }}>Cancelar</button>
+                          <button onClick={() => updateArmeniaDiagPersona(armeniaDiagDetalle.id, armeniaDiagEditData)} style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Guardar cambios</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {armeniaDiagDetalle ? (
+                    <div>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+                        <button onClick={() => setArmeniaDiagDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Armenia 24</button>
+                        <button onClick={() => { setArmeniaDiagEditData({ ...armeniaDiagDetalle }); setArmeniaDiagEditModal(true); }} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-pencil-square"></i> Editar</button>
+                        {currentUser.role === 'admin' && <button onClick={() => { if(window.confirm('¿Eliminar este registro?')) deleteArmeniaDiagPersona(armeniaDiagDetalle.id); }} style={{ padding: '8px 16px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>}
+                      </div>
+                      <div style={{ background: 'white', borderRadius: 16, padding: 28, marginBottom: 20 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+                          <div>
+                            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{armeniaDiagDetalle.nombre_establecimiento}</h2>
+                            <p style={{ fontSize: 14, color: '#64748b' }}>{armeniaDiagDetalle.razon_social} · {armeniaDiagDetalle.tipo_negocio}</p>
+                            <p style={{ fontSize: 13, color: '#94a3b8' }}>{armeniaDiagDetalle.ciudad_empresa} · {new Date(armeniaDiagDetalle.created_at).toLocaleDateString('es-CO')}</p>
+                          </div>
+                          {diagBadge(armeniaDiagDetalle.estado)}
+                        </div>
+                        <div style={{ marginBottom: 16 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '1px', marginBottom: 8 }}>ESTADO</p>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            {[['visitado','Visitado'],['en_proceso','En Proceso'],['completado','Completado'],['cancelado','Cancelado']].map(([val, lbl]) => (
+                              <button key={val} onClick={() => updateArmeniaDiagEstado(armeniaDiagDetalle.id, val)} style={{ padding: '6px 14px', borderRadius: 8, border: `2px solid ${armeniaDiagDetalle.estado === val ? diagEstados[val] : '#e5e7eb'}`, background: armeniaDiagDetalle.estado === val ? diagEstados[val] : 'white', color: armeniaDiagDetalle.estado === val ? 'white' : '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                            ))}
+                          </div>
+                        </div>
+                        {[
+                          ['EMPRESA', [['Razón Social', 'razon_social'],['Tipo ID', 'tipo_identificacion'],['Nº ID', 'numero_identificacion'],['Representante', 'nombre_representante'],['Departamento', 'departamento'],['Ciudad', 'ciudad_empresa'],['Teléfono Rep.', 'telefono_representante'],['Correo Rep.', 'correo_representante'],['Régimen', 'regimen']]],
+                          ['ESTABLECIMIENTO', [['Nombre', 'nombre_establecimiento'],['Teléfono', 'telefono_establecimiento'],['Dirección', 'direccion'],['Correo Est.', 'correo_establecimiento'],['Barrio', 'barrio'],['Estrato', 'estrato'],['Instagram', 'instagram'],['Sucursales', 'tiene_sucursales'],['Área m²', 'area_establecimiento']]],
+                          ['FUNCIONAMIENTO', [['Tipo Negocio', 'tipo_negocio'],['CIIU Principal', 'actividad_principal_ciiu'],['Concepto', 'concepto_establecimiento'],['Música Vivo', 'musica_en_vivo'],['Días Op.', 'dias_operacion'],['Horario', 'horario_servicio'],['Aforo', 'aforo'],['Sillas', 'num_sillas'],['Usuarios Pie', 'num_usuarios_pie']]],
+                          ['INFRAESTRUCTURA', [['Baños Hombres', 'num_banos_hombres'],['Baños Mujeres', 'num_banos_mujeres'],['Baños Discap.', 'num_banos_discapacitados'],['Salidas', 'num_salidas'],['Rampas', 'rampas_acceso'],['CCTV', 'sistema_cctv'],['Ventilación', 'ventilacion_artificial'],['Parqueadero', 'parqueadero']]],
+                          ['INFORME DE VISITA', [['Nombre Informe', 'nombre_informe'],['Correo Informe', 'correo_informe'],['Teléfono Informe', 'telefono_informe']]],
+                        ].map(([section, fields]) => (
+                          <div key={section} style={{ marginBottom: 20 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#1e7c34', letterSpacing: '1px', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid #e8f5e9' }}>{section}</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+                              {fields.map(([lbl, key]) => armeniaDiagDetalle[key] ? (
+                                <div key={key}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{armeniaDiagDetalle[key]}</p></div>
+                              ) : null)}
+                            </div>
+                          </div>
+                        ))}
+                        {armeniaDiagDetalle.documentacion && (
+                          <div style={{ marginBottom: 20 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#1e7c34', letterSpacing: '1px', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid #e8f5e9' }}>DOCUMENTACIÓN</p>
+                            {armeniaDiagDetalle.documentacion.split(' | ').map((d, i) => (
+                              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#2db84b', flexShrink: 0, display: 'inline-block' }}/>
+                                <span style={{ fontSize: 13, color: '#1e293b' }}>{d}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {(() => { const knownDiagKeys = new Set(['id','created_at','nombre_establecimiento','razon_social','tipo_identificacion','numero_identificacion','nombre_representante','departamento','ciudad_empresa','telefono_representante','correo_representante','regimen','telefono_establecimiento','direccion','correo_establecimiento','barrio','estrato','instagram','tiene_sucursales','area_establecimiento','tipo_negocio','actividad_principal_ciiu','concepto_establecimiento','musica_en_vivo','dias_operacion','horario_servicio','aforo','num_sillas','num_usuarios_pie','num_banos_hombres','num_banos_mujeres','num_banos_discapacitados','num_salidas','rampas_acceso','sistema_cctv','ventilacion_artificial','parqueadero','nombre_informe','correo_informe','telefono_informe','documentacion','estado','notas']); const extras = Object.entries(armeniaDiagDetalle).filter(([k,v])=>!knownDiagKeys.has(k)&&v!==null&&v!==undefined&&v!==''); return extras.length > 0 ? (<div style={{marginBottom:20}}><p style={{fontSize:11,fontWeight:700,color:'#1e7c34',letterSpacing:'1px',marginBottom:10,paddingBottom:6,borderBottom:'2px solid #e8f5e9'}}>OTROS CAMPOS</p><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:10}}>{extras.map(([k,v])=>(<div key={k}><p style={{fontSize:11,color:'#94a3b8',marginBottom:2}}>{k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</p><p style={{fontSize:13,color:'#1e293b',fontWeight:500}}>{String(v)}</p></div>))}</div></div>) : null; })()}
+                        <div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '1px', marginBottom: 8 }}>NOTAS INTERNAS</p>
+                          <textarea value={armeniaDiagNotasEdit} onChange={e => setArmeniaDiagNotasEdit(e.target.value)} onFocus={() => setArmeniaDiagNotasEdit(armeniaDiagDetalle.notas || '')} style={{ width: '100%', padding: 12, border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', minHeight: 80, resize: 'vertical', boxSizing: 'border-box' }} placeholder="Añade notas internas sobre este establecimiento..."/>
+                          <button onClick={() => saveArmeniaDiagNotas(armeniaDiagDetalle.id, armeniaDiagNotasEdit)} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <button onClick={() => setView('crm-armenia-folder')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Armenia 24</button>
+                        <input value={armeniaDiagSearch} onChange={e => setArmeniaDiagSearch(e.target.value)} placeholder="Buscar por establecimiento, NIT, correo..." style={{ flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}/>
+                        <select value={armeniaDiagFiltroEstado} onChange={e => setArmeniaDiagFiltroEstado(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}>
+                          <option value="all">Todos los estados</option>
+                          <option value="visitado">Visitado</option>
+                          <option value="en_proceso">En Proceso</option>
+                          <option value="completado">Completado</option>
+                          <option value="cancelado">Cancelado</option>
+                        </select>
+                        <button onClick={loadArmeniaDiag} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
+                        <button onClick={exportArmeniaDiagExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                        <button onClick={downloadArmeniaDiagArchivos} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#0369a1,#0284c7)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-file-zip"></i> Archivos ZIP</button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
+                        {[['Total', armeniaDiagData.length, '#1e7c34'], ['Visitado', armeniaDiagData.filter(r=>r.estado==='visitado').length, '#3b82f6'], ['En Proceso', armeniaDiagData.filter(r=>r.estado==='en_proceso').length, '#f59e0b'], ['Completado', armeniaDiagData.filter(r=>r.estado==='completado').length, '#2db84b'], ['Cancelado', armeniaDiagData.filter(r=>r.estado==='cancelado').length, '#E84338']].map(([lbl, val, color]) => (
+                          <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                            <p style={{ fontSize: 22, fontWeight: 700, color }}>{val}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{lbl}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {armeniaDiagLoading ? (
+                        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Cargando...</div>
+                      ) : filtered.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16, color: '#94a3b8' }}>No hay registros{armeniaDiagSearch ? ' que coincidan con la búsqueda' : ''}.</div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                          {filtered.map((r, i) => (
+                            <div key={r.id} onClick={() => { setArmeniaDiagDetalle(r); setArmeniaDiagNotasEdit(r.notas || ''); }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i < filtered.length-1 ? '1px solid #f1f5f9' : 'none', cursor: 'pointer', transition: 'background .15s' }}
+                              onMouseOver={e=>e.currentTarget.style.background='#f8fff9'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg, #2db84b, #1e7c34)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🏪</div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nombre_establecimiento}</p>
+                                <p style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.tipo_negocio} · {r.ciudad_empresa}</p>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                                {diagBadge(r.estado)}
+                                <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-armenia-asistencia' && (() => {
+              const asistBadge = (estado) => { const map = { registrado: { bg: '#dbeafe', color: '#1d4ed8', label: 'Registrado' }, asistio: { bg: '#dcfce7', color: '#166534', label: 'Asistió' }, no_asistio: { bg: '#fee2e2', color: '#991b1b', label: 'No asistió' }, cancelado: { bg: '#f1f5f9', color: '#475569', label: 'Cancelado' } }; const s = map[estado] || map.registrado; return React.createElement('span', { style: { padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color } }, s.label); };
+              const filtered = getArmeniaAsistFiltered();
+              return (
+                <div>
+                  {armeniaAsistDetalle ? (
+                    <div>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+                        <button onClick={() => setArmeniaAsistDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Armenia 24</button>
+                        {currentUser.role === 'admin' && <button onClick={() => { if(window.confirm('¿Eliminar este registro?')) deleteArmeniaAsistPersona(armeniaAsistDetalle.id); }} style={{ padding: '8px 16px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>}
+                      </div>
+                      <div style={{ background: 'white', borderRadius: 16, padding: 28, marginBottom: 20 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+                          <div>
+                            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{[armeniaAsistDetalle.nombre, armeniaAsistDetalle.apellido].filter(Boolean).join(' ')}</h2>
+                            <p style={{ fontSize: 14, color: '#64748b' }}>{armeniaAsistDetalle.cargo} · {armeniaAsistDetalle.ciudad}</p>
+                            <p style={{ fontSize: 13, color: '#94a3b8' }}>{new Date(armeniaAsistDetalle.created_at).toLocaleDateString('es-CO')}</p>
+                          </div>
+                          {asistBadge(armeniaAsistDetalle.estado)}
+                        </div>
+                        <div style={{ marginBottom: 16 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '1px', marginBottom: 8 }}>ESTADO</p>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            {[['registrado','Registrado'],['asistio','Asistió'],['no_asistio','No asistió'],['cancelado','Cancelado']].map(([val, lbl]) => (
+                              <button key={val} onClick={() => updateArmeniaAsistEstado(armeniaAsistDetalle.id, val)} style={{ padding: '6px 14px', borderRadius: 8, border: `2px solid ${armeniaAsistDetalle.estado === val ? '#2db84b' : '#e5e7eb'}`, background: armeniaAsistDetalle.estado === val ? '#2db84b' : 'white', color: armeniaAsistDetalle.estado === val ? 'white' : '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
+                          {Object.entries(armeniaAsistDetalle).filter(([k,v])=>!['id','created_at','nombre','apellido','cargo','ciudad','estado','notas'].includes(k)&&v!==null&&v!==undefined&&v!=='').map(([k,v])=>(
+                            <div key={k}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{String(v)}</p></div>
+                          ))}
+                        </div>
+                        <div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: '1px', marginBottom: 8 }}>NOTAS INTERNAS</p>
+                          <textarea value={armeniaAsistNotasEdit} onChange={e => setArmeniaAsistNotasEdit(e.target.value)} onFocus={() => setArmeniaAsistNotasEdit(armeniaAsistDetalle.notas || '')} style={{ width: '100%', padding: 12, border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', minHeight: 80, resize: 'vertical', boxSizing: 'border-box' }} placeholder="Añade notas sobre esta persona..."/>
+                          <button onClick={() => saveArmeniaAsistNotas(armeniaAsistDetalle.id, armeniaAsistNotasEdit)} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <button onClick={() => setView('crm-armenia-folder')} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Armenia 24</button>
+                        <input value={armeniaAsistSearch} onChange={e => setArmeniaAsistSearch(e.target.value)} placeholder="Buscar por nombre, cédula, correo..." style={{ flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}/>
+                        <select value={armeniaAsistFiltroEstado} onChange={e => setArmeniaAsistFiltroEstado(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}>
+                          <option value="all">Todos</option>
+                          <option value="registrado">Registrado</option>
+                          <option value="asistio">Asistió</option>
+                          <option value="no_asistio">No asistió</option>
+                          <option value="cancelado">Cancelado</option>
+                        </select>
+                        <button onClick={loadArmeniaAsist} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
+                        <button onClick={exportArmeniaAsistExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #2db84b, #1e7c34)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12, marginBottom: 20 }}>
+                        {[['Total', armeniaAsistData.length, '#2db84b'], ['Registrado', armeniaAsistData.filter(r=>r.estado==='registrado'||!r.estado).length, '#3b82f6'], ['Asistió', armeniaAsistData.filter(r=>r.estado==='asistio').length, '#10b981'], ['No asistió', armeniaAsistData.filter(r=>r.estado==='no_asistio').length, '#E84338']].map(([lbl, val, color]) => (
+                          <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                            <p style={{ fontSize: 22, fontWeight: 700, color }}>{val}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{lbl}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {armeniaAsistLoading ? (
+                        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Cargando...</div>
+                      ) : filtered.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16, color: '#94a3b8' }}>No hay registros{armeniaAsistSearch ? ' que coincidan' : ''}.</div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                          {filtered.map((r, i) => (
+                            <div key={r.id} onClick={() => { setArmeniaAsistDetalle(r); setArmeniaAsistNotasEdit(r.notas || ''); }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i < filtered.length-1 ? '1px solid #f1f5f9' : 'none', cursor: 'pointer' }}
+                              onMouseOver={e=>e.currentTarget.style.background='#f8fff9'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg, #2db84b, #1e7c34)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>👤</div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 2 }}>{[r.nombre, r.apellido].filter(Boolean).join(' ')}</p>
+                                <p style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.cargo} · {r.ciudad}</p>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                                {asistBadge(r.estado)}
+                                <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-armenia-guia' && (() => {
+              const guiaBadge = (estado) => { const map = { en_guia: ['En Guía','#10b981'], rechazado: ['Rechazado','#E84338'], pendiente: ['Pendiente','#94a3b8'] }; const [lbl, color] = map[estado] || map['pendiente']; return <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: color + '22', color }}>{lbl}</span>; };
+              const filtered = getArmeniaGuiaFiltered();
+              return (
+                <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
+                  {armeniaGuiaDetalle ? (
+                    <div style={{ flex: 1, overflowY: 'auto', background: 'white', borderRadius: 16, padding: 24 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <button onClick={() => setArmeniaGuiaDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← Volver</button>
+                        {currentUser.role === 'admin' && <button onClick={() => { if(window.confirm('¿Eliminar este establecimiento?')) deleteArmeniaGuiaPersona(armeniaGuiaDetalle.id); }} style={{ padding: '8px 16px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>}
+                      </div>
+                      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                        <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#1e7c34,#2db84b)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 12px' }}><i className="bi bi-map"></i></div>
+                        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{armeniaGuiaDetalle.nombre_establecimiento}</h2>
+                        <p style={{ fontSize: 14, color: '#64748b' }}>{armeniaGuiaDetalle.tipo_negocio} · {armeniaGuiaDetalle.ciudad}</p>
+                        <p style={{ fontSize: 13, color: '#94a3b8' }}>{new Date(armeniaGuiaDetalle.created_at).toLocaleDateString('es-CO')}</p>
+                      </div>
+                      {guiaBadge(armeniaGuiaDetalle.estado)}
+                      <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
+                        {[['pendiente','Pendiente'],['en_guia','En Guía'],['rechazado','Rechazado']].map(([val,lbl]) =>
+                          <button key={val} onClick={() => updateArmeniaGuiaEstado(armeniaGuiaDetalle.id, val)} style={{ padding: '6px 14px', borderRadius: 8, border: `2px solid ${armeniaGuiaDetalle.estado === val ? '#1e7c34' : '#e5e7eb'}`, background: armeniaGuiaDetalle.estado === val ? '#1e7c34' : 'white', color: armeniaGuiaDetalle.estado === val ? 'white' : '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                        )}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+                        {Object.entries(armeniaGuiaDetalle).filter(([k, v]) => !['id','created_at','nombre_establecimiento','tipo_negocio','ciudad','estado','notas','link_camara_comercio','link_foto_establecimiento','link_logo','documentacion'].includes(k) && v !== null && v !== undefined && v !== '').map(([k, v]) => (
+                          <div key={k}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{String(v)}</p></div>
+                        ))}
+                      </div>
+                      {armeniaGuiaDetalle.documentacion && <div style={{ marginTop: 12 }}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>DOCUMENTACIÓN</p><p style={{ fontSize: 13, color: '#1e293b' }}>{armeniaGuiaDetalle.documentacion.split(' | ').join(', ')}</p></div>}
+                      <div style={{ marginTop: 12 }}>
+                        {armeniaGuiaDetalle.link_camara_comercio && <p style={{ fontSize: 13, marginBottom: 4 }}>📄 <a href={armeniaGuiaDetalle.link_camara_comercio} target="_blank" rel="noreferrer" style={{ color: '#1e7c34' }}>Cámara de Comercio</a></p>}
+                        {armeniaGuiaDetalle.link_foto_establecimiento && <p style={{ fontSize: 13, marginBottom: 4 }}>📷 <a href={armeniaGuiaDetalle.link_foto_establecimiento} target="_blank" rel="noreferrer" style={{ color: '#1e7c34' }}>Fotografía del Establecimiento</a></p>}
+                        {armeniaGuiaDetalle.link_logo && <p style={{ fontSize: 13 }}><i className="bi bi-image" style={{marginRight:4}}></i><a href={armeniaGuiaDetalle.link_logo} target="_blank" rel="noreferrer" style={{ color: '#1e7c34' }}>Logo</a></p>}
+                      </div>
+                      <div style={{ marginTop: 16 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>NOTAS</p>
+                        <textarea value={armeniaGuiaNotasEdit} onChange={e => setArmeniaGuiaNotasEdit(e.target.value)} onFocus={() => setArmeniaGuiaNotasEdit(armeniaGuiaDetalle.notas || '')} style={{ width: '100%', padding: 12, border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', minHeight: 80, resize: 'vertical', boxSizing: 'border-box' }} placeholder="Añade notas sobre este establecimiento..."/>
+                        <button onClick={() => saveArmeniaGuiaNotas(armeniaGuiaDetalle.id, armeniaGuiaNotasEdit)} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#1e7c34,#2db84b)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+                        <button onClick={() => setView('crm-armenia-folder')} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← Armenia 24</button>
+                        <input value={armeniaGuiaSearch} onChange={e => setArmeniaGuiaSearch(e.target.value)} placeholder="Buscar establecimiento, correo, ciudad..." style={{ flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}/>
+                        <select value={armeniaGuiaFiltroEstado} onChange={e => setArmeniaGuiaFiltroEstado(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}>
+                          <option value="all">Todos</option>
+                          <option value="pendiente">Pendiente</option>
+                          <option value="en_guia">En Guía</option>
+                          <option value="rechazado">Rechazado</option>
+                        </select>
+                        <button onClick={loadArmeniaGuia} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
+                        <button onClick={exportArmeniaGuiaExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#1e7c34,#2db84b)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                        <button onClick={downloadArmeniaGuiaArchivos} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#0369a1,#0284c7)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-file-zip"></i> Archivos ZIP</button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 16 }}>
+                        {[['Total',armeniaGuiaData.length,'#1e7c34'],['Pendiente',armeniaGuiaData.filter(r=>!r.estado||r.estado==='pendiente').length,'#94a3b8'],['En Guía',armeniaGuiaData.filter(r=>r.estado==='en_guia').length,'#10b981'],['Rechazado',armeniaGuiaData.filter(r=>r.estado==='rechazado').length,'#E84338']].map(([lbl,val,color]) => (
+                          <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                            <p style={{ fontSize: 22, fontWeight: 700, color }}>{val}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{lbl}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {armeniaGuiaLoading ? (
+                        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Cargando...</div>
+                      ) : filtered.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16, color: '#94a3b8' }}>No hay registros{armeniaGuiaSearch ? ' que coincidan' : ''}.</div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                          {filtered.map((r, i) => (
+                            <div key={r.id} onClick={() => { setArmeniaGuiaDetalle(r); setArmeniaGuiaNotasEdit(r.notas || ''); }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i < filtered.length-1 ? '1px solid #f1f5f9' : 'none', cursor: 'pointer' }}
+                              onMouseOver={e=>e.currentTarget.style.background='#f0fdf4'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg,#1e7c34,#2db84b)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🏪</div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 2 }}>{r.nombre_establecimiento}</p>
+                                <p style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.tipo_negocio} · {r.ciudad}</p>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                                {guiaBadge(r.estado)}
+                                <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-armenia-postgastro' && (() => {
+              const pgBadge = (estado) => { const map = { postulado: ['Postulado','#94a3b8'], seleccionado: ['Seleccionado','#10b981'], en_proceso: ['En Proceso','#f59e0b'], no_seleccionado: ['No Seleccionado','#E84338'] }; const [lbl, color] = map[estado] || map['postulado']; return <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: color + '22', color }}>{lbl}</span>; };
+              const filtered = getArmeniaPostGastroFiltered();
+              return (
+                <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
+                  {armeniaPostGastroDetalle ? (
+                    <div style={{ flex: 1, overflowY: 'auto', background: 'white', borderRadius: 16, padding: 24 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <button onClick={() => setArmeniaPostGastroDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← Volver</button>
+                        {currentUser.role === 'admin' && <button onClick={() => { if(window.confirm('¿Eliminar este registro?')) deleteArmeniaPostGastroPersona(armeniaPostGastroDetalle.id); }} style={{ padding: '8px 16px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>}
+                      </div>
+                      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                        <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#1e7c34,#2db84b)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 12px' }}><i className="bi bi-cup-hot"></i></div>
+                        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{armeniaPostGastroDetalle.nombre_establecimiento}</h2>
+                        <p style={{ fontSize: 14, color: '#64748b' }}>{armeniaPostGastroDetalle.ciudad}{armeniaPostGastroDetalle.barrio ? ' · ' + armeniaPostGastroDetalle.barrio : ''}</p>
+                        <p style={{ fontSize: 13, color: '#94a3b8' }}>{new Date(armeniaPostGastroDetalle.created_at).toLocaleDateString('es-CO')}</p>
+                      </div>
+                      {pgBadge(armeniaPostGastroDetalle.estado)}
+                      <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
+                        {[['postulado','Postulado'],['seleccionado','Seleccionado'],['en_proceso','En Proceso'],['no_seleccionado','No Seleccionado']].map(([val,lbl]) =>
+                          <button key={val} onClick={() => updateArmeniaPostGastroEstado(armeniaPostGastroDetalle.id, val)} style={{ padding: '6px 14px', borderRadius: 8, border: `2px solid ${armeniaPostGastroDetalle.estado === val ? '#1e7c34' : '#e5e7eb'}`, background: armeniaPostGastroDetalle.estado === val ? '#1e7c34' : 'white', color: armeniaPostGastroDetalle.estado === val ? 'white' : '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                        )}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+                        {Object.entries(armeniaPostGastroDetalle).filter(([k,v])=>!['id','created_at','nombre_establecimiento','ciudad','barrio','estado','notas'].includes(k)&&v!==null&&v!==undefined&&v!=='').map(([k,v])=>(
+                          <div key={k}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{String(v)}</p></div>
+                        ))}
+                      </div>
+                      <div style={{ marginTop: 16 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>NOTAS</p>
+                        <textarea value={armeniaPostGastroNotasEdit} onChange={e => setArmeniaPostGastroNotasEdit(e.target.value)} onFocus={() => setArmeniaPostGastroNotasEdit(armeniaPostGastroDetalle.notas || '')} style={{ width: '100%', padding: 12, border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', minHeight: 80, resize: 'vertical', boxSizing: 'border-box' }} placeholder="Añade notas sobre este establecimiento..."/>
+                        <button onClick={() => saveArmeniaPostGastroNotas(armeniaPostGastroDetalle.id, armeniaPostGastroNotasEdit)} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#1e7c34,#2db84b)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+                        <button onClick={() => setView('crm-armenia-folder')} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← Armenia 24</button>
+                        <input value={armeniaPostGastroSearch} onChange={e => setArmeniaPostGastroSearch(e.target.value)} placeholder="Buscar establecimiento, correo, ciudad..." style={{ flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}/>
+                        <select value={armeniaPostGastroFiltroEstado} onChange={e => setArmeniaPostGastroFiltroEstado(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}>
+                          <option value="all">Todos</option>
+                          <option value="postulado">Postulado</option>
+                          <option value="seleccionado">Seleccionado</option>
+                          <option value="en_proceso">En Proceso</option>
+                          <option value="no_seleccionado">No Seleccionado</option>
+                        </select>
+                        <button onClick={loadArmeniaPostGastro} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
+                        <button onClick={exportArmeniaPostGastroExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#1e7c34,#2db84b)', color: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 12, marginBottom: 16 }}>
+                        {[['Total',armeniaPostGastroData.length,'#1e7c34'],['Postulado',armeniaPostGastroData.filter(r=>!r.estado||r.estado==='postulado').length,'#94a3b8'],['Seleccionado',armeniaPostGastroData.filter(r=>r.estado==='seleccionado').length,'#10b981'],['En Proceso',armeniaPostGastroData.filter(r=>r.estado==='en_proceso').length,'#f59e0b'],['No Seleccionado',armeniaPostGastroData.filter(r=>r.estado==='no_seleccionado').length,'#E84338']].map(([lbl,val,color]) => (
+                          <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                            <p style={{ fontSize: 22, fontWeight: 700, color }}>{val}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{lbl}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {armeniaPostGastroLoading ? (
+                        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Cargando...</div>
+                      ) : filtered.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16, color: '#94a3b8' }}>No hay registros{armeniaPostGastroSearch ? ' que coincidan' : ''}.</div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                          {filtered.map((r, i) => (
+                            <div key={r.id} onClick={() => { setArmeniaPostGastroDetalle(r); setArmeniaPostGastroNotasEdit(r.notas || ''); }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i < filtered.length-1 ? '1px solid #f1f5f9' : 'none', cursor: 'pointer' }}
+                              onMouseOver={e=>e.currentTarget.style.background='#f0fdf4'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg,#1e7c34,#2db84b)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🏪</div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 2 }}>{r.nombre_establecimiento}</p>
+                                <p style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nombre_contacto} · {r.ciudad || 'Armenia'}</p>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                                {pgBadge(r.estado)}
+                                <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-bar-week' && (() => {
+              const bwBadge = (estado) => { const m = { pendiente: { bg: '#fef3c7', color: '#92400e', lbl: 'Pendiente' }, confirmado: { bg: '#d1fae5', color: '#065f46', lbl: 'Confirmado' }, rechazado: { bg: '#fee2e2', color: '#991b1b', lbl: 'Rechazado' } }; const s = m[estado] || m.pendiente; return <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color }}>{s.lbl}</span>; };
+              const filtered = getBarWeekFiltered();
+              return (
+                <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
+                  {barWeekDetalle ? (
+                    <div style={{ flex: 1, overflowY: 'auto', background: 'white', borderRadius: 16, padding: 24 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <button onClick={() => setBarWeekDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← Volver</button>
+                        {currentUser.role === 'admin' && <button onClick={() => { if(window.confirm('¿Eliminar este registro?')) deleteBarWeekPersona(barWeekDetalle.id); }} style={{ padding: '8px 16px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>}
+                      </div>
+                      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                        <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#d4a017,#b8860b)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 12px' }}><i className="bi bi-cup-straw"></i></div>
+                        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{barWeekDetalle.nombre_establecimiento}</h2>
+                        <p style={{ fontSize: 14, color: '#64748b' }}>{barWeekDetalle.barrio} · {barWeekDetalle.localidad}</p>
+                        <p style={{ fontSize: 13, color: '#94a3b8' }}>{new Date(barWeekDetalle.created_at).toLocaleDateString('es-CO')}</p>
+                      </div>
+                      {bwBadge(barWeekDetalle.estado)}
+                      <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
+                        {[['pendiente','Pendiente'],['confirmado','Confirmado'],['rechazado','Rechazado']].map(([val,lbl]) =>
+                          <button key={val} onClick={() => updateBarWeekEstado(barWeekDetalle.id, val)} style={{ padding: '6px 14px', borderRadius: 8, border: `2px solid ${barWeekDetalle.estado===val?'#d4a017':'#e5e7eb'}`, background: barWeekDetalle.estado===val?'#d4a017':'white', color: barWeekDetalle.estado===val?'#0d0d0d':'#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                        )}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+                        {Object.entries(barWeekDetalle).filter(([k,v])=>!['id','created_at','nombre_establecimiento','barrio','localidad','estado','notas'].includes(k)&&v!==null&&v!==undefined&&v!=='').map(([k,v])=>(
+                          <div key={k}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{String(v)}</p></div>
+                        ))}
+                      </div>
+                      <div style={{ marginTop: 16 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>NOTAS INTERNAS</p>
+                        <textarea value={barWeekNotasEdit} onChange={e => setBarWeekNotasEdit(e.target.value)} onFocus={() => setBarWeekNotasEdit(barWeekDetalle.notas || '')} style={{ width: '100%', padding: 12, border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', minHeight: 80, resize: 'vertical', boxSizing: 'border-box' }} placeholder="Añade notas sobre este establecimiento..."/>
+                        <button onClick={() => saveBarWeekNotas(barWeekDetalle.id, barWeekNotasEdit)} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#d4a017,#b8860b)', color: '#0d0d0d', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+                        <button onClick={() => setView('crm')} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← CRM</button>
+                        <input value={barWeekSearch} onChange={e => setBarWeekSearch(e.target.value)} placeholder="Buscar por establecimiento, barrio, localidad, contacto..." style={{ flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}/>
+                        <select value={barWeekFiltroEstado} onChange={e => setBarWeekFiltroEstado(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}>
+                          <option value="all">Todos</option>
+                          <option value="pendiente">Pendiente</option>
+                          <option value="confirmado">Confirmado</option>
+                          <option value="rechazado">Rechazado</option>
+                        </select>
+                        <button onClick={loadBarWeek} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
+                        <button onClick={exportBarWeekExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#d4a017,#b8860b)', color: '#0d0d0d', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12, marginBottom: 16 }}>
+                        {[['Total',barWeekData.length,'#d4a017'],['Pendiente',barWeekData.filter(r=>!r.estado||r.estado==='pendiente').length,'#92400e'],['Confirmado',barWeekData.filter(r=>r.estado==='confirmado').length,'#065f46'],['Rechazado',barWeekData.filter(r=>r.estado==='rechazado').length,'#E84338']].map(([lbl,val,color])=>(
+                          <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                            <p style={{ fontSize: 22, fontWeight: 700, color }}>{val}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{lbl}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {barWeekLoading ? (
+                        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Cargando...</div>
+                      ) : filtered.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16, color: '#94a3b8' }}>No hay registros{barWeekSearch ? ' que coincidan' : ''}.</div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                          {filtered.map((r,i) => (
+                            <div key={r.id} onClick={() => { setBarWeekDetalle(r); setBarWeekNotasEdit(r.notas||''); }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i<filtered.length-1?'1px solid #f1f5f9':'none', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='#fffde7'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg,#d4a017,#b8860b)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}><i className="bi bi-cup-straw"></i></div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 2 }}>{r.nombre_establecimiento}</p>
+                                <p style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.barrio} · {r.localidad}</p>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                                {bwBadge(r.estado)}
+                                <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-espacios-corp' && (() => {
+              const ecBadge = (estado) => { const m = { pendiente: { bg: '#dbeafe', color: '#1e40af', lbl: 'Pendiente' }, confirmado: { bg: '#d1fae5', color: '#065f46', lbl: 'Confirmado' }, rechazado: { bg: '#fee2e2', color: '#991b1b', lbl: 'Rechazado' } }; const s = m[estado] || m.pendiente; return <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color }}>{s.lbl}</span>; };
+              const filtered = getEspaciosCorpFiltered();
+              return (
+                <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
+                  {espaciosCorpDetalle ? (
+                    <div style={{ flex: 1, overflowY: 'auto', background: 'white', borderRadius: 16, padding: 24 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <button onClick={() => setEspaciosCorpDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← Volver</button>
+                        {currentUser.role === 'admin' && <button onClick={() => { if(window.confirm('¿Eliminar este registro?')) deleteEspaciosCorpRegistro(espaciosCorpDetalle.id); }} style={{ padding: '8px 16px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>}
+                      </div>
+                      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                        <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#1d4ed8,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, color: 'white', margin: '0 auto 12px' }}><i className="bi bi-building-check"></i></div>
+                        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{espaciosCorpDetalle.nombre_establecimiento}</h2>
+                        <p style={{ fontSize: 14, color: '#64748b' }}>{espaciosCorpDetalle.localidad_zona}</p>
+                        <p style={{ fontSize: 13, color: '#94a3b8' }}>{new Date(espaciosCorpDetalle.created_at).toLocaleDateString('es-CO')}</p>
+                      </div>
+                      {ecBadge(espaciosCorpDetalle.estado)}
+                      <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
+                        {[['pendiente','Pendiente'],['confirmado','Confirmado'],['rechazado','Rechazado']].map(([val,lbl]) =>
+                          <button key={val} onClick={() => updateEspaciosCorpEstado(espaciosCorpDetalle.id, val)} style={{ padding: '6px 14px', borderRadius: 8, border: `2px solid ${espaciosCorpDetalle.estado===val?'#1d4ed8':'#e5e7eb'}`, background: espaciosCorpDetalle.estado===val?'#1d4ed8':'white', color: espaciosCorpDetalle.estado===val?'white':'#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                        )}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+                        {[
+                          ['Responsable', espaciosCorpDetalle.nombre_responsable],
+                          ['Tel / WhatsApp', espaciosCorpDetalle.telefono_whatsapp],
+                          ['Correo', espaciosCorpDetalle.correo_electronico],
+                          ['Dirección', espaciosCorpDetalle.direccion],
+                          ['Redes / Web', espaciosCorpDetalle.redes_sociales],
+                        ].filter(([,v])=>v).map(([k,v]) => (
+                          <div key={k}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{k}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{v}</p></div>
+                        ))}
+                        {espaciosCorpDetalle.tipos_eventos && <div style={{ gridColumn: '1/-1' }}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>Tipos de eventos</p><div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>{espaciosCorpDetalle.tipos_eventos.split(', ').map(t => <span key={t} style={{ padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: '#eff6ff', color: '#1d4ed8' }}>{t}</span>)}</div></div>}
+                        {espaciosCorpDetalle.tipos_eventos_otros && <div style={{ gridColumn: '1/-1' }}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>Otros eventos</p><p style={{ fontSize: 13, color: '#1e293b' }}>{espaciosCorpDetalle.tipos_eventos_otros}</p></div>}
+                      </div>
+                      <div style={{ marginTop: 16 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>NOTAS INTERNAS</p>
+                        <textarea value={espaciosCorpNotasEdit} onChange={e => setEspaciosCorpNotasEdit(e.target.value)} onFocus={() => setEspaciosCorpNotasEdit(espaciosCorpDetalle.notas || '')} style={{ width: '100%', padding: 12, border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', minHeight: 80, resize: 'vertical', boxSizing: 'border-box' }} placeholder="Añade notas sobre este establecimiento..."/>
+                        <button onClick={() => saveEspaciosCorpNotas(espaciosCorpDetalle.id, espaciosCorpNotasEdit)} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#1d4ed8,#2563eb)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+                        <button onClick={() => setView('crm')} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← CRM</button>
+                        <input value={espaciosCorpSearch} onChange={e => setEspaciosCorpSearch(e.target.value)} placeholder="Buscar por establecimiento, localidad, contacto, correo..." style={{ flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}/>
+                        <select value={espaciosCorpFiltroEstado} onChange={e => setEspaciosCorpFiltroEstado(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}>
+                          <option value="all">Todos</option>
+                          <option value="pendiente">Pendiente</option>
+                          <option value="confirmado">Confirmado</option>
+                          <option value="rechazado">Rechazado</option>
+                        </select>
+                        <button onClick={loadEspaciosCorp} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
+                        <button onClick={exportEspaciosCorpExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#1d4ed8,#2563eb)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12, marginBottom: 16 }}>
+                        {[['Total',espaciosCorpData.length,'#1d4ed8'],['Pendiente',espaciosCorpData.filter(r=>!r.estado||r.estado==='pendiente').length,'#1e40af'],['Confirmado',espaciosCorpData.filter(r=>r.estado==='confirmado').length,'#065f46'],['Rechazado',espaciosCorpData.filter(r=>r.estado==='rechazado').length,'#E84338']].map(([lbl,val,color])=>(
+                          <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                            <p style={{ fontSize: 22, fontWeight: 700, color }}>{val}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{lbl}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {espaciosCorpLoading ? (
+                        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Cargando...</div>
+                      ) : filtered.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16, color: '#94a3b8' }}>No hay registros{espaciosCorpSearch ? ' que coincidan' : ''}.</div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                          {filtered.map((r,i) => (
+                            <div key={r.id} onClick={() => { setEspaciosCorpDetalle(r); setEspaciosCorpNotasEdit(r.notas||''); }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i<filtered.length-1?'1px solid #f1f5f9':'none', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='#eff6ff'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg,#1d4ed8,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: 'white', flexShrink: 0 }}><i className="bi bi-building-check"></i></div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 2 }}>{r.nombre_establecimiento}</p>
+                                <p style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.localidad_zona}{r.nombre_responsable ? ' · ' + r.nombre_responsable : ''}</p>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                                {ecBadge(r.estado)}
+                                <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-mix-shake' && (() => {
+              const mxsEstados = { inscrito: { label: 'Inscrito', color: '#8B2BE8', bg: '#f3e8ff' }, confirmado: { label: 'Confirmado', color: '#10b981', bg: '#d1fae5' }, activo: { label: 'Activo', color: '#FF3D9A', bg: '#fce7f3' }, inactivo: { label: 'Inactivo', color: '#94a3b8', bg: '#f1f5f9' } };
+              const filtered = getMixShakeFiltered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = mxsEstados[estado] || mxsEstados.inscrito; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+              if (mixShakeDetalle) {
+                const r = mixShakeDetalle;
+                return (
+                  <div>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setMixShakeDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Inscritos</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.profesion} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteMixShake(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN Y PROFESIÓN')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo ID', r.tipo_identificacion)}{cell('Nº ID', r.numero_identificacion)}{cell('Profesión', r.profesion)}
+                          </div>
+                        </div>
+                        {(r.empresa_nombre || r.empresa_nit) && (
+                          <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                            {sec('EMPRESA / ESTABLECIMIENTO')}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                              {cell('Empresa', r.empresa_nombre)}{cell('NIT', r.empresa_nit)}{cell('Dirección', r.empresa_direccion)}{cell('Tel. Empresa', r.empresa_telefono)}{cell('Representante', r.empresa_representante)}{cell('Cédula Rep.', r.empresa_cedula_rep)}{cell('Email Empresa', r.empresa_email)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>ESTADO</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {Object.entries(mxsEstados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateMixShakeEstado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid', borderColor: r.estado === key ? e.color : '#e5e7eb', background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>{e.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>NOTAS INTERNAS</p>
+                          <textarea value={mixShakeNotasEdit !== '' ? mixShakeNotasEdit : (r.notas || '')} onChange={e => setMixShakeNotasEdit(e.target.value)} onFocus={() => setMixShakeNotasEdit(r.notas || '')} rows={5} placeholder="Agrega notas internas..." style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          <button onClick={() => { saveMixShakeNotas(r.id, mixShakeNotasEdit !== '' ? mixShakeNotasEdit : (r.notas || '')); setMixShakeNotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #8B2BE8, #6d22c2)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              const counts = { inscrito: 0, confirmado: 0, activo: 0, inactivo: 0 };
+              mixShakeData.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    {[['Total', mixShakeData.length, '#8B2BE8'], ['Inscrito', counts.inscrito, '#8B2BE8'], ['Confirmado', counts.confirmado, '#10b981'], ['Activo', counts.activo, '#FF3D9A'], ['Inactivo', counts.inactivo, '#94a3b8']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '12px 20px', minWidth: 100 }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>{lbl}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{mixShakeLoading ? '…' : val}</p>
+                      </div>
+                    ))}
+                    <button onClick={exportMixShakeExcel} disabled={filtered.length === 0} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, ID, email, profesión, ciudad o empresa..." value={mixShakeSearch} onChange={e => setMixShakeSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={mixShakeFiltroEstado} onChange={e => setMixShakeFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(mxsEstados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                  </div>
+                  {mixShakeLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : mixShakeData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin inscripciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los registros del formulario MIX &amp; SHAKE.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setMixShakeDetalle(r); setMixShakeNotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.profesion} · {r.ciudad}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMAIL','PROFESIÓN / CIUDAD','ESTADO',''].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setMixShakeDetalle(r); setMixShakeNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#faf5ff'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 13 }}>{r.profesion}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
+                          {badge(r.estado)}
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-circulo-gastro' && (() => {
+              const cgEstados = { inscrito: { label: 'Inscrito', color: '#e67e22', bg: '#fef3e2' }, confirmado: { label: 'Confirmado', color: '#10b981', bg: '#d1fae5' }, activo: { label: 'Activo', color: '#3b82f6', bg: '#eff6ff' }, inactivo: { label: 'Inactivo', color: '#94a3b8', bg: '#f1f5f9' } };
+              const filtered = getCirculoGastroFiltered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = cgEstados[estado] || cgEstados.inscrito; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+              if (circuloGastroDetalle) {
+                const r = circuloGastroDetalle;
+                return (
+                  <div>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setCirculoGastroDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Inscritos</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.profesion} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteCirculoGastro(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN Y PROFESIÓN')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo ID', r.tipo_identificacion)}{cell('Nº ID', r.numero_identificacion)}{cell('Profesión', r.profesion)}
+                          </div>
+                        </div>
+                        {(r.empresa_nombre || r.empresa_nit) && (
+                          <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                            {sec('EMPRESA / ESTABLECIMIENTO')}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                              {cell('Empresa', r.empresa_nombre)}{cell('NIT', r.empresa_nit)}{cell('Dirección', r.empresa_direccion)}{cell('Tel. Empresa', r.empresa_telefono)}{cell('Representante', r.empresa_representante)}{cell('Cédula Rep.', r.empresa_cedula_rep)}{cell('Email Empresa', r.empresa_email)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>ESTADO</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {Object.entries(cgEstados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateCirculoGastroEstado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid', borderColor: r.estado === key ? e.color : '#e5e7eb', background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>{e.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>NOTAS INTERNAS</p>
+                          <textarea value={circuloGastroNotasEdit !== '' ? circuloGastroNotasEdit : (r.notas || '')} onChange={e => setCirculoGastroNotasEdit(e.target.value)} onFocus={() => setCirculoGastroNotasEdit(r.notas || '')} rows={5} placeholder="Agrega notas internas..." style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          <button onClick={() => { saveCirculoGastroNotas(r.id, circuloGastroNotasEdit !== '' ? circuloGastroNotasEdit : (r.notas || '')); setCirculoGastroNotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #e67e22, #d35400)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              const counts = { inscrito: 0, confirmado: 0, activo: 0, inactivo: 0 };
+              circuloGastroData.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    {[['Total', circuloGastroData.length, '#e67e22'], ['Inscrito', counts.inscrito, '#e67e22'], ['Confirmado', counts.confirmado, '#10b981'], ['Activo', counts.activo, '#3b82f6'], ['Inactivo', counts.inactivo, '#94a3b8']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '12px 20px', minWidth: 100 }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>{lbl}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{circuloGastroLoading ? '…' : val}</p>
+                      </div>
+                    ))}
+                    <button onClick={exportCirculoGastroExcel} disabled={filtered.length === 0} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, ID, email, profesión, ciudad o empresa..." value={circuloGastroSearch} onChange={e => setCirculoGastroSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={circuloGastroFiltroEstado} onChange={e => setCirculoGastroFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(cgEstados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                  </div>
+                  {circuloGastroLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : circuloGastroData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin inscripciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los registros del formulario de Círculo Gastro.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setCirculoGastroDetalle(r); setCirculoGastroNotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.profesion} · {r.ciudad}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMAIL','PROFESIÓN / CIUDAD','ESTADO',''].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setCirculoGastroDetalle(r); setCirculoGastroNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#fff7ed'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 13 }}>{r.profesion}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
+                          {badge(r.estado)}
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-cluster-dj' && (() => {
+              const cdEstados = { inscrito: { label: 'Inscrito', color: '#0ea5e9', bg: '#e0f2fe' }, confirmado: { label: 'Confirmado', color: '#10b981', bg: '#d1fae5' }, activo: { label: 'Activo', color: '#8b5cf6', bg: '#ede9fe' }, inactivo: { label: 'Inactivo', color: '#94a3b8', bg: '#f1f5f9' } };
+              const filtered = getClusterDjFiltered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = cdEstados[estado] || cdEstados.inscrito; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+              if (clusterDjDetalle) {
+                const r = clusterDjDetalle;
+                return (
+                  <div>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setClusterDjDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Inscritos</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.profesion} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteClusterDj(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN Y PROFESIÓN')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo ID', r.tipo_identificacion)}{cell('Nº ID', r.numero_identificacion)}{cell('Profesión', r.profesion)}
+                          </div>
+                        </div>
+                        {(r.empresa_nombre || r.empresa_nit) && (
+                          <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                            {sec('EMPRESA / ESTABLECIMIENTO')}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                              {cell('Empresa', r.empresa_nombre)}{cell('NIT', r.empresa_nit)}{cell('Dirección', r.empresa_direccion)}{cell('Tel. Empresa', r.empresa_telefono)}{cell('Representante', r.empresa_representante)}{cell('Cédula Rep.', r.empresa_cedula_rep)}{cell('Email Empresa', r.empresa_email)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>ESTADO</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {Object.entries(cdEstados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateClusterDjEstado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid', borderColor: r.estado === key ? e.color : '#e5e7eb', background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>{e.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>NOTAS INTERNAS</p>
+                          <textarea value={clusterDjNotasEdit !== '' ? clusterDjNotasEdit : (r.notas || '')} onChange={e => setClusterDjNotasEdit(e.target.value)} onFocus={() => setClusterDjNotasEdit(r.notas || '')} rows={5} placeholder="Agrega notas internas..." style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          <button onClick={() => { saveClusterDjNotas(r.id, clusterDjNotasEdit !== '' ? clusterDjNotasEdit : (r.notas || '')); setClusterDjNotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              const counts = { inscrito: 0, confirmado: 0, activo: 0, inactivo: 0 };
+              clusterDjData.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    {[['Total', clusterDjData.length, '#0ea5e9'], ['Inscrito', counts.inscrito, '#0ea5e9'], ['Confirmado', counts.confirmado, '#10b981'], ['Activo', counts.activo, '#8b5cf6'], ['Inactivo', counts.inactivo, '#94a3b8']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '12px 20px', minWidth: 100 }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>{lbl}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{clusterDjLoading ? '…' : val}</p>
+                      </div>
+                    ))}
+                    <button onClick={exportClusterDjExcel} disabled={filtered.length === 0} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, ID, email, profesión, ciudad o empresa..." value={clusterDjSearch} onChange={e => setClusterDjSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={clusterDjFiltroEstado} onChange={e => setClusterDjFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(cdEstados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                  </div>
+                  {clusterDjLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : clusterDjData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-inbox"></i></p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin inscripciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los registros del formulario de Cluster DJ.</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setClusterDjDetalle(r); setClusterDjNotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.profesion} · {r.ciudad}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMAIL','PROFESIÓN / CIUDAD','ESTADO',''].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setClusterDjDetalle(r); setClusterDjNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#f0f9ff'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 13 }}>{r.profesion}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
+                          {badge(r.estado)}
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-base-total' && (() => {
+              const totalPages = baseTotalCount !== null ? Math.ceil(baseTotalCount / 100) : 0;
+              const goTo = (p) => loadBaseTotalPage(p, baseTotalSearch);
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div style={{ background: 'white', borderRadius: 12, padding: '12px 20px' }}>
+                      <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>Total registros</p>
+                      <p style={{ fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{baseTotalCount !== null ? baseTotalCount.toLocaleString('es-CO') : '…'}</p>
+                    </div>
+                    <button onClick={() => exportAllBaseTotal(baseTotalSearch)} disabled={baseTotalExporting} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalExporting ? 'default' : 'pointer', opacity: baseTotalExporting ? 0.6 : 1 }}>
+                      <i className="bi bi-file-earmark-excel"></i> {baseTotalExporting ? 'Descargando todo...' : 'Descargar todo en Excel'}
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+                    <input type="text" placeholder="Filtrar por nombre, apellido, email, ciudad, profesión o nº documento..." value={baseTotalSearch} onChange={e => setBaseTotalSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { loadBaseTotalPage(0, baseTotalSearch); } }} style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <button onClick={() => loadBaseTotalPage(0, baseTotalSearch)} disabled={baseTotalLoading} style={{ padding: '12px 22px', borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>{baseTotalLoading ? '…' : 'Filtrar'}</button>
+                    {baseTotalSearch && <button onClick={() => { setBaseTotalSearch(''); loadBaseTotalPage(0, ''); }} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>✕ Limpiar</button>}
+                  </div>
+                  {baseTotalLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando...</p></div>
+                  ) : baseTotalResults.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : (
+                    <>
+                      {isMobile ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {baseTotalResults.map((r, i) => (
+                            <div key={i} style={{ background: 'white', borderRadius: 14, padding: 16, border: '1px solid #f1f5f9' }}>
+                              <p style={{ fontSize: 14, fontWeight: 700 }}>{[r.nombre, r.nombre_2, r.apellido, r.apellido_2].filter(Boolean).join(' ')}</p>
+                              <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{r.profesion} · {r.ciudad}</p>
+                              <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{r.email} · {r.telefono}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.8fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 120px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                            {['NOMBRE COMPLETO','PROFESIÓN','EMAIL','CIUDAD','PERFIL CARGO','Nº DOC.'].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                          </div>
+                          {baseTotalResults.map((r, i) => (
+                            <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.8fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 120px', padding: '13px 16px', gap: 8, borderTop: '1px solid #f8f9fa', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#f8fafc'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                              <div><p style={{ fontSize: 13, fontWeight: 700 }}>{[r.nombre, r.nombre_2, r.apellido, r.apellido_2].filter(Boolean).join(' ')}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.genero}</p></div>
+                              <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.profesion}</span>
+                              <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                              <span style={{ fontSize: 13 }}>{r.ciudad}</span>
+                              <span style={{ fontSize: 12, color: '#64748b' }}>{r.perfil_cargo}</span>
+                              <span style={{ fontSize: 12, color: '#94a3b8' }}>{r.numero_documento}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
+                        <button onClick={() => goTo(0)} disabled={baseTotalPage === 0 || baseTotalLoading} style={{ padding: '8px 14px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalPage === 0 ? 'default' : 'pointer', opacity: baseTotalPage === 0 ? 0.4 : 1 }}>«</button>
+                        <button onClick={() => goTo(baseTotalPage - 1)} disabled={baseTotalPage === 0 || baseTotalLoading} style={{ padding: '8px 16px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalPage === 0 ? 'default' : 'pointer', opacity: baseTotalPage === 0 ? 0.4 : 1 }}>‹ Anterior</button>
+                        <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>Página {baseTotalPage + 1} de {totalPages.toLocaleString('es-CO')}</span>
+                        <button onClick={() => goTo(baseTotalPage + 1)} disabled={baseTotalPage >= totalPages - 1 || baseTotalLoading} style={{ padding: '8px 16px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalPage >= totalPages - 1 ? 'default' : 'pointer', opacity: baseTotalPage >= totalPages - 1 ? 0.4 : 1 }}>Siguiente ›</button>
+                        <button onClick={() => goTo(totalPages - 1)} disabled={baseTotalPage >= totalPages - 1 || baseTotalLoading} style={{ padding: '8px 14px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalPage >= totalPages - 1 ? 'default' : 'pointer', opacity: baseTotalPage >= totalPages - 1 ? 0.4 : 1 }}>»</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-afiliados' && (() => {
+              const afiliadosEstados = {
+                'activo':    { label: 'Activo',    color: '#16a34a', bg: '#dcfce7' },
+                'inactivo':  { label: 'Inactivo',  color: '#dc2626', bg: '#fee2e2' },
+                'pendiente': { label: 'Pendiente', color: '#d97706', bg: '#fef3c7' },
+                'suspendido':{ label: 'Suspendido',color: '#64748b', bg: '#f1f5f9' },
+              };
+              const afiliadosFiltrados = afiliadosData.filter(r => {
+                if (afiliadosFiltroEstado !== 'all' && r.estado !== afiliadosFiltroEstado) return false;
+                if (afiliadosSearch.trim().length >= 2) {
+                  const q = afiliadosSearch.toLowerCase();
+                  return [r.nit, r.razon_social, r.nombre_comercial, r.representante_legal, r.correo_electronico, r.email_facturacion, r.telefono].some(v => String(v ?? '').toLowerCase().includes(q));
+                }
+                return true;
+              });
+              const CheckIcon = ({ val }) => val === 'X' ? <span style={{ color: '#16a34a', fontWeight: 700 }}>✓</span> : <span style={{ color: '#cbd5e1' }}>–</span>;
+              return (
+                <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <input type="text" placeholder="Buscar por NIT, razón social, nombre comercial, email..." value={afiliadosSearch} onChange={e => setAfiliadosSearch(e.target.value)} style={{ flex: 1, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, minWidth: 200 }} />
+                      <select value={afiliadosFiltroEstado} onChange={e => setAfiliadosFiltroEstado(e.target.value)} style={{ padding: '11px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }}>
+                        <option value="all">Todos los estados</option>
+                        {Object.entries(afiliadosEstados).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                      </select>
+                      <button onClick={exportAfiliados} disabled={afiliadosExporting} style={{ padding: '11px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: 'pointer', opacity: afiliadosExporting ? 0.6 : 1 }}>
+                        <i className="bi bi-file-earmark-excel"></i> {afiliadosExporting ? 'Descargando...' : 'Excel'}
+                      </button>
+                    </div>
+                    <div style={{ marginBottom: 10, fontSize: 13, color: '#64748b' }}>{afiliadosFiltrados.length} de {afiliadosData.length} afiliados</div>
+                    {afiliadosLoading ? (
+                      <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando...</p></div>
+                    ) : afiliadosFiltrados.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                    ) : isMobile ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {afiliadosFiltrados.map(r => {
+                          const est = afiliadosEstados[r.estado] || afiliadosEstados['activo'];
+                          return (
+                            <div key={r.id} onClick={() => { setAfiliadosDetalle(r); setAfiliadosNotasEdit(r.notas || ''); }} style={{ background: 'white', borderRadius: 14, padding: 16, border: r.id === afiliadosDetalle?.id ? '2px solid #16a34a' : '1px solid #f1f5f9', cursor: 'pointer' }}>
+                              <p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre_comercial || r.razon_social}</p>
+                              <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{r.nit} · {r.representante_legal}</p>
+                              <div style={{ marginTop: 8 }}><span style={{ padding: '3px 9px', borderRadius: 8, fontSize: 11, fontWeight: 700, background: est.bg, color: est.color }}>{est.label}</span></div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1.2fr) minmax(0,1.4fr) 100px 60px 100px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                          {['NIT','NOMBRE COMERCIAL','RAZÓN SOCIAL','REP. LEGAL','#EST.','ESTADO'].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                        </div>
+                        {afiliadosFiltrados.map(r => {
+                          const est = afiliadosEstados[r.estado] || afiliadosEstados['activo'];
+                          return (
+                            <div key={r.id} onClick={() => { setAfiliadosDetalle(r); setAfiliadosNotasEdit(r.notas || ''); }} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1.2fr) minmax(0,1.4fr) 100px 60px 100px', padding: '13px 16px', gap: 8, borderTop: '1px solid #f8f9fa', alignItems: 'center', cursor: 'pointer', background: r.id === afiliadosDetalle?.id ? '#f0fdf4' : 'white' }} onMouseEnter={e => { if (r.id !== afiliadosDetalle?.id) e.currentTarget.style.background = '#f0fdf4'; }} onMouseLeave={e => { if (r.id !== afiliadosDetalle?.id) e.currentTarget.style.background = 'white'; }}>
+                              <span style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nit}</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nombre_comercial}</span>
+                              <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.razon_social}</span>
+                              <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.representante_legal}</span>
+                              <span style={{ fontSize: 13, textAlign: 'center' }}>{r.num_establecimientos || '–'}</span>
+                              <span style={{ padding: '3px 9px', borderRadius: 8, fontSize: 11, fontWeight: 700, background: est.bg, color: est.color }}>{est.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {afiliadosDetalle && (
+                    <div style={{ width: 360, flexShrink: 0, background: 'white', borderRadius: 20, padding: 24, border: '2px solid #dcfce7', position: 'sticky', top: 20, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+                        <div>
+                          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{afiliadosDetalle.nombre_comercial || afiliadosDetalle.razon_social}</h3>
+                          <p style={{ fontSize: 12, color: '#64748b' }}>{afiliadosDetalle.razon_social}</p>
+                        </div>
+                        <button onClick={() => setAfiliadosDetalle(null)} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 16 }}>✕</button>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+                        {[
+                          ['NIT', afiliadosDetalle.nit],
+                          ['Nº Carpeta', afiliadosDetalle.no_carpeta],
+                          ['Rep. Legal', afiliadosDetalle.representante_legal],
+                          ['Doc. RL', afiliadosDetalle.documento_rl],
+                          ['Dirección', afiliadosDetalle.direccion],
+                          ['Teléfono', afiliadosDetalle.telefono],
+                          ['Nº Establec.', afiliadosDetalle.num_establecimientos],
+                          ['Link Docs', afiliadosDetalle.link_documentos ? '🔗 Ver' : '–'],
+                        ].map(([label, val]) => (
+                          <div key={label} style={{ background: '#f8f9fa', borderRadius: 10, padding: '10px 12px' }}>
+                            <p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>{label}</p>
+                            {label === 'Link Docs' && afiliadosDetalle.link_documentos ? (
+                              <a href={afiliadosDetalle.link_documentos} target="_blank" rel="noreferrer" style={{ fontSize: 13, fontWeight: 600, color: '#16a34a', textDecoration: 'none' }}>🔗 Ver carpeta</a>
+                            ) : (
+                              <p style={{ fontSize: 13, fontWeight: 600 }}>{val || '–'}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ marginBottom: 16 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>CONTACTO FACTURACIÓN</p>
+                        <div style={{ background: '#f8f9fa', borderRadius: 10, padding: '10px 12px', fontSize: 13 }}>
+                          {afiliadosDetalle.email_facturacion && <p>{afiliadosDetalle.email_facturacion}</p>}
+                          {afiliadosDetalle.nombre_contacto_facturacion && <p style={{ color: '#64748b' }}>{afiliadosDetalle.nombre_contacto_facturacion}</p>}
+                          {afiliadosDetalle.telefono_facturacion && <p style={{ color: '#64748b' }}>{afiliadosDetalle.telefono_facturacion}</p>}
+                          {afiliadosDetalle.correo_facturacion && afiliadosDetalle.correo_facturacion !== afiliadosDetalle.email_facturacion && <p style={{ color: '#64748b' }}>{afiliadosDetalle.correo_facturacion}</p>}
+                        </div>
+                      </div>
+
+                      {(afiliadosDetalle.persona_contacto || afiliadosDetalle.telefono_contacto || afiliadosDetalle.correo_electronico) && (
+                        <div style={{ marginBottom: 16 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>CONTACTO GENERAL</p>
+                          <div style={{ background: '#f8f9fa', borderRadius: 10, padding: '10px 12px', fontSize: 13 }}>
+                            {afiliadosDetalle.persona_contacto && <p>{afiliadosDetalle.persona_contacto}</p>}
+                            {afiliadosDetalle.telefono_contacto && <p style={{ color: '#64748b' }}>{afiliadosDetalle.telefono_contacto}</p>}
+                            {afiliadosDetalle.correo_electronico && <p style={{ color: '#64748b' }}>{afiliadosDetalle.correo_electronico}</p>}
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{ marginBottom: 16 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>DOCUMENTOS</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                          {[
+                            ['Cámara Comercio', afiliadosDetalle.camara_comercio],
+                            ['RUT', afiliadosDetalle.rut],
+                            ['Cédula RL', afiliadosDetalle.cedula_rl],
+                            ['Uso de Marca', afiliadosDetalle.uso_marca],
+                            ['Cert. Afiliado', afiliadosDetalle.certificado_afiliado],
+                            ['Adendo Anticorr.', afiliadosDetalle.adendo_anticorrupcion],
+                            ['Formato Afil.', afiliadosDetalle.formato_afiliacion],
+                            ['Pág. Red Cuidado', afiliadosDetalle.pag_red_cuidado],
+                            ['Web Asobares', afiliadosDetalle.web_asobares],
+                            ['Mi Destino', afiliadosDetalle.mi_destino_tu_noche],
+                          ].map(([label, val]) => (
+                            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, background: val === 'X' ? '#f0fdf4' : '#f8f9fa' }}>
+                              <CheckIcon val={val} />
+                              <span style={{ fontSize: 12, color: '#475569' }}>{label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {afiliadosDetalle.observacion && (
+                        <div style={{ marginBottom: 16 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 6 }}>OBSERVACIÓN</p>
+                          <p style={{ fontSize: 13, color: '#64748b', background: '#fffbeb', padding: '10px 12px', borderRadius: 10 }}>{afiliadosDetalle.observacion}</p>
+                        </div>
+                      )}
+
+                      <div style={{ marginBottom: 14 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>ESTADO</p>
+                        <select value={afiliadosDetalle.estado || 'activo'} onChange={e => {
+                          const nuevo = e.target.value;
+                          saveAfiliadoNota(afiliadosDetalle.id, afiliadosNotasEdit, nuevo);
+                        }} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }}>
+                          {Object.entries(afiliadosEstados).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                        </select>
+                      </div>
+
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>NOTAS INTERNAS</p>
+                        <textarea value={afiliadosNotasEdit} onChange={e => setAfiliadosNotasEdit(e.target.value)} rows={3} placeholder="Agrega notas..." style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
+                        <button onClick={() => saveAfiliadoNota(afiliadosDetalle.id, afiliadosNotasEdit, afiliadosDetalle.estado || 'activo')} style={{ marginTop: 8, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #16a34a, #15803d)', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Guardar</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'team' && (<div><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}><h2 style={{ fontSize: 18, fontWeight: 600 }}>Equipo</h2><button onClick={() => { setEditingUser(null); setShowUserModal(true); }} style={{ padding: '12px 24px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontWeight: 600, cursor: 'pointer' }}>+ Añadir</button></div><div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>{users.map(u => { const s = getStats(u.id, selectedMonth); return (<div key={u.id} style={{ background: 'white', borderRadius: 16, padding: 24 }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}><div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ fontSize: 40 }}>{u.avatar}</span><div><h3 style={{ fontSize: 16, fontWeight: 700 }}>{u.name}</h3><p style={{ fontSize: 12, color: '#E84338' }}>{u.cargo}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>@{u.username}</p></div></div><span style={{ padding: '4px 10px', borderRadius: 12, fontSize: 10, fontWeight: 600, background: u.role === 'admin' ? '#fee2e2' : u.role === 'invitado' ? '#e0f2fe' : '#f1f5f9', color: u.role === 'admin' ? '#E84338' : u.role === 'invitado' ? '#0284c7' : '#64748b', height: 'fit-content' }}>{u.role === 'admin' ? 'Admin' : u.role === 'invitado' ? 'Invitado' : 'Usuario'}</span></div><div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, padding: '12px 0', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9' }}><div style={{ textAlign: 'center' }}><p style={{ fontSize: 18, fontWeight: 700 }}>{s.total}</p><p style={{ fontSize: 9, color: '#64748b' }}>Total</p></div><div style={{ textAlign: 'center' }}><p style={{ fontSize: 18, fontWeight: 700, color: '#10b981' }}>{s.completadas}</p><p style={{ fontSize: 9, color: '#64748b' }}>Hechas</p></div><div style={{ textAlign: 'center' }}><p style={{ fontSize: 18, fontWeight: 700, color: '#3b82f6' }}>{s.pendientes}</p><p style={{ fontSize: 9, color: '#64748b' }}>Pendientes</p></div><div style={{ textAlign: 'center' }}><p style={{ fontSize: 18, fontWeight: 700, color: '#E84338' }}>{s.retrasadas}</p><p style={{ fontSize: 9, color: '#64748b' }}>Retrasadas</p></div></div><div style={{ display: 'flex', gap: 8, marginTop: 16 }}><button onClick={() => { setEditingUser(u); setShowUserModal(true); }} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e5e7eb', background: 'white', color: '#64748b', cursor: 'pointer' }}><i className="bi bi-pencil-square"></i> Editar</button>{u.id !== currentUser.id && <button onClick={() => handleDeleteUser(u.id)} style={{ padding: 10, borderRadius: 8, border: 'none', background: '#fee2e2', color: '#E84338', cursor: 'pointer' }}><i className="bi bi-trash"></i></button>}</div></div>); })}</div></div>)}
+
+            {view === 'conecta' && (() => {
+              const hoy = cToday();
+              const cCard = {background:'white',borderRadius:16,padding:24,border:'1px solid #f1f5f9',boxShadow:'0 1px 3px rgba(0,0,0,0.04)'};
+              const cInp = {padding:'11px 14px',borderRadius:10,border:'2px solid #e5e7eb',fontSize:14,width:'100%',boxSizing:'border-box',fontFamily:'inherit'};
+              const cLbl = {display:'block',fontSize:13,fontWeight:600,color:'#374151',marginBottom:5,marginTop:12};
+              const TABS = [{id:'panorama',label:'Panorama'},{id:'aliados',label:'Aliados'},{id:'propuestas',label:'Propuestas'},{id:'go',label:'Bandeja GO'},{id:'viernes',label:'Mesa Viernes'},{id:'afiliados',label:'Afiliados'},{id:'planes',label:'Planes y actividades'},{id:'seguimiento',label:'Seguimiento'},{id:'radar',label:'Radar'},{id:'datos',label:'Actividad'}];
+              const SBadge = ({s}) => <span style={{padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:600,...cPropBadge(s)}}>{s}</span>;
+              const HBadge = ({a}) => { const h=cHealth(a); return <span style={{padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:600,...cHealthStyle(h)}}>{cHealthLabel(h)}</span>; };
+              const cUserOptions = users.filter(u=>u.role!=='invitado').map(u=><option key={u.id} value={u.name}>{u.name}</option>);
+              const cPlatOptions = CONECTA_PLATFORMS.map(p=><option key={p} value={p}>{p}</option>);
+              const cAllyOptions = <>{<option value="">Sin aliado</option>}{conectaAliados.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</>;
+              const CModalWrap = ({children,onClose}) => <div onClick={e=>e.target===e.currentTarget&&onClose()} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:3000,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>{children}</div>;
+              const CModalBox = ({title,onClose,children}) => <CModalWrap onClose={onClose}><div style={{background:'white',borderRadius:20,width:'100%',maxWidth:700,maxHeight:'90vh',display:'flex',flexDirection:'column',overflow:'hidden',boxShadow:'0 25px 60px rgba(0,0,0,0.3)'}}><div style={{padding:'18px 28px',borderBottom:'1px solid #f1f5f9',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}><h2 style={{fontSize:18,fontWeight:700,margin:0,color:'#1a1a2e'}}>{title}</h2><button onClick={onClose} style={{width:36,height:36,borderRadius:8,border:'none',background:'#f1f5f9',cursor:'pointer',fontSize:18,lineHeight:1}}>×</button></div><div style={{padding:'20px 28px',overflowY:'auto',flex:1}}>{children}</div></div></CModalWrap>;
+              const CModalBtns = ({onCancel,onSave}) => <div style={{display:'flex',gap:10,marginTop:20,justifyContent:'flex-end'}}><button onClick={onCancel} style={{padding:'10px 24px',borderRadius:10,border:'2px solid #e5e7eb',background:'white',fontWeight:600,cursor:'pointer'}}>Cancelar</button><button onClick={onSave} style={{padding:'10px 28px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:700,cursor:'pointer'}}>Guardar</button></div>;
+
+              return (
+                <>
+                  {/* ── MODALES ─────────────────────────────────────────────── */}
+                  {conectaModalAlly!==undefined&&<CModalBox title={conectaModalAlly?.id?'Editar aliado':'Nuevo aliado'} onClose={()=>setConectaModalAlly(undefined)}>
+                    {(()=>{const d=conectaModalAlly,set=(k,v)=>setConectaModalAlly(p=>({...p,[k]:v}));return(<><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div style={{gridColumn:'1/-1'}}><label style={cLbl}>Empresa *</label><input style={cInp} value={d?.name||''} onChange={e=>set('name',e.target.value)}/></div>
+                      <div><label style={cLbl}>Categoría</label><input style={cInp} value={d?.category||''} onChange={e=>set('category',e.target.value)}/></div>
+                      <div><label style={cLbl}>Estado del convenio</label><select style={cInp} value={d?.status||'Por confirmar'} onChange={e=>set('status',e.target.value)}><option>Por confirmar</option><option>Activo</option><option>En negociación</option><option>Inactivo</option></select></div>
+                      <div><label style={cLbl}>Aporte mensual COP</label><input type="number" style={cInp} value={d?.monthly||0} onChange={e=>set('monthly',Number(e.target.value))}/></div>
+                      <div><label style={cLbl}>Renovación</label><input type="date" style={cInp} value={d?.renew||''} onChange={e=>set('renew',e.target.value)}/></div>
+                      <div><label style={cLbl}>Contacto</label><input style={cInp} value={d?.contact||''} onChange={e=>set('contact',e.target.value)}/></div>
+                      <div><label style={cLbl}>¿Inconformidad?</label><select style={cInp} value={String(d?.concern||false)} onChange={e=>set('concern',e.target.value==='true')}><option value="false">No</option><option value="true">Sí — requiere atención</option></select></div>
+                      <div style={{gridColumn:'1/-1'}}><label style={cLbl}>Objetivo comercial</label><textarea style={{...cInp,minHeight:70,resize:'vertical'}} value={d?.goal||''} onChange={e=>set('goal',e.target.value)}/></div>
+                      <div style={{gridColumn:'1/-1'}}><label style={cLbl}>Compromisos del convenio</label><textarea style={{...cInp,minHeight:70,resize:'vertical'}} value={d?.commit||''} onChange={e=>set('commit',e.target.value)}/></div>
+                    </div><CModalBtns onCancel={()=>setConectaModalAlly(undefined)} onSave={()=>d?.name?.trim()&&saveAllyC(d)}/></>);})()}
+                  </CModalBox>}
+
+                  {conectaModalProp!==undefined&&<CModalBox title={conectaModalProp?.id?'Editar propuesta':'Nueva propuesta'} onClose={()=>setConectaModalProp(undefined)}>
+                    {(()=>{const d=conectaModalProp,set=(k,v)=>setConectaModalProp(p=>({...p,[k]:v}));return(<><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div style={{gridColumn:'1/-1'}}><label style={cLbl}>Nombre de la iniciativa *</label><input style={cInp} value={d?.title||''} onChange={e=>set('title',e.target.value)}/></div>
+                      <div><label style={cLbl}>Aliado</label><select style={cInp} value={d?.ally_id||''} onChange={e=>set('ally_id',e.target.value)}>{cAllyOptions}</select></div>
+                      <div><label style={cLbl}>Tipo</label><select style={cInp} value={d?.type||'Incluida en el convenio'} onChange={e=>set('type',e.target.value)}>{CONECTA_PROP_TYPES.map(t=><option key={t} value={t}>{t}</option>)}</select></div>
+                      <div><label style={cLbl}>Plataforma</label><select style={cInp} value={d?.platform||''} onChange={e=>set('platform',e.target.value)}><option value="">Seleccionar...</option>{cPlatOptions}</select></div>
+                      <div><label style={cLbl}>Fecha</label><input type="date" style={cInp} value={d?.date||''} onChange={e=>set('date',e.target.value)}/></div>
+                      <div><label style={cLbl}>Responsable</label><select style={cInp} value={d?.owner||currentUser?.name||''} onChange={e=>set('owner',e.target.value)}>{cUserOptions}</select></div>
+                      <div><label style={cLbl}>Ingreso adicional COP</label><input type="number" style={cInp} value={d?.revenue||0} onChange={e=>set('revenue',Number(e.target.value))}/></div>
+                      <div><label style={cLbl}>Costo estimado COP</label><input type="number" style={cInp} value={d?.cost||0} onChange={e=>set('cost',Number(e.target.value))}/></div>
+                      {[['objective','Objetivo'],['activities','Actividades'],['audience','Público y territorio'],['deliverables','Entregables'],['benefit','Valor para aliado y afiliados'],['kpi','Indicadores y metas'],['conditions','Aportes y condiciones'],['notes','Notas internas']].map(([k,l])=><div key={k} style={{gridColumn:'1/-1'}}><label style={cLbl}>{l}</label><textarea style={{...cInp,minHeight:60,resize:'vertical'}} value={d?.[k]||''} onChange={e=>set(k,e.target.value)}/></div>)}
+                    </div><CModalBtns onCancel={()=>setConectaModalProp(undefined)} onSave={()=>d?.title?.trim()&&savePropC(d)}/></>);})()}
+                  </CModalBox>}
+
+                  {conectaPropDetalle&&<CModalBox title={'Propuesta · v'+(conectaPropDetalle.version||1)} onClose={()=>setConectaPropDetalle(null)}>
+                    {(()=>{const p=conectaPropDetalle;const NEXT={'GO aprobado':'Presentada al aliado','Presentada al aliado':'Aceptada por aliado','Aceptada por aliado':'En ejecución','En ejecución':'Ejecutada'};return(<>
+                      <SBadge s={p.status}/><h2 style={{margin:'12px 0 4px',fontSize:20,fontWeight:700}}>{p.title}</h2>
+                      <p style={{color:'#64748b',marginBottom:12}}>{p.objective}</p>
+                      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:12}}>
+                        {[['Aliado',cAllyName(p.ally_id)],['Ingreso adicional',formatCOP(p.revenue)],['Costo estimado',formatCOP(p.cost)]].map(([k,v])=><div key={k} style={{background:'#f8f9fa',borderRadius:10,padding:12}}><p style={{fontSize:11,color:'#64748b',marginBottom:2}}>{k}</p><p style={{fontWeight:700,fontSize:13}}>{v}</p></div>)}
+                      </div>
+                      {[['Actividades',p.activities],['Público',p.audience],['Entregables',p.deliverables],['Beneficios',p.benefit],['Indicadores',p.kpi],['Condiciones',p.conditions],['Notas',p.notes]].filter(([,v])=>v).map(([k,v])=><div key={k} style={{borderTop:'1px solid #f1f5f9',paddingTop:8,marginTop:8}}><p style={{fontSize:11,fontWeight:700,color:'#64748b',marginBottom:3}}>{k.toUpperCase()}</p><p style={{fontSize:13,whiteSpace:'pre-wrap'}}>{v}</p></div>)}
+                      {(p.history||[]).length>0&&<div style={{marginTop:14}}><p style={{fontSize:11,fontWeight:700,color:'#64748b',marginBottom:6}}>HISTORIAL</p>{p.history.map((h,i)=><p key={i} style={{fontSize:12,color:'#64748b',marginBottom:2}}><strong>{h.action}</strong> · {h.actor} · {new Date(h.date).toLocaleDateString('es-CO')}{h.comment&&<> — {h.comment}</>}</p>)}</div>}
+                      <div style={{display:'flex',gap:8,marginTop:16,flexWrap:'wrap'}}>
+                        {p.status==='Borrador'&&<button onClick={()=>changeStatusC(p,'Pendiente de GO')} style={{padding:'8px 16px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer',fontSize:13}}>Solicitar GO</button>}
+                        {p.status==='Pendiente de GO'&&currentUser?.role==='admin'&&<><button onClick={()=>changeStatusC(p,'GO aprobado')} style={{padding:'8px 16px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#10b981,#059669)',color:'white',fontWeight:600,cursor:'pointer',fontSize:13}}><i className="bi bi-check-lg"></i> Dar GO</button><button onClick={()=>{const c=prompt('Observaciones:');if(c!==null)changeStatusC(p,'Ajustes solicitados',c);}} style={{padding:'8px 16px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',fontWeight:600,cursor:'pointer',fontSize:13}}>Pedir ajustes</button><button onClick={()=>changeStatusC(p,'Descartada')} style={{padding:'8px 16px',borderRadius:8,border:'none',background:'#fee2e2',color:'#E84338',fontWeight:600,cursor:'pointer',fontSize:13}}>Descartar</button></>}
+                        {NEXT[p.status]&&currentUser?.role!=='invitado'&&<button onClick={()=>changeStatusC(p,NEXT[p.status])} style={{padding:'8px 16px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer',fontSize:13}}>{NEXT[p.status]}</button>}
+                        <button onClick={()=>{setConectaModalProp({...p});setConectaPropDetalle(null);}} style={{padding:'8px 16px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',fontWeight:600,cursor:'pointer',fontSize:13}}><i className="bi bi-pencil-square"></i> Editar</button>
+                        <button onClick={()=>duplicatePropC(p)} style={{padding:'8px 16px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',fontWeight:600,cursor:'pointer',fontSize:13}}>Duplicar</button>
+                        {currentUser?.role==='admin'&&<button onClick={()=>deletePropC(p.id,p.title)} style={{padding:'8px 16px',borderRadius:8,border:'none',background:'#fee2e2',color:'#E84338',fontWeight:600,cursor:'pointer',fontSize:13}}><i className="bi bi-trash"></i> Eliminar</button>}
+                      </div>
+                    </>);})()}
+                  </CModalBox>}
+
+                  {conectaModalTarea!==undefined&&<CModalBox title={conectaModalTarea?.id?'Editar acción de seguimiento':'Nueva acción de seguimiento'} onClose={()=>setConectaModalTarea(undefined)}>
+                    {(()=>{const d=conectaModalTarea,set=(k,v)=>setConectaModalTarea(p=>({...p,[k]:v}));return(<><label style={cLbl}>Acción *</label><input style={cInp} value={d?.title||''} onChange={e=>set('title',e.target.value)}/><label style={cLbl}>Aliado</label><select style={{...cInp,marginTop:4}} value={d?.ally_id||''} onChange={e=>set('ally_id',e.target.value)}>{cAllyOptions}</select><label style={cLbl}>Responsable</label><select style={{...cInp,marginTop:4}} value={d?.owner||currentUser?.name||''} onChange={e=>set('owner',e.target.value)}>{cUserOptions}</select><label style={cLbl}>Fecha límite</label><input type="date" style={{...cInp,marginTop:4}} value={d?.due||''} onChange={e=>set('due',e.target.value)}/><CModalBtns onCancel={()=>setConectaModalTarea(undefined)} onSave={()=>d?.title?.trim()&&saveTareaC(d)}/></>);})()}
+                  </CModalBox>}
+
+                  {conectaModalSolicitud!==undefined&&<CModalBox title="Registrar solicitud" onClose={()=>setConectaModalSolicitud(undefined)}>
+                    {(()=>{const d=conectaModalSolicitud,set=(k,v)=>setConectaModalSolicitud(p=>({...p,[k]:v}));return(<><label style={cLbl}>Nombre del afiliado *</label><input style={cInp} value={d?.name||''} onChange={e=>set('name',e.target.value)}/><label style={cLbl}>Necesidad</label><textarea style={{...cInp,minHeight:70,marginTop:4,resize:'vertical'}} value={d?.need||''} onChange={e=>set('need',e.target.value)}/><label style={cLbl}>Plataforma</label><select style={{...cInp,marginTop:4}} value={d?.platform||''} onChange={e=>set('platform',e.target.value)}><option value="">Seleccionar...</option>{cPlatOptions}</select><label style={cLbl}>Aliado relacionado</label><select style={{...cInp,marginTop:4}} value={d?.ally_id||''} onChange={e=>set('ally_id',e.target.value)}>{cAllyOptions}</select><label style={cLbl}>Responsable</label><select style={{...cInp,marginTop:4}} value={d?.owner||currentUser?.name||''} onChange={e=>set('owner',e.target.value)}>{cUserOptions}</select><CModalBtns onCancel={()=>setConectaModalSolicitud(undefined)} onSave={()=>d?.name?.trim()&&saveSolicitudC(d)}/></>);})()}
+                  </CModalBox>}
+
+                  {conectaModalPlan!==undefined&&<CModalBox title="Plan mensual de valor" onClose={()=>setConectaModalPlan(undefined)}>
+                    {(()=>{const d=conectaModalPlan,set=(k,v)=>setConectaModalPlan(p=>({...p,[k]:v}));return(<><label style={cLbl}>Aliado *</label><select style={cInp} value={d?.ally_id||''} onChange={e=>set('ally_id',e.target.value)}>{cAllyOptions}</select><label style={cLbl}>Mes</label><input type="month" style={{...cInp,marginTop:4}} value={d?.month||''} onChange={e=>set('month',e.target.value)}/><label style={cLbl}>Acción *</label><input style={{...cInp,marginTop:4}} value={d?.action||''} onChange={e=>set('action',e.target.value)}/><label style={cLbl}>Responsable</label><select style={{...cInp,marginTop:4}} value={d?.owner||currentUser?.name||''} onChange={e=>set('owner',e.target.value)}>{cUserOptions}</select><label style={cLbl}>Fecha límite</label><input type="date" style={{...cInp,marginTop:4}} value={d?.due||''} onChange={e=>set('due',e.target.value)}/><label style={cLbl}>Indicador y meta</label><textarea style={{...cInp,minHeight:60,marginTop:4,resize:'vertical'}} value={d?.metric||''} onChange={e=>set('metric',e.target.value)}/><CModalBtns onCancel={()=>setConectaModalPlan(undefined)} onSave={()=>d?.ally_id&&d?.action?.trim()&&savePlanC(d)}/></>);})()}
+                  </CModalBox>}
+
+                  {conectaModalFinanza!==undefined&&<CModalBox title={conectaModalFinanza?.id?'Editar facturación':'Registrar facturación'} onClose={()=>setConectaModalFinanza(undefined)}>
+                    {(()=>{const d=conectaModalFinanza,set=(k,v)=>setConectaModalFinanza(p=>({...p,[k]:v}));return(<><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div><label style={cLbl}>Aliado</label><select style={cInp} value={d?.ally_id||''} onChange={e=>set('ally_id',e.target.value)}>{cAllyOptions}</select></div>
+                      <div><label style={cLbl}>Plataforma *</label><select style={cInp} value={d?.platform||''} onChange={e=>set('platform',e.target.value)}><option value="">Seleccionar...</option>{cPlatOptions}</select></div>
+                      <div><label style={cLbl}>Mes</label><input type="month" style={cInp} value={d?.month||conectaPanoramaMes} onChange={e=>set('month',e.target.value)}/></div>
+                      <div><label style={cLbl}>Fecha</label><input type="date" style={cInp} value={d?.date||cToday()} onChange={e=>set('date',e.target.value)}/></div>
+                      <div><label style={cLbl}>Facturado COP</label><input type="number" style={cInp} value={d?.invoiced||0} onChange={e=>set('invoiced',Number(e.target.value))}/></div>
+                      <div><label style={cLbl}>Pagado COP</label><input type="number" style={cInp} value={d?.paid||0} onChange={e=>set('paid',Number(e.target.value))}/></div>
+                      <div style={{gridColumn:'1/-1'}}><label style={cLbl}>Notas</label><textarea style={{...cInp,minHeight:60,resize:'vertical'}} value={d?.notes||''} onChange={e=>set('notes',e.target.value)}/></div>
+                    </div><CModalBtns onCancel={()=>setConectaModalFinanza(undefined)} onSave={()=>d?.platform&&saveFinanzaC(d)}/></>);})()}
+                  </CModalBox>}
+
+                  {conectaModalRadar!==undefined&&<CModalBox title="Señal para el radar" onClose={()=>setConectaModalRadar(undefined)}>
+                    {(()=>{const d=conectaModalRadar,set=(k,v)=>setConectaModalRadar(p=>({...p,[k]:v}));return(<><label style={cLbl}>Empresa / Prospecto *</label><input style={cInp} value={d?.name||''} onChange={e=>set('name',e.target.value)}/><label style={cLbl}>Idea de conexión</label><textarea style={{...cInp,minHeight:70,marginTop:4,resize:'vertical'}} value={d?.idea||''} onChange={e=>set('idea',e.target.value)}/><label style={cLbl}>Plataforma</label><select style={{...cInp,marginTop:4}} value={d?.platform||''} onChange={e=>set('platform',e.target.value)}><option value="">Seleccionar...</option>{cPlatOptions}</select><label style={cLbl}>Fuente (URL)</label><input style={{...cInp,marginTop:4}} value={d?.url||''} onChange={e=>set('url',e.target.value)}/><CModalBtns onCancel={()=>setConectaModalRadar(undefined)} onSave={()=>d?.name?.trim()&&saveRadarC(d)}/></>);})()}
+                  </CModalBox>}
+
+                  {/* ── SUB-NAV ─────────────────────────────────────────────── */}
+                  <div style={{display:'flex',gap:6,overflowX:'auto',marginBottom:24,paddingBottom:4,scrollbarWidth:'none'}}>
+                    {TABS.map(t=><button key={t.id} onClick={()=>setConectaView(t.id)} style={{padding:'8px 16px',borderRadius:8,border:'none',background:conectaView===t.id?'linear-gradient(135deg,#E84338,#c41e16)':'white',color:conectaView===t.id?'white':'#64748b',fontWeight:conectaView===t.id?600:400,fontSize:13,cursor:'pointer',whiteSpace:'nowrap',boxShadow:'0 1px 3px rgba(0,0,0,0.08)'}}>{t.label}</button>)}
+                  </div>
+
+                  {/* ── VISTAS ──────────────────────────────────────────────── */}
+                  {conectaCargando&&<div style={{textAlign:'center',padding:60}}><p style={{fontSize:32,marginBottom:8}}>⏳</p><p style={{color:'#64748b'}}>Cargando datos...</p></div>}
+
+                  {/* PANORAMA */}
+                  {!conectaCargando&&conectaView==='panorama'&&(()=>{
+                    const platActual = conectaPanoramaPlat;
+                    const mesActual = conectaPanoramaMes;
+                    const finMes = conectaFinanzas.filter(f=>f.month===mesActual&&(platActual?f.platform===platActual:true));
+                    const finMesPlat = p => conectaFinanzas.filter(f=>f.month===mesActual&&f.platform===p);
+                    const totalFact = finMes.reduce((s,f)=>s+(f.invoiced||0),0);
+                    const totalPag = finMes.reduce((s,f)=>s+(f.paid||0),0);
+                    const actMes = conectaPlanes.filter(p=>p.month===mesActual&&(platActual?p.platform===platActual:true));
+                    const actRealizadas = actMes.filter(p=>p.done);
+                    const solicMes = conectaSolicitudes.filter(s=>(s.date||'').slice(0,7)===mesActual&&(platActual?s.platform===platActual:true));
+                    const aliadosActivos = platActual ? conectaAliados.filter(a=>conectaPropuestas.some(p=>p.ally_id===a.id&&p.platform===platActual)) : conectaAliados;
+                    const pendGO = conectaPropuestas.filter(p=>p.status==='Pendiente de GO').length;
+                    const alerta = conectaAliados.filter(a=>cHealth(a)!=='bien');
+                    const signalColor = totalFact===0?'#E84338':totalPag>=totalFact?'#10b981':'#f59e0b';
+                    const signalLabel = totalFact===0?'ROJO · Gestión mensual':totalPag>=totalFact?'VERDE · Gestión mensual':'AMARILLO · Gestión mensual';
+                    const signalText = totalFact===0
+                      ? `No hay facturación registrada en ${mesActual}. Confirma los datos y programa una acción comercial esta semana.`
+                      : totalPag>=totalFact ? `Facturación y recaudo al día en ${mesActual}.`
+                      : `Hay ${formatCOP(totalFact-totalPag)} pendiente de recaudo en ${mesActual}.`;
+                    return(<div>
+                      {/* Selector plataforma + mes */}
+                      <div style={{display:'flex',gap:12,marginBottom:16,flexWrap:'wrap',alignItems:'flex-end'}}>
+                        <div style={{flex:2,minWidth:180}}>
+                          <label style={{fontSize:12,fontWeight:600,color:'#64748b',display:'block',marginBottom:4}}>Plataforma</label>
+                          <select value={conectaPanoramaPlat} onChange={e=>setConectaPanoramaPlat(e.target.value)} style={{padding:'10px 14px',borderRadius:10,border:'2px solid #e5e7eb',fontSize:14,width:'100%',background:'white'}}>
+                            <option value="">Asobares Bogotá & Colombia</option>
+                            {CONECTA_PLATFORMS.map(p=><option key={p} value={p}>{p}</option>)}
+                          </select>
+                        </div>
+                        <div style={{flex:1,minWidth:150}}>
+                          <label style={{fontSize:12,fontWeight:600,color:'#64748b',display:'block',marginBottom:4}}>Mes</label>
+                          <input type="month" value={conectaPanoramaMes} onChange={e=>setConectaPanoramaMes(e.target.value)} style={{padding:'10px 14px',borderRadius:10,border:'2px solid #e5e7eb',fontSize:14,width:'100%',boxSizing:'border-box'}}/>
+                        </div>
+                      </div>
+                      {/* Botones de acción */}
+                      <div style={{display:'flex',gap:8,marginBottom:20,flexWrap:'wrap'}}>
+                        <button onClick={()=>setConectaModalFinanza({platform:conectaPanoramaPlat,month:conectaPanoramaMes,invoiced:0,paid:0})} style={{padding:'9px 18px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer',fontSize:13}}>Registrar facturación</button>
+                        <button onClick={()=>setConectaView('datos')} style={{padding:'9px 18px',borderRadius:10,border:'1px solid #e5e7eb',background:'white',fontWeight:500,cursor:'pointer',fontSize:13}}>Ver movimientos</button>
+                        <button onClick={()=>setConectaView('seguimiento')} style={{padding:'9px 18px',borderRadius:10,border:'1px solid #e5e7eb',background:'white',fontWeight:500,cursor:'pointer',fontSize:13}}>Registrar actividad</button>
+                        <button onClick={()=>setConectaModalSolicitud({owner:currentUser?.name||'',platform:conectaPanoramaPlat})} style={{padding:'9px 18px',borderRadius:10,border:'1px solid #e5e7eb',background:'white',fontWeight:500,cursor:'pointer',fontSize:13}}>Registrar solicitud</button>
+                      </div>
+                      {/* Alerta mensual */}
+                      <div style={{borderLeft:`4px solid ${signalColor}`,background:signalColor==='#E84338'?'#fff5f5':signalColor==='#10b981'?'#f0fdf4':'#fffbeb',borderRadius:12,padding:'14px 18px',marginBottom:20}}>
+                        <p style={{fontWeight:700,color:signalColor,fontSize:13,margin:'0 0 4px'}}>{signalLabel}</p>
+                        <p style={{color:'#475569',margin:'0 0 4px',fontSize:14}}>{signalText}</p>
+                        <p style={{color:'#94a3b8',fontSize:12,margin:0}}>Semana del {hoy} · {aliadosActivos.length} aliado{aliadosActivos.length!==1?'s':''} en este alcance.</p>
+                      </div>
+                      {/* Stats cards */}
+                      <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(3,1fr)',gap:12,marginBottom:20}}>
+                        {[
+                          {label:'Aliados actuales confirmados',val:aliadosActivos.length,sub:'Convenio activo',color:'#1a1a2e'},
+                          {label:'Facturación mensual',val:formatCOP(totalFact),sub:'Suma por registro, sin duplicar plataformas',color:'#1a1a2e'},
+                          {label:'Interacciones con afiliados',val:solicMes.length,sub:'Interacciones registradas en el mes',color:'#1a1a2e'},
+                          {label:'Actividades del mes',val:actMes.length,sub:'Planificadas y realizadas',color:'#1a1a2e'},
+                          {label:'Actividades realizadas',val:actRealizadas.length,sub:'Con resultado documentado',color:'#1a1a2e'},
+                          {label:'Recaudo mensual',val:formatCOP(totalPag),sub:'Dinero recibido registrado',color:totalPag>0?'#10b981':'#1a1a2e'},
+                        ].map((s,i)=>(
+                          <div key={i} style={{...cCard,padding:'16px 18px'}}>
+                            <p style={{fontSize:11,color:'#64748b',marginBottom:4}}>{s.label}</p>
+                            <p style={{fontSize:typeof s.val==='number'?28:20,fontWeight:700,color:s.color,margin:'0 0 2px'}}>{s.val}</p>
+                            <p style={{fontSize:11,color:'#94a3b8',margin:0}}>{s.sub}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Alerta comercial por plataforma */}
+                      <div style={{...cCard,marginBottom:16}}>
+                        <h3 style={{fontSize:15,fontWeight:700,marginBottom:14}}>Alerta comercial por plataforma</h3>
+                        {CONECTA_PLATFORMS.map(plat=>{
+                          const fPlat=finMesPlat(plat);
+                          const facPlat=fPlat.reduce((s,f)=>s+(f.invoiced||0),0);
+                          const newAllies=conectaAliados.filter(a=>conectaPropuestas.some(p=>p.ally_id===a.id&&p.platform===plat&&['GO aprobado','Presentada al aliado','Aceptada por aliado','En ejecución','Ejecutada'].includes(p.status))).length;
+                          const sig=facPlat===0?{bg:'#fff5f5',color:'#E84338'}:{bg:'#f0fdf4',color:'#059669'};
+                          return(<div key={plat} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0',borderBottom:'1px solid #f1f5f9',cursor:'pointer'}} onClick={()=>{setConectaPanoramaPlat(plat);}}>
+                            <span style={{fontSize:14,fontWeight:600}}>{plat}</span>
+                            <span style={{padding:'5px 14px',borderRadius:20,fontSize:12,fontWeight:600,background:sig.bg,color:sig.color}}>{formatCOP(facPlat)} facturado · {newAllies} aliado{newAllies!==1?'s':''} activo{newAllies!==1?'s':''}</span>
+                          </div>);
+                        })}
+                      </div>
+                      {/* Aliados con alerta */}
+                      {alerta.length>0&&<div style={{...cCard,marginBottom:16}}>
+                        <h3 style={{fontSize:15,fontWeight:700,marginBottom:10}}><i className="bi bi-exclamation-triangle-fill" style={{color:'#f59e0b',marginRight:6}}></i>Aliados que requieren atención</h3>
+                        {alerta.map(a=><div key={a.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:'1px solid #f1f5f9'}}><span style={{fontSize:14,fontWeight:500}}>{a.name}</span><HBadge a={a}/></div>)}
+                      </div>}
+                      {/* GO pendientes + Propuestas recientes */}
+                      <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:16}}>
+                        <div style={cCard}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+                            <h3 style={{fontSize:15,fontWeight:700,margin:0}}>Decisiones de Presidencia</h3>
+                            <span onClick={()=>setConectaView('go')} style={{fontSize:12,color:'#E84338',cursor:'pointer',fontWeight:600}}>{pendGO} pendiente{pendGO!==1?'s':''}</span>
+                          </div>
+                          {conectaPropuestas.filter(p=>p.status==='Pendiente de GO').slice(0,3).map(p=><div key={p.id} onClick={()=>setConectaPropDetalle(p)} style={{padding:'8px 0',borderBottom:'1px solid #f1f5f9',cursor:'pointer'}}><p style={{fontSize:13,fontWeight:600,margin:0}}>{p.title}</p><p style={{fontSize:11,color:'#64748b'}}>{cAllyName(p.ally_id)}</p></div>)}
+                          {pendGO===0&&<p style={{color:'#94a3b8',fontSize:13,textAlign:'center',padding:12}}>Sin pendientes de GO</p>}
+                        </div>
+                        <div style={cCard}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+                            <h3 style={{fontSize:15,fontWeight:700,margin:0}}>Propuestas recientes</h3>
+                            <button onClick={()=>setConectaModalProp({owner:currentUser?.name||'',type:'Incluida en el convenio',revenue:0,cost:0,history:[]})} style={{padding:'6px 12px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer',fontSize:12}}>+ Nueva</button>
+                          </div>
+                          {conectaPropuestas.slice(0,4).map(p=><div key={p.id} onClick={()=>setConectaPropDetalle(p)} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:'1px solid #f1f5f9',cursor:'pointer'}}><div><p style={{fontSize:13,fontWeight:600,margin:0}}>{p.title}</p><p style={{fontSize:11,color:'#64748b'}}>{cAllyName(p.ally_id)}</p></div><SBadge s={p.status}/></div>)}
+                          {conectaPropuestas.length===0&&<p style={{color:'#94a3b8',textAlign:'center',padding:12}}>Sin propuestas aún.</p>}
+                        </div>
+                      </div>
+                      {/* Movimientos del mes */}
+                      {finMes.length>0&&<div style={{...cCard,marginTop:16}}>
+                        <h3 style={{fontSize:15,fontWeight:700,marginBottom:12}}>Facturación registrada · {mesActual}</h3>
+                        {finMes.map(f=><div key={f.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:'1px solid #f1f5f9'}}>
+                          <div><p style={{fontSize:13,fontWeight:600,margin:0}}>{cAllyName(f.ally_id)||'Sin aliado'} · {f.platform}</p><p style={{fontSize:11,color:'#64748b'}}>{f.date}{f.notes?' · '+f.notes:''}</p></div>
+                          <div style={{textAlign:'right',flexShrink:0,marginLeft:12}}>
+                            <p style={{fontSize:13,fontWeight:700,margin:0}}>{formatCOP(f.invoiced)}</p>
+                            <p style={{fontSize:11,color:'#10b981'}}>Pagado: {formatCOP(f.paid)}</p>
+                          </div>
+                        </div>)}
+                      </div>}
+                    </div>);
+                  })()}
+
+                  {/* ALIADOS */}
+                  {!conectaCargando&&conectaView==='aliados'&&(<div>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+                      <p style={{color:'#64748b',margin:0}}>{conectaAliados.length} aliado{conectaAliados.length!==1?'s':''} registrado{conectaAliados.length!==1?'s':''}</p>
+                      <button onClick={()=>setConectaModalAlly({concern:false,monthly:0})} style={{padding:'10px 20px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer'}}>+ Nuevo aliado</button>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:16}}>
+                      {conectaAliados.map(a=>{
+                        const planesMes=conectaPlanes.filter(p=>p.ally_id===a.id&&p.month===hoy.slice(0,7));
+                        return(<div key={a.id} style={cCard}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}><div><h3 style={{fontSize:16,fontWeight:700,margin:0}}>{a.name}</h3><p style={{fontSize:12,color:'#64748b',marginTop:2}}>{a.category}</p></div><div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}><span style={{padding:'3px 8px',borderRadius:6,fontSize:11,fontWeight:600,...(a.status==='Activo'?{background:'#e1f4eb',color:'#176246'}:a.status==='Inactivo'?{background:'#fce6e6',color:'#9b3030'}:{background:'#fff0c8',color:'#775410'})}}>{a.status||'Por confirmar'}</span><HBadge a={a}/></div></div>
+                          <p style={{fontSize:22,fontWeight:700,color:'#1a1a2e',margin:'6px 0'}}>{formatCOP(a.monthly)}<span style={{fontSize:12,fontWeight:400,color:'#94a3b8'}}>/mes</span></p>
+                          {a.renew&&<p style={{fontSize:12,color:'#64748b',margin:'0 0 8px'}}>Renovación: {a.renew}</p>}
+                          {a.goal&&<p style={{fontSize:13,color:'#475569',marginBottom:8}}>{a.goal}</p>}
+                          {a.commit&&<div style={{background:'#f8f9fa',borderRadius:8,padding:'8px 12px',marginBottom:10}}><p style={{fontSize:11,fontWeight:600,color:'#64748b',marginBottom:2}}>Compromisos</p><p style={{fontSize:12,margin:0}}>{a.commit}</p></div>}
+                          <p style={{fontSize:11,color:'#94a3b8',marginBottom:10}}>Plan este mes: {planesMes.length>0?planesMes[0].action:'Sin plan registrado'}</p>
+                          <div style={{display:'flex',gap:8}}>
+                            <button onClick={()=>setConectaModalAlly({...a})} style={{flex:1,padding:'8px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',cursor:'pointer',fontSize:13}}><i className="bi bi-pencil-square"></i> Editar</button>
+                            <button onClick={()=>setConectaModalPlan({ally_id:a.id,month:hoy.slice(0,7),owner:currentUser?.name||''})} style={{flex:1,padding:'8px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',cursor:'pointer',fontSize:13}}><i className="bi bi-calendar3"></i> Plan</button>
+                            {currentUser?.role==='admin'&&<button onClick={()=>deleteAllyC(a.id,a.name)} style={{padding:'8px 12px',borderRadius:8,border:'none',background:'#fee2e2',color:'#E84338',cursor:'pointer',fontSize:13}}><i className="bi bi-trash"></i></button>}
+                          </div>
+                        </div>);
+                      })}
+                      {conectaAliados.length===0&&<p style={{color:'#94a3b8',gridColumn:'1/-1',textAlign:'center',padding:48}}>No hay aliados registrados. Crea el primero.</p>}
+                    </div>
+                  </div>)}
+
+                  {/* PROPUESTAS */}
+                  {!conectaCargando&&conectaView==='propuestas'&&(<div>
+                    <div style={{display:'flex',gap:12,marginBottom:20,alignItems:'center',flexWrap:'wrap'}}>
+                      <input placeholder="Buscar..." value={conectaPropSearch} onChange={e=>setConectaPropSearch(e.target.value)} style={{flex:1,minWidth:200,padding:'10px 14px',borderRadius:10,border:'2px solid #e5e7eb',fontSize:14}}/>
+                      <button onClick={()=>setConectaModalProp({owner:currentUser?.name||'',type:'Incluida en el convenio',revenue:0,cost:0,history:[]})} style={{padding:'10px 20px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>+ Nueva propuesta</button>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:16}}>
+                      {conectaPropuestas.filter(p=>(p.title+cAllyName(p.ally_id)).toLowerCase().includes(conectaPropSearch.toLowerCase())).map(p=>(
+                        <div key={p.id} onClick={()=>setConectaPropDetalle(p)} style={{...cCard,cursor:'pointer'}}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}><p style={{fontSize:11,color:'#64748b',margin:0}}>{cAllyName(p.ally_id)} · {p.platform}</p><SBadge s={p.status}/></div>
+                          <h3 style={{fontSize:15,fontWeight:700,margin:'0 0 6px'}}>{p.title}</h3>
+                          <p style={{fontSize:12,color:'#64748b',marginBottom:10}}>{p.objective?.slice(0,90)}{p.objective?.length>90?'…':''}</p>
+                          <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'#94a3b8'}}><span>{formatCOP(p.revenue)}</span><span>{p.date}</span></div>
+                        </div>
+                      ))}
+                      {conectaPropuestas.length===0&&<p style={{color:'#94a3b8',gridColumn:'1/-1',textAlign:'center',padding:48}}>Sin propuestas. Crea la primera.</p>}
+                    </div>
+                  </div>)}
+
+                  {/* BANDEJA GO */}
+                  {!conectaCargando&&conectaView==='go'&&(()=>{
+                    const pending=conectaPropuestas.filter(p=>p.status==='Pendiente de GO');
+                    return(<div>
+                      <div style={{...cCard,background:'linear-gradient(135deg,#1a1a2e,#16213e)',color:'white',marginBottom:20}}>
+                        <h2 style={{fontSize:18,fontWeight:700,margin:'0 0 6px'}}>Decisiones de Presidencia</h2>
+                        <p style={{color:'#94a3b8',margin:0,fontSize:13}}>{currentUser?.role==='admin'?'Como administrador, puedes aprobar o rechazar propuestas.':'Solo el administrador puede dar GO. Aquí puedes consultar las propuestas pendientes.'}</p>
+                      </div>
+                      {pending.length===0?<div style={{...cCard,textAlign:'center',padding:48}}><p style={{fontSize:40,marginBottom:8}}><i className="bi bi-check-circle-fill" style={{color:'#10b981'}}></i></p><p style={{color:'#64748b'}}>No hay propuestas pendientes de GO.</p></div>:
+                      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:16}}>
+                        {pending.map(p=><div key={p.id} style={{...cCard,borderLeft:'4px solid #f59e0b'}}>
+                          <p style={{fontSize:11,color:'#64748b',marginBottom:4}}>{cAllyName(p.ally_id)} · {p.platform}</p>
+                          <h3 style={{fontSize:15,fontWeight:700,margin:'0 0 6px'}}>{p.title}</h3>
+                          <p style={{fontSize:12,color:'#64748b',marginBottom:8}}>{p.objective?.slice(0,100)}</p>
+                          <p style={{fontSize:13,fontWeight:600,marginBottom:12}}>{formatCOP(p.revenue)} adicional · Costo {formatCOP(p.cost)}</p>
+                          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                            <button onClick={()=>setConectaPropDetalle(p)} style={{padding:'7px 14px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',cursor:'pointer',fontSize:13}}>Ver detalle</button>
+                            {currentUser?.role==='admin'&&<><button onClick={()=>changeStatusC(p,'GO aprobado')} style={{padding:'7px 14px',borderRadius:8,border:'none',background:'linear-gradient(135deg,#10b981,#059669)',color:'white',fontWeight:600,cursor:'pointer',fontSize:13}}><i className="bi bi-check-lg"></i> Dar GO</button><button onClick={()=>{const c=prompt('Observaciones:');if(c!==null)changeStatusC(p,'Ajustes solicitados',c);}} style={{padding:'7px 14px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',cursor:'pointer',fontSize:13}}>Ajustes</button></>}
+                          </div>
+                        </div>)}
+                      </div>}
+                    </div>);
+                  })()}
+
+                  {/* MESA DEL VIERNES */}
+                  {!conectaCargando&&conectaView==='viernes'&&(()=>{
+                    const alerta=conectaAliados.filter(a=>cHealth(a)!=='bien');
+                    const pendReq=conectaSolicitudes.filter(s=>s.status!=='Atendida');
+                    const pendGO=conectaPropuestas.filter(p=>p.status==='Pendiente de GO');
+                    const pendTareas=conectaTareas.filter(t=>!t.done);
+                    return(<div>
+                      <div style={{...cCard,background:'linear-gradient(135deg,#1a1a2e,#16213e)',color:'white',marginBottom:20}}>
+                        <p style={{color:'#E84338',fontWeight:700,fontSize:11,letterSpacing:2,textTransform:'uppercase',marginBottom:6}}>60 min · Mesa del Viernes</p>
+                        <h2 style={{fontSize:18,fontWeight:700,margin:'0 0 6px'}}>De las necesidades a las acciones</h2>
+                        <p style={{color:'#94a3b8',margin:0,fontSize:13}}>15 min aliados · 15 min afiliados · 20 min iniciativas · 10 min responsables y fechas</p>
+                      </div>
+                      <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:16}}>
+                        <div style={cCard}>
+                          <h3 style={{fontSize:15,fontWeight:700,marginBottom:10}}>1. Aliados con atención requerida</h3>
+                          {alerta.length===0?<p style={{color:'#64748b',fontSize:13}}>Todos al día</p>:alerta.map(a=><div key={a.id} style={{display:'flex',justifyContent:'space-between',padding:'7px 0',borderBottom:'1px solid #f1f5f9'}}><span style={{fontSize:13,fontWeight:500}}>{a.name}</span><HBadge a={a}/></div>)}
+                          <h3 style={{fontSize:15,fontWeight:700,marginTop:16,marginBottom:10}}>2. Solicitudes de afiliados</h3>
+                          {pendReq.length===0?<p style={{color:'#64748b',fontSize:13}}>Sin solicitudes pendientes</p>:pendReq.map(r=><div key={r.id} style={{padding:'6px 0',borderBottom:'1px solid #f1f5f9'}}><p style={{fontSize:13,fontWeight:600,margin:0}}>{r.name}</p><p style={{fontSize:12,color:'#64748b'}}>{r.need}</p></div>)}
+                        </div>
+                        <div style={cCard}>
+                          <h3 style={{fontSize:15,fontWeight:700,marginBottom:10}}>3. Propuestas pendientes de GO</h3>
+                          {pendGO.length===0?<p style={{color:'#64748b',fontSize:13}}>Sin propuestas en GO</p>:pendGO.map(p=><div key={p.id} onClick={()=>setConectaPropDetalle(p)} style={{padding:'6px 0',borderBottom:'1px solid #f1f5f9',cursor:'pointer'}}><p style={{fontSize:13,fontWeight:600,margin:0}}>{p.title}</p><p style={{fontSize:12,color:'#64748b'}}>{cAllyName(p.ally_id)}</p></div>)}
+                          <h3 style={{fontSize:15,fontWeight:700,marginTop:16,marginBottom:10}}>4. Próximas acciones del equipo</h3>
+                          {pendTareas.slice(0,6).map(t=><div key={t.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 0',borderBottom:'1px solid #f1f5f9'}}><div><p style={{fontSize:13,fontWeight:600,margin:0}}>{t.title}</p><p style={{fontSize:11,color:'#64748b'}}>{t.owner} · {t.due}</p></div><button onClick={()=>toggleTareaC(t)} style={{padding:'4px 10px',borderRadius:6,border:'none',background:'#e1f4eb',color:'#176246',cursor:'pointer',fontSize:12}}>✓</button></div>)}
+                          {pendTareas.length===0&&<p style={{color:'#64748b',fontSize:13}}>Sin tareas pendientes</p>}
+                        </div>
+                      </div>
+                    </div>);
+                  })()}
+
+                  {/* AFILIADOS */}
+                  {!conectaCargando&&conectaView==='afiliados'&&(<div>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+                      <p style={{color:'#64748b',margin:0}}>Solicitudes de conexión con aliados</p>
+                      <button onClick={()=>setConectaModalSolicitud({owner:currentUser?.name||''})} style={{padding:'10px 20px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer'}}>+ Registrar solicitud</button>
+                    </div>
+                    <div style={{...cCard,marginBottom:16}}>
+                      <h3 style={{fontSize:15,fontWeight:700,marginBottom:12}}>Beneficios disponibles por aliado</h3>
+                      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))',gap:12}}>
+                        {conectaAliados.map(a=><div key={a.id} style={{background:'#f8f9fa',borderRadius:10,padding:14}}>
+                          <p style={{fontSize:13,fontWeight:700,marginBottom:4}}>{a.name}</p>
+                          <p style={{fontSize:12,color:'#64748b',marginBottom:10}}>{a.commit||'Sin compromisos definidos'}</p>
+                          <button onClick={()=>setConectaModalSolicitud({ally_id:a.id,owner:currentUser?.name||''})} style={{padding:'6px 14px',borderRadius:6,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer',fontSize:12}}>Me interesa</button>
+                        </div>)}
+                        {conectaAliados.length===0&&<p style={{color:'#94a3b8',fontSize:13}}>Sin aliados registrados aún.</p>}
+                      </div>
+                    </div>
+                    <div style={cCard}>
+                      <h3 style={{fontSize:15,fontWeight:700,marginBottom:12}}>Solicitudes registradas</h3>
+                      {conectaSolicitudes.map(s=><div key={s.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'12px 0',borderBottom:'1px solid #f1f5f9'}}>
+                        <div><p style={{fontSize:14,fontWeight:600,margin:0}}>{s.name}</p><p style={{fontSize:12,color:'#64748b'}}>{s.need}</p><p style={{fontSize:11,color:'#94a3b8'}}>{s.platform} · {s.owner} · {s.date}</p></div>
+                        <div style={{display:'flex',gap:6,alignItems:'center',flexShrink:0,marginLeft:8}}>
+                          <span style={{padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:600,...(s.status==='Atendida'?{background:'#e1f4eb',color:'#176246'}:{background:'#fff0c8',color:'#775410'})}}>{s.status}</span>
+                          {s.status!=='Atendida'&&<button onClick={()=>atenderSolicitudC(s)} style={{padding:'4px 10px',borderRadius:6,border:'none',background:'#e1f4eb',color:'#176246',cursor:'pointer',fontSize:12}}>Atender</button>}
+                        </div>
+                      </div>)}
+                      {conectaSolicitudes.length===0&&<p style={{color:'#94a3b8',textAlign:'center',padding:24}}>Sin solicitudes registradas.</p>}
+                    </div>
+                  </div>)}
+
+                  {/* PLANES Y ACTIVIDADES */}
+                  {!conectaCargando&&conectaView==='planes'&&(()=>{
+                    const mesActual = new Date().toISOString().slice(0,7);
+                    const planesMes = mes => conectaPlanes.filter(p=>p.month===mes);
+                    const meses = [...new Set(conectaPlanes.map(p=>p.month))].sort().reverse();
+                    if(!meses.includes(mesActual)) meses.unshift(mesActual);
+                    return(<div>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:10}}>
+                        <p style={{color:'#64748b',margin:0}}>Acciones mensuales de valor por aliado</p>
+                        <button onClick={()=>setConectaModalPlan({month:mesActual,owner:currentUser?.name||'',done:false})} style={{padding:'10px 20px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer'}}>+ Nueva actividad</button>
+                      </div>
+                      {meses.map(mes=>{
+                        const planes=planesMes(mes);
+                        if(planes.length===0&&mes!==mesActual) return null;
+                        const realizadas=planes.filter(p=>p.done).length;
+                        return(<div key={mes} style={{...cCard,marginBottom:16}}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+                            <h3 style={{fontSize:15,fontWeight:700,margin:0}}>{mes}</h3>
+                            <span style={{fontSize:12,color:'#64748b'}}>{realizadas}/{planes.length} realizadas</span>
+                          </div>
+                          {planes.length===0&&<p style={{color:'#94a3b8',fontSize:13,textAlign:'center',padding:12}}>Sin actividades registradas para este mes.</p>}
+                          {planes.map(plan=>(
+                            <div key={plan.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'12px 0',borderBottom:'1px solid #f1f5f9'}}>
+                              <div style={{flex:1}}>
+                                <p style={{fontSize:14,fontWeight:600,margin:0,textDecoration:plan.done?'line-through':'none',color:plan.done?'#94a3b8':'#1a1a2e'}}>{plan.action}</p>
+                                <p style={{fontSize:12,color:'#64748b',marginTop:2}}>{cAllyName(plan.ally_id)} · {plan.owner} · Límite: {plan.due}</p>
+                                {plan.metric&&<p style={{fontSize:11,color:'#94a3b8',margin:'4px 0 0'}}>Indicador: {plan.metric}</p>}
+                                {plan.result&&<p style={{fontSize:12,color:'#10b981',marginTop:4,fontStyle:'italic'}}>Resultado: {plan.result}</p>}
+                              </div>
+                              <div style={{display:'flex',gap:6,marginLeft:12,flexShrink:0}}>
+                                {!plan.done&&<button onClick={()=>resultadoPlanC(plan)} style={{padding:'6px 10px',borderRadius:8,border:'none',background:'#e1f4eb',color:'#176246',cursor:'pointer',fontSize:12}}>✓ Resultado</button>}
+                                <button onClick={()=>setConectaModalPlan({...plan})} style={{padding:'6px 10px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',cursor:'pointer',fontSize:12}}><i className="bi bi-pencil-square"></i></button>
+                                {currentUser?.role==='admin'&&<button onClick={async()=>{if(confirm('¿Eliminar esta actividad?')){await supabase.from('conecta_planes').delete().eq('id',plan.id);loadConecta();}}} style={{padding:'6px 10px',borderRadius:8,border:'none',background:'#fee2e2',color:'#E84338',cursor:'pointer',fontSize:12}}><i className="bi bi-trash"></i></button>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>);
+                      })}
+                      {conectaPlanes.length===0&&<div style={{...cCard,textAlign:'center',padding:48}}><p style={{fontSize:40,marginBottom:8}}>📆</p><p style={{color:'#64748b'}}>Sin actividades registradas. Crea la primera desde aquí o desde la ficha de un aliado.</p></div>}
+                    </div>);
+                  })()}
+
+                  {/* SEGUIMIENTO */}
+                  {!conectaCargando&&conectaView==='seguimiento'&&(<div>
+                    <div style={{display:'flex',gap:12,marginBottom:20,alignItems:'center',flexWrap:'wrap'}}>
+                      <button onClick={()=>setConectaModalTarea({owner:currentUser?.name||''})} style={{padding:'10px 20px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer'}}>+ Nueva tarea</button>
+                      <label style={{display:'flex',alignItems:'center',gap:6,fontSize:13,cursor:'pointer',color:'#64748b'}}><input type="checkbox" checked={conectaMostrarTareasTodas} onChange={e=>setConectaMostrarTareasTodas(e.target.checked)}/>Mostrar completadas</label>
+                    </div>
+                    <div style={{...cCard,marginBottom:16}}>
+                      {(conectaMostrarTareasTodas?conectaTareas:conectaTareas.filter(t=>!t.done)).map(t=>{
+                        const retrasada=!t.done&&t.due<hoy;
+                        return(<div key={t.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'12px 0',borderBottom:'1px solid #f1f5f9'}}>
+                          <div style={{flex:1}}>
+                            <p style={{fontSize:14,fontWeight:600,margin:0,textDecoration:t.done?'line-through':'none',color:t.done?'#94a3b8':'#1a1a2e'}}>{t.title}</p>
+                            <p style={{fontSize:12,color:'#64748b',marginTop:2}}>{t.owner} · {cAllyName(t.ally_id)} · {t.due}</p>
+                            <span style={{padding:'2px 8px',borderRadius:20,fontSize:10,fontWeight:600,...(t.done?{background:'#e1f4eb',color:'#176246'}:retrasada?{background:'#fce6e6',color:'#9b3030'}:{background:'#fff0c8',color:'#775410'})}}>{t.done?'Completada':retrasada?'Retrasada':'Pendiente'}</span>
+                          </div>
+                          <div style={{display:'flex',gap:6,marginLeft:12,flexShrink:0}}>
+                            <button onClick={()=>toggleTareaC(t)} style={{padding:'6px 10px',borderRadius:8,border:'none',background:t.done?'#f1f5f9':'#e1f4eb',color:t.done?'#64748b':'#176246',cursor:'pointer',fontSize:12}}>{t.done?'Reabrir':'✓ Listo'}</button>
+                            <button onClick={()=>setConectaModalTarea({...t})} style={{padding:'6px 10px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',cursor:'pointer',fontSize:12}}><i className="bi bi-pencil-square"></i></button>
+                            {currentUser?.role==='admin'&&<button onClick={()=>deleteTareaC(t.id,t.title)} style={{padding:'6px 10px',borderRadius:8,border:'none',background:'#fee2e2',color:'#E84338',cursor:'pointer',fontSize:12}}><i className="bi bi-trash"></i></button>}
+                          </div>
+                        </div>);
+                      })}
+                      {conectaTareas.filter(t=>conectaMostrarTareasTodas||!t.done).length===0&&<p style={{color:'#94a3b8',textAlign:'center',padding:32}}>Sin tareas pendientes</p>}
+                    </div>
+                    {conectaAliados.length>0&&<div style={cCard}>
+                      <h3 style={{fontSize:15,fontWeight:700,marginBottom:10}}>📆 Renovaciones por aliado</h3>
+                      {[...conectaAliados].sort((a,b)=>{
+                        if(!a.renew&&!b.renew) return a.name.localeCompare(b.name);
+                        if(!a.renew) return 1;
+                        if(!b.renew) return -1;
+                        return a.renew.localeCompare(b.renew);
+                      }).map(a=>{
+                        const vence = a.renew;
+                        const urgente = vence && vence<=cInDays(30);
+                        const proximo = vence && vence<=cInDays(90);
+                        return(<div key={a.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #f1f5f9'}}>
+                          <div><span style={{fontSize:14,fontWeight:500}}>{a.name}</span>
+                          {vence&&<span style={{marginLeft:8,padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:600,...(urgente?{background:'#fce6e6',color:'#9b3030'}:proximo?{background:'#fff0c8',color:'#775410'}:{background:'#f1f5f9',color:'#64748b'})}}>{urgente?'! ':proximo?'~ ':''}{vence}</span>}</div>
+                          <button onClick={()=>setConectaModalTarea({ally_id:a.id,owner:currentUser?.name||'',title:'Preparar seguimiento · '+a.name,due:vence||''})} style={{padding:'5px 14px',borderRadius:6,border:'1px solid #e5e7eb',background:'white',cursor:'pointer',fontSize:12,whiteSpace:'nowrap'}}>Preparar seguimiento</button>
+                        </div>);
+                      })}
+                    </div>}
+                  </div>)}
+
+                  {/* RADAR */}
+                  {!conectaCargando&&conectaView==='radar'&&(<div>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+                      <p style={{color:'#64748b',margin:0}}>Prospectos con razón de conexión</p>
+                      <button onClick={()=>setConectaModalRadar({})} style={{padding:'10px 20px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#E84338,#c41e16)',color:'white',fontWeight:600,cursor:'pointer'}}>+ Añadir al radar</button>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:16}}>
+                      {conectaRadar.map(r=><div key={r.id} style={cCard}>
+                        <span style={{padding:'3px 8px',borderRadius:6,fontSize:11,fontWeight:600,background:'#e0f2fe',color:'#0284c7'}}>Prospecto · sin validar</span>
+                        <h3 style={{fontSize:15,fontWeight:700,margin:'10px 0 6px'}}>{r.name}</h3>
+                        <p style={{fontSize:13,color:'#475569',marginBottom:6}}>{r.idea}</p>
+                        <p style={{fontSize:11,color:'#94a3b8',marginBottom:8}}>{r.platform} · {r.date}</p>
+                        {r.url&&<a href={r.url} target="_blank" rel="noopener noreferrer" style={{fontSize:12,color:'#E84338',fontWeight:600,textDecoration:'none',display:'block',marginBottom:10}}>Ver fuente</a>}
+                        <div style={{display:'flex',gap:8}}>
+                          <button onClick={()=>setConectaModalProp({owner:currentUser?.name||'',type:'Negocio nuevo',revenue:0,cost:0,history:[],title:'Propuesta para '+r.name})} style={{flex:1,padding:'7px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',cursor:'pointer',fontSize:12}}>Crear propuesta</button>
+                          <button onClick={()=>setConectaModalRadar({...r})} style={{padding:'7px 12px',borderRadius:8,border:'1px solid #e5e7eb',background:'white',cursor:'pointer',fontSize:12}}><i className="bi bi-pencil-square"></i></button>
+                          {currentUser?.role==='admin'&&<button onClick={()=>deleteRadarC(r.id,r.name)} style={{padding:'7px 12px',borderRadius:8,border:'none',background:'#fee2e2',color:'#E84338',cursor:'pointer',fontSize:12}}><i className="bi bi-trash"></i></button>}
+                        </div>
+                      </div>)}
+                      {conectaRadar.length===0&&<p style={{color:'#94a3b8',gridColumn:'1/-1',textAlign:'center',padding:48}}>Sin señales en el radar aún.</p>}
+                    </div>
+                  </div>)}
+
+                  {/* ACTIVIDAD */}
+                  {!conectaCargando&&conectaView==='datos'&&(<div style={cCard}>
+                    <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Registro de actividad del equipo</h3>
+                    <p style={{color:'#64748b',fontSize:13,marginBottom:16}}>Todas las acciones realizadas por los usuarios en Conecta.</p>
+                    {conectaActLog.map(l=><div key={l.id} style={{padding:'8px 0',borderBottom:'1px solid #f1f5f9'}}>
+                      <p style={{fontSize:13,margin:0}}>{l.text}</p>
+                      <p style={{fontSize:11,color:'#94a3b8',marginTop:2}}>{l.actor} · {new Date(l.created_at).toLocaleString('es-CO',{timeZone:'America/Bogota'})}</p>
+                    </div>)}
+                    {conectaActLog.length===0&&<p style={{color:'#94a3b8',textAlign:'center',padding:32}}>Todavía no hay actividad registrada.</p>}
+                  </div>)}
+                </>
+              );
+            })()}
+
+            {view === 'analytics' && (<div><div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)', gap: isMobile ? 12 : 20, marginBottom: isMobile ? 16 : 32 }}>{[{ icon: 'bi-clipboard-check', val: globalStats.total, label: `Total ${selectedMonth}`, color: '#1a1a2e' }, { icon: 'bi-check-circle-fill', val: globalStats.completadas, label: 'Completadas', color: '#10b981' }, { icon: 'bi-arrow-clockwise', val: globalStats.enCurso, label: 'En Curso', color: '#f59e0b' }, { icon: 'bi-pencil-square', val: globalStats.pendientes, label: 'Pendientes', color: '#3b82f6' }, { icon: 'bi-exclamation-triangle-fill', val: globalStats.retrasadas, label: 'No Cumplidas', color: '#E84338' }].map((s, i) => (<div key={i} style={{ background: 'white', borderRadius: 16, padding: 20, borderLeft: `4px solid ${s.color}` }}><i className={'bi '+s.icon} style={{fontSize:24,lineHeight:1}}></i><p style={{ fontSize: 32, fontWeight: 700, color: s.color, marginTop: 8 }}>{s.val}</p><p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{s.label}</p></div>))}</div><div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 24, marginBottom: 24 }}><div style={{ background: 'white', borderRadius: 16, padding: 24 }}><h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Cumplimiento - {selectedMonth}</h2><div style={{ display: 'flex', justifyContent: 'center' }}><div style={{ position: 'relative', width: 160, height: 160 }}><svg width="160" height="160" viewBox="0 0 160 160"><circle cx="80" cy="80" r="65" fill="none" stroke="#f1f5f9" strokeWidth="14" /><circle cx="80" cy="80" r="65" fill="none" stroke={globalStats.cumplimiento >= 70 ? '#10b981' : globalStats.cumplimiento >= 40 ? '#f59e0b' : '#E84338'} strokeWidth="14" strokeDasharray={`${(globalStats.cumplimiento / 100) * 408} 408`} strokeLinecap="round" transform="rotate(-90 80 80)" /></svg><div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 36, fontWeight: 700 }}>{globalStats.cumplimiento}%</span><span style={{ fontSize: 32 }}>{<span style={{display:'inline-block',width:14,height:14,borderRadius:'50%',background:globalStats.cumplimiento>=70?'#10b981':globalStats.cumplimiento>=40?'#f59e0b':'#E84338'}}></span>}</span></div></div></div></div><div style={{ background: 'white', borderRadius: 16, padding: 24 }}><h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Por Miembro</h2><div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 300, overflowY: 'auto' }}>{userStats.sort((a, b) => b.cumplimiento - a.cumplimiento).map(m => (<div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: '#f8f9fa', borderRadius: 10 }}><span style={{ fontSize: 24 }}>{m.avatar}</span><div style={{ flex: 1 }}><p style={{ fontSize: 13, fontWeight: 600 }}>{m.name}</p><div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}><div style={{ flex: 1, height: 6, background: '#e5e7eb', borderRadius: 3 }}><div style={{ height: '100%', width: `${m.cumplimiento}%`, background: m.cumplimiento >= 70 ? '#10b981' : m.cumplimiento >= 40 ? '#f59e0b' : '#E84338', borderRadius: 3 }}></div></div><span style={{ fontSize: 11, fontWeight: 600, color: m.cumplimiento >= 70 ? '#10b981' : m.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}>{m.cumplimiento}%</span></div></div><span>{<span style={{display:'inline-block',width:12,height:12,borderRadius:'50%',background:m.cumplimiento>=70?'#10b981':m.cumplimiento>=40?'#f59e0b':'#E84338',flexShrink:0}}></span>}</span></div>))}</div></div></div><div style={{ background: 'white', borderRadius: 16, padding: 24 }}><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 24 }}>Ranking - {selectedMonth}</h2><div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}><thead><tr style={{ background: '#f8f9fa' }}><th style={{ padding: 14, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#64748b' }}>#</th><th style={{ padding: 14, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#64748b' }}>RESPONSABLE</th><th style={{ padding: 14, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#64748b' }}>TOTAL</th><th style={{ padding: 14, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#64748b' }}>HECHAS</th><th style={{ padding: 14, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#64748b' }}>PEND.</th><th style={{ padding: 14, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#64748b' }}>RETR.</th><th style={{ padding: 14, textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#64748b' }}>CUMPLIMIENTO</th><th style={{ padding: 14 }}></th></tr></thead><tbody>{userStats.sort((a, b) => b.cumplimiento - a.cumplimiento).map((m, i) => (<tr key={m.id} style={{ borderTop: '1px solid #f1f5f9' }}><td style={{ padding: 16, fontSize: 18 }}>{i + 1}</td><td style={{ padding: 16 }}><div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ fontSize: 24 }}>{m.avatar}</span><div><p style={{ fontWeight: 600 }}>{m.name}</p><p style={{ fontSize: 12, color: '#E84338' }}>{m.cargo}</p></div></div></td><td style={{ padding: 16, textAlign: 'center', fontWeight: 600 }}>{m.total}</td><td style={{ padding: 16, textAlign: 'center', fontWeight: 600, color: '#10b981' }}>{m.completadas}</td><td style={{ padding: 16, textAlign: 'center', fontWeight: 600, color: '#3b82f6' }}>{m.pendientes}</td><td style={{ padding: 16, textAlign: 'center', fontWeight: 600, color: '#E84338' }}>{m.retrasadas}</td><td style={{ padding: 16 }}><div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><div style={{ flex: 1, height: 10, background: '#f1f5f9', borderRadius: 5 }}><div style={{ height: '100%', width: `${m.cumplimiento}%`, background: m.cumplimiento >= 70 ? '#10b981' : m.cumplimiento >= 40 ? '#f59e0b' : '#E84338', borderRadius: 5 }}></div></div><span style={{ fontWeight: 700, minWidth: 45, color: m.cumplimiento >= 70 ? '#10b981' : m.cumplimiento >= 40 ? '#f59e0b' : '#E84338' }}>{m.cumplimiento}%</span></div></td><td style={{ padding: 16, fontSize: 24 }}>{<span style={{display:'inline-block',width:12,height:12,borderRadius:'50%',background:m.cumplimiento>=70?'#10b981':m.cumplimiento>=40?'#f59e0b':'#E84338',flexShrink:0}}></span>}</td></tr>))}</tbody></table></div></div></div>)}
+          </main>
+
+          {certInformeOpen && certLoteActivo && (() => {
+            const enviados = certPersonas.filter(p => p.estado === 'enviado');
+            const exportInforme = () => {
+              const fecha = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+              const filas = enviados.map((p, i) => `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>${[p.nombre, p.apellidos].filter(Boolean).join(' ')}</td>
+                  <td>${p.email || '—'}</td>
+                </tr>`).join('');
+              const win = window.open('', '_blank');
+              win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe — ${certLoteActivo.nombre}</title>
+                <style>
+                  * { box-sizing: border-box; margin: 0; padding: 0; }
+                  body { font-family: Arial, sans-serif; color: #1a1a2e; padding: 40px; }
+                  .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #E84338; padding-bottom: 20px; margin-bottom: 28px; }
+                  .header img { height: 40px; }
+                  .header-right { text-align: right; }
+                  h1 { font-size: 18px; font-weight: 800; color: #1a1a2e; margin-bottom: 4px; }
+                  .meta { font-size: 12px; color: #64748b; margin-bottom: 2px; }
+                  .stats { background: #f8fafc; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 32px; }
+                  .stat-item { text-align: center; }
+                  .stat-num { font-size: 28px; font-weight: 800; color: #E84338; }
+                  .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+                  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+                  thead tr { background: #1a1a2e; color: white; }
+                  thead th { padding: 11px 14px; text-align: left; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+                  tbody tr:nth-child(even) { background: #f8fafc; }
+                  tbody td { padding: 10px 14px; border-bottom: 1px solid #e5e7eb; color: #374151; }
+                  .footer { margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px; font-size: 11px; color: #94a3b8; text-align: center; }
+                  @media print { body { padding: 20px; } button { display: none !important; } }
+                </style>
+              </head><body>
+                <div class="header">
+                  <img src="https://gestion.asobares.org/asobares_original.png" alt="Asobares" />
+                  <div class="header-right">
+                    <h1>Informe de Envíos</h1>
+                    <div class="meta">${certLoteActivo.nombre}</div>
+                    <div class="meta">Generado el ${fecha}</div>
+                  </div>
+                </div>
+                <div class="stats">
+                  <div class="stat-item"><div class="stat-num">${enviados.length}</div><div class="stat-label">Enviados</div></div>
+                  <div class="stat-item"><div class="stat-num">${certPersonas.length}</div><div class="stat-label">Total inscritos</div></div>
+                  <div class="stat-item"><div class="stat-num">${certPersonas.filter(p => p.estado !== 'enviado').length}</div><div class="stat-label">Pendientes</div></div>
+                </div>
+                <table>
+                  <thead><tr><th>#</th><th>Nombre</th><th>Correo electrónico</th></tr></thead>
+                  <tbody>${filas}</tbody>
+                </table>
+                <div class="footer">Asociación de Bares y Restaurantes de Colombia — ASOBARES · gestion.asobares.org</div>
+                <script>window.onload = function() { window.print(); }<\/script>
+              </body></html>`);
+              win.document.close();
+            };
+            return (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+                <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 640, maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.3)' }}>
+                  <div style={{ padding: '24px 28px 16px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                    <div>
+                      <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a2e', margin: 0 }}><i className="bi bi-bar-chart-fill"></i> Informe de envíos</h2>
+                      <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>{certLoteActivo.nombre} · {enviados.length} {enviados.length === 1 ? 'persona' : 'personas'} con {certLoteActivo.cert_plantillas?.nombre?.toLowerCase().includes('carta') ? 'carta' : 'certificado'} enviado</p>
+                    </div>
+                    <button onClick={() => setCertInformeOpen(false)} style={{ width: 36, height: 36, borderRadius: 10, border: 'none', background: '#f1f5f9', cursor: 'pointer', fontSize: 18, color: '#64748b' }}>×</button>
+                  </div>
+                  <div style={{ overflowY: 'auto', flex: 1, padding: '16px 28px' }}>
+                    {enviados.length === 0 ? (
+                      <p style={{ color: '#94a3b8', textAlign: 'center', padding: '32px 0' }}>No hay envíos registrados aún.</p>
+                    ) : (
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                        <thead>
+                          <tr style={{ background: '#f8fafc' }}>
+                            <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700, color: '#374151', borderBottom: '2px solid #e5e7eb' }}>#</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700, color: '#374151', borderBottom: '2px solid #e5e7eb' }}>Nombre</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700, color: '#374151', borderBottom: '2px solid #e5e7eb' }}>Correo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {enviados.map((p, i) => (
+                            <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9', background: i % 2 === 0 ? 'white' : '#fafafa' }}>
+                              <td style={{ padding: '10px 12px', color: '#94a3b8', fontWeight: 600 }}>{i + 1}</td>
+                              <td style={{ padding: '10px 12px', color: '#1a1a2e', fontWeight: 600 }}>{[p.nombre, p.apellidos].filter(Boolean).join(' ')}</td>
+                              <td style={{ padding: '10px 12px', color: '#475569' }}>{p.email || '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                  <div style={{ padding: '16px 28px', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end', gap: 12, flexShrink: 0 }}>
+                    <button onClick={() => setCertInformeOpen(false)} style={{ padding: '10px 20px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#374151', fontWeight: 600, cursor: 'pointer' }}>Cerrar</button>
+                    <button onClick={exportInforme} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #0369a1)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>🖨️ Generar PDF</button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {certPreviewData && (
+            <CertPreviewModal
+              persona={certPreviewData.persona}
+              lote={certPreviewData.lote}
+              plantilla={certPreviewData.plantilla}
+              batchPersonas={certPreviewData.batchPersonas || null}
+              onClose={() => setCertPreviewData(null)}
+              onDownload={async (camposOverride) => {
+                try {
+                  const doc = await generarPDF(certPreviewData.persona, certPreviewData.lote, certPreviewData.plantilla, camposOverride);
+                  doc.save(`Certificado_${[certPreviewData.persona.nombre, certPreviewData.persona.apellidos].filter(Boolean).join('_')}.pdf`);
+                } catch (e) { showNotif('Error: ' + e.message); }
+              }}
+              onGenerarTodos={async (camposOverride) => {
+                await generarTodos(certPreviewData.batchPersonas, certPreviewData.lote, certPreviewData.plantilla, camposOverride);
+              }}
+              onSaveToPlantilla={async (campos) => {
+                await saveEditorCampos(certPreviewData.plantilla.id, campos);
+                setCertPreviewData(prev => ({ ...prev, plantilla: { ...prev.plantilla, campos } }));
+              }}
+            />
+          )}
+          {shareDocId && <div onClick={() => setShareDocId(null)} style={{ position: 'fixed', inset: 0, zIndex: 49 }} />}
+          {showTaskModal && <TaskModal task={editingTask} users={users} currentUser={currentUser} onSave={handleSaveTask} onClose={() => { setShowTaskModal(false); setEditingTask(null); }} />}
+          {showUserModal && <UserModal user={editingUser} cargos={cargos} onSave={handleSaveUser} onClose={() => { setShowUserModal(false); setEditingUser(null); }} />}
+          {showAddDocModal && <DocAddLinkModal onSave={handleAddDoc} saving={savingDoc} onClose={() => setShowAddDocModal(false)} />}
+          {docPreview && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 24px', background: '#1a1a2e', gap: 12, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><i className={'bi '+getDriveIcon(docPreview.tipo)} style={{fontSize:22}}></i><p style={{ color: 'white', fontWeight: 700, fontSize: 15 }}>{docPreview.nombre}</p><span style={{ fontSize: 11, color: '#64748b', background: 'rgba(255,255,255,0.1)', padding: '3px 8px', borderRadius: 6 }}>{getDriveLabel(docPreview.tipo)}</span></div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  {docPreview.tipo === 'folder'
+                    ? <button onClick={() => descargarCarpetaZip(docPreview)} disabled={zipDescargando === docPreview.id} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: zipDescargando === docPreview.id ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)', color: zipDescargando === docPreview.id ? '#94a3b8' : 'white', fontSize: 13, fontWeight: 600, cursor: zipDescargando === docPreview.id ? 'default' : 'pointer' }}>{zipDescargando === docPreview.id ? '⏳ Preparando...' : '⬇️ Descargar ZIP'}</button>
+                    : <a href={docPreview.url} target="_blank" rel="noopener noreferrer" style={{ padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', color: 'white', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}><i className="bi bi-box-arrow-up-right" style={{marginRight:4}}></i>Abrir en Drive</a>
+                  }
+                  {getDriveDownloadUrl(docPreview) && docPreview.tipo !== 'folder' && <a href={getDriveDownloadUrl(docPreview)} target="_blank" rel="noopener noreferrer" style={{ padding: '8px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>⬇️ Descargar</a>}
+                  <button onClick={() => setDocPreview(null)} style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                </div>
+              </div>
+              <iframe src={getDrivePreviewUrl(docPreview.url)} style={{ flex: 1, border: 'none', background: 'white' }} allow="autoplay" />
+            </div>
+          )}
+          <div style={{ position: 'fixed', bottom: 0, left: 280, right: 0, padding: '12px 32px', background: 'white', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}><p style={{ fontSize: 12, color: '#94a3b8' }}>Desarrollado por: <a href="https://vamosarayar.com" target="_blank" rel="noopener noreferrer" style={{ color: '#E84338', fontWeight: 600, textDecoration: 'none' }}>Rayar!</a></p></div>
+        </div>
+      );
+    }
+
+    function TaskModal({ task, users, currentUser, onSave, onClose }) {
+      const [mes, setMes] = useState(task?.mes || meses[new Date().getMonth()]);
+      const [cargo, setCargo] = useState(task?.cargo || currentUser.cargo);
+      const [responsables, setResponsables] = useState(() => {
+        const r = getResponsables(task);
+        return r.length > 0 ? r : [currentUser.id];
+      });
+      const [proyecto, setProyecto] = useState(task?.proyecto || '');
+      const [ejeEstrategico, setEjeEstrategico] = useState(task?.eje_estrategico || ejesEstrategicos[0]);
+      const [fechaInicio, setFechaInicio] = useState(task?.fecha_inicio || new Date().toISOString().split('T')[0]);
+      const [fechaFin, setFechaFin] = useState(task?.fecha_fin || '');
+      const [estado, setEstado] = useState(task?.estado || 'planeado');
+      const [descripcion, setDescripcion] = useState(task?.descripcion || '');
+      const toggleResponsable = (id) => {
+        setResponsables(prev => {
+          if (prev.includes(id)) {
+            if (prev.length === 1) return prev;
+            return prev.filter(x => x !== id);
+          }
+          return [...prev, id];
+        });
+      };
+      const st = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, boxSizing: 'border-box' };
+      return (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}><div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 600, maxHeight: '90vh', overflow: 'auto' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 24, background: 'linear-gradient(135deg, #E84338, #c41e16)', borderRadius: '20px 20px 0 0' }}><h2 style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>{task ? 'Editar' : 'Nueva'} Tarea</h2><button onClick={onClose} style={{ width: 40, height: 40, borderRadius: 10, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 20, color: 'white', cursor: 'pointer' }}>×</button></div><div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Proyecto *</label><input type="text" value={proyecto} onChange={e => setProyecto(e.target.value)} style={st} /></div>
+        <div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Descripción</label><textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} rows={4} style={{ ...st, resize: 'vertical', fontFamily: 'inherit' }} placeholder="Describe la tarea..." /></div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Mes</label><select value={mes} onChange={e => setMes(e.target.value)} style={st}>{meses.map(m => <option key={m} value={m}>{m}</option>)}</select></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Eje Estratégico</label><select value={ejeEstrategico} onChange={e => setEjeEstrategico(e.target.value)} style={st}>{ejesEstrategicos.map(e => <option key={e} value={e}>{e}</option>)}</select></div></div>
+        <div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Asignar a (selecciona uno o más)</label><div style={{ border: '2px solid #e5e7eb', borderRadius: 10, padding: 8, maxHeight: 180, overflowY: 'auto' }}>{users.filter(u => u.role !== 'invitado').map(u => (<label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, cursor: 'pointer', background: responsables.includes(u.id) ? '#fef2f2' : 'transparent' }}><input type="checkbox" checked={responsables.includes(u.id)} onChange={() => toggleResponsable(u.id)} style={{ width: 18, height: 18, accentColor: '#E84338' }} /><span style={{ fontSize: 20 }}>{u.avatar}</span><span style={{ fontSize: 14 }}>{u.name}</span><span style={{ fontSize: 11, color: '#94a3b8' }}>({u.cargo})</span></label>))}</div><p style={{ fontSize: 11, color: '#64748b', marginTop: 6 }}>{responsables.length} persona(s) seleccionada(s)</p></div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}><i className="bi bi-calendar3" style={{marginRight:4}}></i>Inicio</label><input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} style={st} /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}><i className="bi bi-flag-fill" style={{marginRight:4}}></i>Fin</label><input type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} style={st} /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Estado</label><select value={estado} onChange={e => setEstado(e.target.value)} style={st}>{Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div></div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}><button onClick={onClose} style={{ padding: '12px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button><button onClick={() => { if (proyecto.trim()) onSave({ mes, cargo, responsables, proyecto, ejeEstrategico, fechaInicio, fechaFin, estado, descripcion }); }} style={{ padding: '12px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>{task ? 'Guardar' : 'Crear'}</button></div>
+      </div></div></div>);
+    }
+
+    function UserModal({ user, cargos, onSave, onClose }) {
+      const emojis = ['👤', '👨', '👩', '🧑', '👨‍💼', '👩‍💼', '👨‍💻', '👩‍💻', '🎨', '🎵', '👨‍🍳', '📱', '⚖️', '👔'];
+      const [name, setName] = useState(user?.name || '');
+      const [username, setUsername] = useState(user?.username || '');
+      const [email, setEmail] = useState(user?.email || '');
+      const [password, setPassword] = useState('');
+      const [cargo, setCargo] = useState(user?.cargo || cargos[0]);
+      const [avatar, setAvatar] = useState(user?.avatar || '👤');
+      const [role, setRole] = useState(user?.role || 'user');
+      const st = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, boxSizing: 'border-box' };
+      return (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}><div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 500, maxHeight: '90vh', overflow: 'auto' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 24, background: 'linear-gradient(135deg, #E84338, #c41e16)', borderRadius: '20px 20px 0 0' }}><h2 style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>{user ? 'Editar' : 'Nuevo'} Usuario</h2><button onClick={onClose} style={{ width: 40, height: 40, borderRadius: 10, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 20, color: 'white', cursor: 'pointer' }}>×</button></div><div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Emoji</label><div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: 12, background: '#f8f9fa', borderRadius: 10 }}>{emojis.map(e => <button key={e} type="button" onClick={() => setAvatar(e)} style={{ width: 40, height: 40, borderRadius: 10, border: avatar === e ? '2px solid #E84338' : '2px solid transparent', background: avatar === e ? '#fee2e2' : 'white', fontSize: 20, cursor: 'pointer' }}>{e}</button>)}</div></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Nombre *</label><input type="text" value={name} onChange={e => setName(e.target.value)} style={st} /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Usuario *</label><input type="text" value={username} onChange={e => setUsername(e.target.value)} style={st} placeholder="nombre.apellido" /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>📧 Email *</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} style={st} placeholder="correo@asobares.org" /></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>{user ? 'Nueva Contraseña (opcional)' : 'Contraseña *'}</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} style={st} /></div><div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Cargo</label><select value={cargo} onChange={e => setCargo(e.target.value)} style={st}>{cargos.map(c => <option key={c} value={c}>{c}</option>)}</select></div><div><label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Rol</label><select value={role} onChange={e => setRole(e.target.value)} style={st}><option value="user">Usuario</option><option value="admin">Admin</option><option value="invitado">Invitado</option></select></div></div><div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}><button onClick={onClose} style={{ padding: '12px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button><button onClick={() => { if (name.trim() && username.trim() && email.trim() && (user || password.trim())) onSave({ name, username, email, password: password || undefined, cargo, avatar, role }); }} style={{ padding: '12px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #E84338, #c41e16)', color: 'white', fontWeight: 700, cursor: 'pointer' }}>{user ? 'Guardar' : 'Crear'}</button></div></div></div></div>);
+    }
+
+    function DocAddLinkModal({ onSave, saving, onClose }) {
+      const [nombre, setNombre] = useState('');
+      const [url, setUrl] = useState('');
+      const [categoria, setCategoria] = useState(docCategories[0].id);
+      const [subcategoria, setSubcategoria] = useState('');
+      const [descripcion, setDescripcion] = useState('');
+      const tipo = getDriveType(url);
+      const st = { width: '100%', padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, boxSizing: 'border-box' };
+      const canSave = nombre.trim() && url.trim();
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 520, maxHeight: '90vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 24, background: 'linear-gradient(135deg, #E84338, #c41e16)', borderRadius: '20px 20px 0 0' }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: 'white' }}><i className="bi bi-link-45deg"></i> Agregar recurso de Drive</h2>
+              <button onClick={onClose} style={{ width: 40, height: 40, borderRadius: 10, border: 'none', background: 'rgba(255,255,255,0.2)', fontSize: 20, color: 'white', cursor: 'pointer' }}>×</button>
+            </div>
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Nombre del recurso *</label>
+                <input type="text" value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Ej: Reglamento Interno 2025" style={st} />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Link de Google Drive *</label>
+                <input type="url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://drive.google.com/..." style={st} />
+                {url && <p style={{ marginTop: 6, fontSize: 12, color: '#64748b' }}>Tipo detectado: <><i className={'bi '+getDriveIcon(tipo)} style={{fontSize:14,marginRight:4}}></i>{getDriveLabel(tipo)}</></p>}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Categoría *</label>
+                  <select value={categoria} onChange={e => setCategoria(e.target.value)} style={st}>
+                    {docCategories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Subcarpeta <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
+                  <input type="text" value={subcategoria} onChange={e => setSubcategoria(e.target.value)} placeholder="Ej: 2025, Protocolos..." style={st} />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#374151' }}>Descripción <span style={{ fontWeight: 400, color: '#94a3b8' }}>(opcional)</span></label>
+                <textarea value={descripcion} onChange={e => setDescripcion(e.target.value)} rows={2} placeholder="Breve descripción del contenido..." style={{ ...st, resize: 'vertical', fontFamily: 'inherit' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button onClick={onClose} style={{ padding: '12px 24px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+                <button onClick={() => canSave && onSave({ nombre, url, categoria, subcategoria, descripcion })} disabled={!canSave || saving} style={{ padding: '12px 32px', borderRadius: 10, border: 'none', background: canSave && !saving ? 'linear-gradient(135deg, #E84338, #c41e16)' : '#e5e7eb', color: canSave && !saving ? 'white' : '#94a3b8', fontWeight: 700, cursor: canSave && !saving ? 'pointer' : 'not-allowed' }}>
+                  {saving ? '⏳ Guardando...' : '✓ Agregar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+    // Ocultar pantalla de carga una vez React ha montado
+    const splash = document.getElementById('splash');
+    if (splash) { splash.classList.add('hidden'); setTimeout(() => splash.remove(), 350); }
+  

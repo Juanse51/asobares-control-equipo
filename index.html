@@ -1023,7 +1023,8 @@ const [baseTotalCount, setBaseTotalCount] = useState(null);
 const [baseTotalSearch, setBaseTotalSearch] = useState('');
 const [baseTotalResults, setBaseTotalResults] = useState([]);
 const [baseTotalLoading, setBaseTotalLoading] = useState(false);
-const [baseTotalSearched, setBaseTotalSearched] = useState(false);
+const [baseTotalPage, setBaseTotalPage] = useState(0);
+const [baseTotalExporting, setBaseTotalExporting] = useState(false);
 
       const [certPlantillas, setCertPlantillas] = useState([]);
       const [certLotes, setCertLotes] = useState([]);
@@ -1074,7 +1075,7 @@ const [baseTotalSearched, setBaseTotalSearched] = useState(false);
       useEffect(() => { if (view === 'crm' || view === 'crm-mix-shake') { setMixShakeDetalle(null); loadMixShake(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-circulo-gastro') { setCirculoGastroDetalle(null); loadCirculoGastro(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-cluster-dj') { setClusterDjDetalle(null); loadClusterDj(); } }, [view]);
-      useEffect(() => { if (view === 'crm' || view === 'crm-base-total') { loadBaseTotalCount(); } }, [view]);
+      useEffect(() => { if (view === 'crm-base-total') { loadBaseTotalPage(0, ''); } else if (view === 'crm') { loadBaseTotalCount(); } }, [view]);
       useEffect(() => { if (view === 'conecta') loadConecta(); }, [view]);
 
       useEffect(() => {
@@ -1890,16 +1891,47 @@ const [baseTotalSearched, setBaseTotalSearched] = useState(false);
         const { count } = await supabase.from('base_datos_general').select('*', { count: 'exact', head: true });
         setBaseTotalCount(count);
       };
-      const searchBaseTotal = async (q) => {
-        if (!q || q.trim().length < 3) return;
+      const loadBaseTotalPage = async (page, search) => {
         setBaseTotalLoading(true);
-        setBaseTotalSearched(true);
-        const term = q.trim();
-        const { data } = await supabase.from('base_datos_general').select('*')
-          .or(`nombre.ilike.%${term}%,apellido.ilike.%${term}%,email.ilike.%${term}%,ciudad.ilike.%${term}%,profesion.ilike.%${term}%,numero_documento.ilike.%${term}%`)
-          .limit(100);
+        const perPage = 100;
+        const from = page * perPage;
+        const to = from + perPage - 1;
+        let q = supabase.from('base_datos_general').select('*', { count: 'exact' });
+        if (search && search.trim().length >= 3) {
+          const t = search.trim();
+          q = q.or(`nombre.ilike.%${t}%,apellido.ilike.%${t}%,email.ilike.%${t}%,ciudad.ilike.%${t}%,profesion.ilike.%${t}%,numero_documento.ilike.%${t}%`);
+        }
+        const { data, count } = await q.range(from, to);
         setBaseTotalResults(data || []);
+        setBaseTotalCount(count);
+        setBaseTotalPage(page);
         setBaseTotalLoading(false);
+      };
+      const exportAllBaseTotal = async (search) => {
+        setBaseTotalExporting(true);
+        const batchSize = 1000;
+        let allData = [];
+        let from = 0;
+        while (true) {
+          let q = supabase.from('base_datos_general').select('*');
+          if (search && search.trim().length >= 3) {
+            const t = search.trim();
+            q = q.or(`nombre.ilike.%${t}%,apellido.ilike.%${t}%,email.ilike.%${t}%,ciudad.ilike.%${t}%,profesion.ilike.%${t}%,numero_documento.ilike.%${t}%`);
+          }
+          const { data } = await q.range(from, from + batchSize - 1);
+          if (!data || data.length === 0) break;
+          allData = [...allData, ...data];
+          if (data.length < batchSize) break;
+          from += batchSize;
+        }
+        const headers = ['Nombre','Nombre 2','Apellido','Apellido 2','Género','Ciudad','Perfil Cargo','Profesión','Tipo Doc.','Nº Doc.','Email','Teléfono'];
+        const rows = allData.map(r => [r.nombre||'',r.nombre_2||'',r.apellido||'',r.apellido_2||'',r.genero||'',r.ciudad||'',r.perfil_cargo||'',r.profesion||'',r.tipo_documento||'',r.numero_documento||'',r.email||'',r.telefono||'']);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, 14) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'Base Total');
+        XLSX.writeFile(wb, 'base_datos_total_' + new Date().toISOString().slice(0,10) + '.xlsx');
+        setBaseTotalExporting(false);
       };
 
       const loadClusterDj = async () => {
@@ -5535,16 +5567,8 @@ const [baseTotalSearched, setBaseTotalSearched] = useState(false);
             })()}
 
             {view === 'crm-base-total' && (() => {
-              const exportBaseTotalExcel = () => {
-                if (baseTotalResults.length === 0) return;
-                const headers = ['Nombre','Nombre 2','Apellido','Apellido 2','Género','Ciudad','Perfil Cargo','Profesión','Tipo Doc.','Nº Doc.','Email','Teléfono'];
-                const rows = baseTotalResults.map(r => [r.nombre||'', r.nombre_2||'', r.apellido||'', r.apellido_2||'', r.genero||'', r.ciudad||'', r.perfil_cargo||'', r.profesion||'', r.tipo_documento||'', r.numero_documento||'', r.email||'', r.telefono||'']);
-                const wb = XLSX.utils.book_new();
-                const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-                ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i]||'').length), 10) }));
-                XLSX.utils.book_append_sheet(wb, ws, 'Base Total');
-                XLSX.writeFile(wb, 'base_datos_total_' + new Date().toISOString().slice(0,10) + '.xlsx');
-              };
+              const totalPages = baseTotalCount !== null ? Math.ceil(baseTotalCount / 100) : 0;
+              const goTo = (p) => loadBaseTotalPage(p, baseTotalSearch);
               return (
                 <div>
                   <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -5552,66 +5576,56 @@ const [baseTotalSearched, setBaseTotalSearched] = useState(false);
                       <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>Total registros</p>
                       <p style={{ fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{baseTotalCount !== null ? baseTotalCount.toLocaleString('es-CO') : '…'}</p>
                     </div>
-                    {baseTotalSearched && baseTotalResults.length > 0 && (
-                      <div style={{ background: 'white', borderRadius: 12, padding: '12px 20px' }}>
-                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>Resultados</p>
-                        <p style={{ fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{baseTotalResults.length}{baseTotalResults.length === 100 ? '+' : ''}</p>
-                      </div>
-                    )}
-                    {baseTotalResults.length > 0 && (
-                      <button onClick={exportBaseTotalExcel} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-                    <input
-                      type="text"
-                      placeholder="Buscar por nombre, apellido, email, ciudad, profesión o nº documento..."
-                      value={baseTotalSearch}
-                      onChange={e => setBaseTotalSearch(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') searchBaseTotal(baseTotalSearch); }}
-                      style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }}
-                    />
-                    <button onClick={() => searchBaseTotal(baseTotalSearch)} disabled={baseTotalSearch.trim().length < 3 || baseTotalLoading} style={{ padding: '12px 22px', borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 700, fontSize: 14, cursor: baseTotalSearch.trim().length < 3 ? 'default' : 'pointer', opacity: baseTotalSearch.trim().length < 3 ? 0.4 : 1 }}>
-                      {baseTotalLoading ? '…' : 'Buscar'}
+                    <button onClick={() => exportAllBaseTotal(baseTotalSearch)} disabled={baseTotalExporting} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalExporting ? 'default' : 'pointer', opacity: baseTotalExporting ? 0.6 : 1 }}>
+                      <i className="bi bi-file-earmark-excel"></i> {baseTotalExporting ? 'Descargando todo...' : 'Descargar todo en Excel'}
                     </button>
                   </div>
-                  {!baseTotalSearched ? (
-                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
-                      <p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-search"></i></p>
-                      <p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Escribe al menos 3 caracteres y presiona Buscar</p>
-                      <p style={{ color: '#64748b', fontSize: 13 }}>Puedes buscar por nombre, apellido, email, ciudad, profesión o número de documento.</p>
-                    </div>
-                  ) : baseTotalLoading ? (
-                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Buscando...</p></div>
+                  <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+                    <input type="text" placeholder="Filtrar por nombre, apellido, email, ciudad, profesión o nº documento..." value={baseTotalSearch} onChange={e => setBaseTotalSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { loadBaseTotalPage(0, baseTotalSearch); } }} style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <button onClick={() => loadBaseTotalPage(0, baseTotalSearch)} disabled={baseTotalLoading} style={{ padding: '12px 22px', borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>{baseTotalLoading ? '…' : 'Filtrar'}</button>
+                    {baseTotalSearch && <button onClick={() => { setBaseTotalSearch(''); loadBaseTotalPage(0, ''); }} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>✕ Limpiar</button>}
+                  </div>
+                  {baseTotalLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando...</p></div>
                   ) : baseTotalResults.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados para "{baseTotalSearch}"</p></div>
-                  ) : isMobile ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      {baseTotalResults.map((r, i) => (
-                        <div key={i} style={{ background: 'white', borderRadius: 14, padding: 16, border: '1px solid #f1f5f9' }}>
-                          <p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.nombre_2} {r.apellido} {r.apellido_2}</p>
-                          <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{r.profesion} · {r.ciudad}</p>
-                          <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{r.email} · {r.telefono}</p>
-                        </div>
-                      ))}
-                    </div>
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
                   ) : (
-                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.8fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 120px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
-                        {['NOMBRE COMPLETO','PROFESIÓN','EMAIL','CIUDAD','PERFIL CARGO','Nº DOC.'].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
-                      </div>
-                      {baseTotalResults.map((r, i) => (
-                        <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.8fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 120px', padding: '13px 16px', gap: 8, borderTop: '1px solid #f8f9fa', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#f8fafc'} onMouseLeave={e => e.currentTarget.style.background='white'}>
-                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{[r.nombre, r.nombre_2, r.apellido, r.apellido_2].filter(Boolean).join(' ')}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.genero}</p></div>
-                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.profesion}</span>
-                          <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
-                          <span style={{ fontSize: 13 }}>{r.ciudad}</span>
-                          <span style={{ fontSize: 12, color: '#64748b' }}>{r.perfil_cargo}</span>
-                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{r.numero_documento}</span>
+                    <>
+                      {isMobile ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {baseTotalResults.map((r, i) => (
+                            <div key={i} style={{ background: 'white', borderRadius: 14, padding: 16, border: '1px solid #f1f5f9' }}>
+                              <p style={{ fontSize: 14, fontWeight: 700 }}>{[r.nombre, r.nombre_2, r.apellido, r.apellido_2].filter(Boolean).join(' ')}</p>
+                              <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{r.profesion} · {r.ciudad}</p>
+                              <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{r.email} · {r.telefono}</p>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                      {baseTotalResults.length === 100 && <p style={{ textAlign: 'center', padding: '14px', fontSize: 12, color: '#94a3b8', borderTop: '1px solid #f1f5f9' }}>Mostrando los primeros 100 resultados — refina la búsqueda para ver más.</p>}
-                    </div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.8fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 120px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                            {['NOMBRE COMPLETO','PROFESIÓN','EMAIL','CIUDAD','PERFIL CARGO','Nº DOC.'].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                          </div>
+                          {baseTotalResults.map((r, i) => (
+                            <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.8fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 120px', padding: '13px 16px', gap: 8, borderTop: '1px solid #f8f9fa', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#f8fafc'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                              <div><p style={{ fontSize: 13, fontWeight: 700 }}>{[r.nombre, r.nombre_2, r.apellido, r.apellido_2].filter(Boolean).join(' ')}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.genero}</p></div>
+                              <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.profesion}</span>
+                              <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                              <span style={{ fontSize: 13 }}>{r.ciudad}</span>
+                              <span style={{ fontSize: 12, color: '#64748b' }}>{r.perfil_cargo}</span>
+                              <span style={{ fontSize: 12, color: '#94a3b8' }}>{r.numero_documento}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
+                        <button onClick={() => goTo(0)} disabled={baseTotalPage === 0 || baseTotalLoading} style={{ padding: '8px 14px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalPage === 0 ? 'default' : 'pointer', opacity: baseTotalPage === 0 ? 0.4 : 1 }}>«</button>
+                        <button onClick={() => goTo(baseTotalPage - 1)} disabled={baseTotalPage === 0 || baseTotalLoading} style={{ padding: '8px 16px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalPage === 0 ? 'default' : 'pointer', opacity: baseTotalPage === 0 ? 0.4 : 1 }}>‹ Anterior</button>
+                        <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>Página {baseTotalPage + 1} de {totalPages.toLocaleString('es-CO')}</span>
+                        <button onClick={() => goTo(baseTotalPage + 1)} disabled={baseTotalPage >= totalPages - 1 || baseTotalLoading} style={{ padding: '8px 16px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalPage >= totalPages - 1 ? 'default' : 'pointer', opacity: baseTotalPage >= totalPages - 1 ? 0.4 : 1 }}>Siguiente ›</button>
+                        <button onClick={() => goTo(totalPages - 1)} disabled={baseTotalPage >= totalPages - 1 || baseTotalLoading} style={{ padding: '8px 14px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalPage >= totalPages - 1 ? 'default' : 'pointer', opacity: baseTotalPage >= totalPages - 1 ? 0.4 : 1 }}>»</button>
+                      </div>
+                    </>
                   )}
                 </div>
               );

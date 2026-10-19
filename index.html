@@ -1026,6 +1026,14 @@ const [baseTotalLoading, setBaseTotalLoading] = useState(false);
 const [baseTotalPage, setBaseTotalPage] = useState(0);
 const [baseTotalExporting, setBaseTotalExporting] = useState(false);
 
+const [afiliadosData, setAfiliadosData] = useState([]);
+const [afiliadosLoading, setAfiliadosLoading] = useState(false);
+const [afiliadosSearch, setAfiliadosSearch] = useState('');
+const [afiliadosFiltroEstado, setAfiliadosFiltroEstado] = useState('all');
+const [afiliadosDetalle, setAfiliadosDetalle] = useState(null);
+const [afiliadosNotasEdit, setAfiliadosNotasEdit] = useState('');
+const [afiliadosExporting, setAfiliadosExporting] = useState(false);
+
       const [certPlantillas, setCertPlantillas] = useState([]);
       const [certLotes, setCertLotes] = useState([]);
       const [certPersonas, setCertPersonas] = useState([]);
@@ -1076,6 +1084,7 @@ const [baseTotalExporting, setBaseTotalExporting] = useState(false);
       useEffect(() => { if (view === 'crm' || view === 'crm-circulo-gastro') { setCirculoGastroDetalle(null); loadCirculoGastro(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-cluster-dj') { setClusterDjDetalle(null); loadClusterDj(); } }, [view]);
       useEffect(() => { if (view === 'crm-base-total') { loadBaseTotalPage(0, ''); } else if (view === 'crm') { loadBaseTotalCount(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-afiliados') { setAfiliadosDetalle(null); loadAfiliados(); } }, [view]);
       useEffect(() => { if (view === 'conecta') loadConecta(); }, [view]);
 
       useEffect(() => {
@@ -1887,6 +1896,40 @@ const [baseTotalExporting, setBaseTotalExporting] = useState(false);
           return true;
         });
       };
+      const loadAfiliados = async () => {
+        setAfiliadosLoading(true);
+        const { data } = await supabase.from('afiliados').select('*').order('razon_social');
+        setAfiliadosData(data || []);
+        setAfiliadosLoading(false);
+      };
+      const saveAfiliadoNota = async (id, notas, estado) => {
+        await supabase.from('afiliados').update({ notas, estado }).eq('id', id);
+        setAfiliadosData(prev => prev.map(r => r.id === id ? { ...r, notas, estado } : r));
+        setAfiliadosDetalle(prev => prev ? { ...prev, notas, estado } : prev);
+      };
+      const exportAfiliados = async () => {
+        setAfiliadosExporting(true);
+        const { data } = await supabase.from('afiliados').select('*').order('razon_social');
+        const rows = (data || []).map(r => ({
+          'NIT': r.nit, 'Razón Social': r.razon_social, 'Nombre Comercial': r.nombre_comercial,
+          'Rep. Legal': r.representante_legal, 'Doc. RL': r.documento_rl,
+          'Dirección': r.direccion, 'Teléfono': r.telefono, 'Email Facturación': r.email_facturacion,
+          'Nombre Contacto Fact.': r.nombre_contacto_facturacion, 'Tel. Facturación': r.telefono_facturacion,
+          'Correo Facturación': r.correo_facturacion, 'Cámara Comercio': r.camara_comercio,
+          'RUT': r.rut, 'Cédula RL': r.cedula_rl, 'Uso Marca': r.uso_marca,
+          'Certificado Afiliado': r.certificado_afiliado, 'Adendo Anticorrupción': r.adendo_anticorrupcion,
+          'Formato Afiliación': r.formato_afiliacion, 'Pág. Red de Cuidado': r.pag_red_cuidado,
+          'Web Asobares': r.web_asobares, 'Mi Destino tu Noche': r.mi_destino_tu_noche,
+          'No. Establecimientos': r.num_establecimientos, 'Link Documentos': r.link_documentos,
+          'Persona Contacto': r.persona_contacto, 'Tel. Contacto': r.telefono_contacto,
+          'Correo Electrónico': r.correo_electronico, 'Estado': r.estado, 'Observación': r.observacion, 'No. Carpeta': r.no_carpeta
+        }));
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Afiliados');
+        XLSX.writeFile(wb, 'Afiliados_Asobares.xlsx');
+        setAfiliadosExporting(false);
+      };
       const loadBaseTotalCount = async () => {
         const { count } = await supabase.from('base_datos_general').select('*', { count: 'exact', head: true });
         setBaseTotalCount(count);
@@ -2627,7 +2670,7 @@ const [baseTotalExporting, setBaseTotalExporting] = useState(false);
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
               <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
               <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2-open" style={{fontSize:18,marginRight:8}}></i>Documentación</button>
-              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('certificaciones')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'certificaciones' ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'transparent', color: view === 'certificaciones' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'certificaciones' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-mortarboard" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Certificaciones</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('conecta')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'conecta' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'conecta' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'conecta' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-handshake" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Conecta</button>}
               {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: 'bi-people', label: 'Gestión de Equipo' }, { id: 'analytics', icon: 'bi-graph-up', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><i className={'bi '+item.icon} style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>{item.label}</button>))}</>)}
@@ -2643,7 +2686,7 @@ const [baseTotalExporting, setBaseTotalExporting] = useState(false);
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'crm-ecosistema-dj' && 'El Ecosistema DJ'}{view === 'crm-mix-shake' && 'Mix And Shake'}
                 {view === 'crm-circulo-gastro' && 'Círculo Gastro'}
                 {view === 'crm-cluster-dj' && 'Cluster DJ'}
-                {view === 'crm-base-total' && 'Base de Datos Total'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
+                {view === 'crm-base-total' && 'Base de Datos Total'}{view === 'crm-afiliados' && 'Afiliados'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
               <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'center', flexShrink: 0 }}>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}><i className="bi bi-bell"></i>{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
@@ -2860,7 +2903,8 @@ const [baseTotalExporting, setBaseTotalExporting] = useState(false);
                     { id: 'crm-mix-shake', icon: 'bi-cup-straw-fill', title: 'Mix And Shake', desc: 'Comunidad de bartending de Asobares Colombia — Inscripciones de talento de barra, establecimientos, marcas y proveedores.', count: mixShakeData.length, loading: mixShakeLoading, color: '#8B2BE8', bg: '#f3e8ff' },
                           { id: 'crm-circulo-gastro', icon: 'bi-fork-knife', title: 'Círculo Gastro', desc: 'Comunidad gastronómica de circulogastro.com — Inscripciones de profesionales, establecimientos, marcas y proveedores.', count: circuloGastroData.length, loading: circuloGastroLoading, color: '#e67e22', bg: '#fef3e2' },
                           { id: 'crm-cluster-dj', icon: 'bi-vinyl-fill', title: 'Cluster DJ', desc: 'Comunidad de DJs de clusterdj.co — Inscripciones de talentos, establecimientos, marcas y proveedores del sector.', count: clusterDjData.length, loading: clusterDjLoading, color: '#0ea5e9', bg: '#e0f2fe' },
-                          { id: 'crm-base-total', icon: 'bi-database-fill', title: 'Base de Datos Total', desc: 'Base de datos general del sector — más de 120.000 registros de personas vinculadas a la industria de bares y restaurantes.', count: baseTotalCount, loading: baseTotalCount === null, color: '#1e293b', bg: '#f1f5f9' }
+                          { id: 'crm-base-total', icon: 'bi-database-fill', title: 'Base de Datos Total', desc: 'Base de datos general del sector — más de 120.000 registros de personas vinculadas a la industria de bares y restaurantes.', count: baseTotalCount, loading: baseTotalCount === null, color: '#1e293b', bg: '#f1f5f9' },
+                          { id: 'crm-afiliados', icon: 'bi-patch-check-fill', title: 'Afiliados', desc: 'Establecimientos afiliados a Asobares — razón social, representante legal, documentos y datos de contacto.', count: afiliadosData.length, loading: afiliadosLoading, color: '#16a34a', bg: '#dcfce7' }
                   ].map(card => (
                     <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -5626,6 +5670,179 @@ const [baseTotalExporting, setBaseTotalExporting] = useState(false);
                         <button onClick={() => goTo(totalPages - 1)} disabled={baseTotalPage >= totalPages - 1 || baseTotalLoading} style={{ padding: '8px 14px', borderRadius: 8, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalPage >= totalPages - 1 ? 'default' : 'pointer', opacity: baseTotalPage >= totalPages - 1 ? 0.4 : 1 }}>»</button>
                       </div>
                     </>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-afiliados' && (() => {
+              const afiliadosEstados = {
+                'activo':    { label: 'Activo',    color: '#16a34a', bg: '#dcfce7' },
+                'inactivo':  { label: 'Inactivo',  color: '#dc2626', bg: '#fee2e2' },
+                'pendiente': { label: 'Pendiente', color: '#d97706', bg: '#fef3c7' },
+                'suspendido':{ label: 'Suspendido',color: '#64748b', bg: '#f1f5f9' },
+              };
+              const afiliadosFiltrados = afiliadosData.filter(r => {
+                if (afiliadosFiltroEstado !== 'all' && r.estado !== afiliadosFiltroEstado) return false;
+                if (afiliadosSearch.trim().length >= 2) {
+                  const q = afiliadosSearch.toLowerCase();
+                  return [r.nit, r.razon_social, r.nombre_comercial, r.representante_legal, r.correo_electronico, r.email_facturacion, r.telefono].some(v => String(v ?? '').toLowerCase().includes(q));
+                }
+                return true;
+              });
+              const CheckIcon = ({ val }) => val === 'X' ? <span style={{ color: '#16a34a', fontWeight: 700 }}>✓</span> : <span style={{ color: '#cbd5e1' }}>–</span>;
+              return (
+                <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <input type="text" placeholder="Buscar por NIT, razón social, nombre comercial, email..." value={afiliadosSearch} onChange={e => setAfiliadosSearch(e.target.value)} style={{ flex: 1, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, minWidth: 200 }} />
+                      <select value={afiliadosFiltroEstado} onChange={e => setAfiliadosFiltroEstado(e.target.value)} style={{ padding: '11px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }}>
+                        <option value="all">Todos los estados</option>
+                        {Object.entries(afiliadosEstados).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                      </select>
+                      <button onClick={exportAfiliados} disabled={afiliadosExporting} style={{ padding: '11px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: 'pointer', opacity: afiliadosExporting ? 0.6 : 1 }}>
+                        <i className="bi bi-file-earmark-excel"></i> {afiliadosExporting ? 'Descargando...' : 'Excel'}
+                      </button>
+                    </div>
+                    <div style={{ marginBottom: 10, fontSize: 13, color: '#64748b' }}>{afiliadosFiltrados.length} de {afiliadosData.length} afiliados</div>
+                    {afiliadosLoading ? (
+                      <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando...</p></div>
+                    ) : afiliadosFiltrados.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                    ) : isMobile ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {afiliadosFiltrados.map(r => {
+                          const est = afiliadosEstados[r.estado] || afiliadosEstados['activo'];
+                          return (
+                            <div key={r.id} onClick={() => { setAfiliadosDetalle(r); setAfiliadosNotasEdit(r.notas || ''); }} style={{ background: 'white', borderRadius: 14, padding: 16, border: r.id === afiliadosDetalle?.id ? '2px solid #16a34a' : '1px solid #f1f5f9', cursor: 'pointer' }}>
+                              <p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre_comercial || r.razon_social}</p>
+                              <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{r.nit} · {r.representante_legal}</p>
+                              <div style={{ marginTop: 8 }}><span style={{ padding: '3px 9px', borderRadius: 8, fontSize: 11, fontWeight: 700, background: est.bg, color: est.color }}>{est.label}</span></div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1.2fr) minmax(0,1.4fr) 100px 60px 100px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                          {['NIT','NOMBRE COMERCIAL','RAZÓN SOCIAL','REP. LEGAL','#EST.','ESTADO'].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                        </div>
+                        {afiliadosFiltrados.map(r => {
+                          const est = afiliadosEstados[r.estado] || afiliadosEstados['activo'];
+                          return (
+                            <div key={r.id} onClick={() => { setAfiliadosDetalle(r); setAfiliadosNotasEdit(r.notas || ''); }} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1.2fr) minmax(0,1.4fr) 100px 60px 100px', padding: '13px 16px', gap: 8, borderTop: '1px solid #f8f9fa', alignItems: 'center', cursor: 'pointer', background: r.id === afiliadosDetalle?.id ? '#f0fdf4' : 'white' }} onMouseEnter={e => { if (r.id !== afiliadosDetalle?.id) e.currentTarget.style.background = '#f0fdf4'; }} onMouseLeave={e => { if (r.id !== afiliadosDetalle?.id) e.currentTarget.style.background = 'white'; }}>
+                              <span style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nit}</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nombre_comercial}</span>
+                              <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.razon_social}</span>
+                              <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.representante_legal}</span>
+                              <span style={{ fontSize: 13, textAlign: 'center' }}>{r.num_establecimientos || '–'}</span>
+                              <span style={{ padding: '3px 9px', borderRadius: 8, fontSize: 11, fontWeight: 700, background: est.bg, color: est.color }}>{est.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {afiliadosDetalle && (
+                    <div style={{ width: 360, flexShrink: 0, background: 'white', borderRadius: 20, padding: 24, border: '2px solid #dcfce7', position: 'sticky', top: 20, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+                        <div>
+                          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{afiliadosDetalle.nombre_comercial || afiliadosDetalle.razon_social}</h3>
+                          <p style={{ fontSize: 12, color: '#64748b' }}>{afiliadosDetalle.razon_social}</p>
+                        </div>
+                        <button onClick={() => setAfiliadosDetalle(null)} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 16 }}>✕</button>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+                        {[
+                          ['NIT', afiliadosDetalle.nit],
+                          ['Nº Carpeta', afiliadosDetalle.no_carpeta],
+                          ['Rep. Legal', afiliadosDetalle.representante_legal],
+                          ['Doc. RL', afiliadosDetalle.documento_rl],
+                          ['Dirección', afiliadosDetalle.direccion],
+                          ['Teléfono', afiliadosDetalle.telefono],
+                          ['Nº Establec.', afiliadosDetalle.num_establecimientos],
+                          ['Link Docs', afiliadosDetalle.link_documentos ? '🔗 Ver' : '–'],
+                        ].map(([label, val]) => (
+                          <div key={label} style={{ background: '#f8f9fa', borderRadius: 10, padding: '10px 12px' }}>
+                            <p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>{label}</p>
+                            {label === 'Link Docs' && afiliadosDetalle.link_documentos ? (
+                              <a href={afiliadosDetalle.link_documentos} target="_blank" rel="noreferrer" style={{ fontSize: 13, fontWeight: 600, color: '#16a34a', textDecoration: 'none' }}>🔗 Ver carpeta</a>
+                            ) : (
+                              <p style={{ fontSize: 13, fontWeight: 600 }}>{val || '–'}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ marginBottom: 16 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>CONTACTO FACTURACIÓN</p>
+                        <div style={{ background: '#f8f9fa', borderRadius: 10, padding: '10px 12px', fontSize: 13 }}>
+                          {afiliadosDetalle.email_facturacion && <p>{afiliadosDetalle.email_facturacion}</p>}
+                          {afiliadosDetalle.nombre_contacto_facturacion && <p style={{ color: '#64748b' }}>{afiliadosDetalle.nombre_contacto_facturacion}</p>}
+                          {afiliadosDetalle.telefono_facturacion && <p style={{ color: '#64748b' }}>{afiliadosDetalle.telefono_facturacion}</p>}
+                          {afiliadosDetalle.correo_facturacion && afiliadosDetalle.correo_facturacion !== afiliadosDetalle.email_facturacion && <p style={{ color: '#64748b' }}>{afiliadosDetalle.correo_facturacion}</p>}
+                        </div>
+                      </div>
+
+                      {(afiliadosDetalle.persona_contacto || afiliadosDetalle.telefono_contacto || afiliadosDetalle.correo_electronico) && (
+                        <div style={{ marginBottom: 16 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>CONTACTO GENERAL</p>
+                          <div style={{ background: '#f8f9fa', borderRadius: 10, padding: '10px 12px', fontSize: 13 }}>
+                            {afiliadosDetalle.persona_contacto && <p>{afiliadosDetalle.persona_contacto}</p>}
+                            {afiliadosDetalle.telefono_contacto && <p style={{ color: '#64748b' }}>{afiliadosDetalle.telefono_contacto}</p>}
+                            {afiliadosDetalle.correo_electronico && <p style={{ color: '#64748b' }}>{afiliadosDetalle.correo_electronico}</p>}
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{ marginBottom: 16 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>DOCUMENTOS</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                          {[
+                            ['Cámara Comercio', afiliadosDetalle.camara_comercio],
+                            ['RUT', afiliadosDetalle.rut],
+                            ['Cédula RL', afiliadosDetalle.cedula_rl],
+                            ['Uso de Marca', afiliadosDetalle.uso_marca],
+                            ['Cert. Afiliado', afiliadosDetalle.certificado_afiliado],
+                            ['Adendo Anticorr.', afiliadosDetalle.adendo_anticorrupcion],
+                            ['Formato Afil.', afiliadosDetalle.formato_afiliacion],
+                            ['Pág. Red Cuidado', afiliadosDetalle.pag_red_cuidado],
+                            ['Web Asobares', afiliadosDetalle.web_asobares],
+                            ['Mi Destino', afiliadosDetalle.mi_destino_tu_noche],
+                          ].map(([label, val]) => (
+                            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, background: val === 'X' ? '#f0fdf4' : '#f8f9fa' }}>
+                              <CheckIcon val={val} />
+                              <span style={{ fontSize: 12, color: '#475569' }}>{label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {afiliadosDetalle.observacion && (
+                        <div style={{ marginBottom: 16 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 6 }}>OBSERVACIÓN</p>
+                          <p style={{ fontSize: 13, color: '#64748b', background: '#fffbeb', padding: '10px 12px', borderRadius: 10 }}>{afiliadosDetalle.observacion}</p>
+                        </div>
+                      )}
+
+                      <div style={{ marginBottom: 14 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>ESTADO</p>
+                        <select value={afiliadosDetalle.estado || 'activo'} onChange={e => {
+                          const nuevo = e.target.value;
+                          saveAfiliadoNota(afiliadosDetalle.id, afiliadosNotasEdit, nuevo);
+                        }} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }}>
+                          {Object.entries(afiliadosEstados).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                        </select>
+                      </div>
+
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>NOTAS INTERNAS</p>
+                        <textarea value={afiliadosNotasEdit} onChange={e => setAfiliadosNotasEdit(e.target.value)} rows={3} placeholder="Agrega notas..." style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
+                        <button onClick={() => saveAfiliadoNota(afiliadosDetalle.id, afiliadosNotasEdit, afiliadosDetalle.estado || 'activo')} style={{ marginTop: 8, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #16a34a, #15803d)', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Guardar</button>
+                      </div>
+                    </div>
                   )}
                 </div>
               );

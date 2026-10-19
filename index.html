@@ -1019,6 +1019,12 @@ const [clusterDjFiltroEstado, setClusterDjFiltroEstado] = useState('all');
 const [clusterDjDetalle, setClusterDjDetalle] = useState(null);
 const [clusterDjNotasEdit, setClusterDjNotasEdit] = useState('');
 
+const [baseTotalCount, setBaseTotalCount] = useState(null);
+const [baseTotalSearch, setBaseTotalSearch] = useState('');
+const [baseTotalResults, setBaseTotalResults] = useState([]);
+const [baseTotalLoading, setBaseTotalLoading] = useState(false);
+const [baseTotalSearched, setBaseTotalSearched] = useState(false);
+
       const [certPlantillas, setCertPlantillas] = useState([]);
       const [certLotes, setCertLotes] = useState([]);
       const [certPersonas, setCertPersonas] = useState([]);
@@ -1068,6 +1074,7 @@ const [clusterDjNotasEdit, setClusterDjNotasEdit] = useState('');
       useEffect(() => { if (view === 'crm' || view === 'crm-mix-shake') { setMixShakeDetalle(null); loadMixShake(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-circulo-gastro') { setCirculoGastroDetalle(null); loadCirculoGastro(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-cluster-dj') { setClusterDjDetalle(null); loadClusterDj(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-base-total') { loadBaseTotalCount(); } }, [view]);
       useEffect(() => { if (view === 'conecta') loadConecta(); }, [view]);
 
       useEffect(() => {
@@ -1879,6 +1886,22 @@ const [clusterDjNotasEdit, setClusterDjNotasEdit] = useState('');
           return true;
         });
       };
+      const loadBaseTotalCount = async () => {
+        const { count } = await supabase.from('base_datos_general').select('*', { count: 'exact', head: true });
+        setBaseTotalCount(count);
+      };
+      const searchBaseTotal = async (q) => {
+        if (!q || q.trim().length < 3) return;
+        setBaseTotalLoading(true);
+        setBaseTotalSearched(true);
+        const term = q.trim();
+        const { data } = await supabase.from('base_datos_general').select('*')
+          .or(`nombre.ilike.%${term}%,apellido.ilike.%${term}%,email.ilike.%${term}%,ciudad.ilike.%${term}%,profesion.ilike.%${term}%,numero_documento.ilike.%${term}%`)
+          .limit(100);
+        setBaseTotalResults(data || []);
+        setBaseTotalLoading(false);
+      };
+
       const loadClusterDj = async () => {
         setClusterDjLoading(true);
         const { data } = await supabase.from('inscripciones_cluster_dj').select('*').order('created_at', { ascending: false });
@@ -2572,7 +2595,7 @@ const [clusterDjNotasEdit, setClusterDjNotasEdit] = useState('');
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
               <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
               <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2-open" style={{fontSize:18,marginRight:8}}></i>Documentación</button>
-              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('certificaciones')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'certificaciones' ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'transparent', color: view === 'certificaciones' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'certificaciones' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-mortarboard" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Certificaciones</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('conecta')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'conecta' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'conecta' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'conecta' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-handshake" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Conecta</button>}
               {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: 'bi-people', label: 'Gestión de Equipo' }, { id: 'analytics', icon: 'bi-graph-up', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><i className={'bi '+item.icon} style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>{item.label}</button>))}</>)}
@@ -2587,7 +2610,8 @@ const [clusterDjNotasEdit, setClusterDjNotasEdit] = useState('');
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 20 : 32 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'crm-ecosistema-dj' && 'El Ecosistema DJ'}{view === 'crm-mix-shake' && 'Mix And Shake'}
                 {view === 'crm-circulo-gastro' && 'Círculo Gastro'}
-                {view === 'crm-cluster-dj' && 'Cluster DJ'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
+                {view === 'crm-cluster-dj' && 'Cluster DJ'}
+                {view === 'crm-base-total' && 'Base de Datos Total'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
               <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'center', flexShrink: 0 }}>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}><i className="bi bi-bell"></i>{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
@@ -2803,7 +2827,8 @@ const [clusterDjNotasEdit, setClusterDjNotasEdit] = useState('');
                     { id: 'crm-espacios-corp', icon: 'bi-building-check', title: 'Espacios Corporativos', desc: 'Establecimientos registrados para el directorio de espacios para eventos corporativos — Iniciativa ASOBARES + ANATO Capítulo Central.', count: espaciosCorpData.length, loading: espaciosCorpLoading, color: '#1d4ed8', bg: '#eff6ff' },
                     { id: 'crm-mix-shake', icon: 'bi-cup-straw-fill', title: 'Mix And Shake', desc: 'Comunidad de bartending de Asobares Colombia — Inscripciones de talento de barra, establecimientos, marcas y proveedores.', count: mixShakeData.length, loading: mixShakeLoading, color: '#8B2BE8', bg: '#f3e8ff' },
                           { id: 'crm-circulo-gastro', icon: 'bi-fork-knife', title: 'Círculo Gastro', desc: 'Comunidad gastronómica de circulogastro.com — Inscripciones de profesionales, establecimientos, marcas y proveedores.', count: circuloGastroData.length, loading: circuloGastroLoading, color: '#e67e22', bg: '#fef3e2' },
-                          { id: 'crm-cluster-dj', icon: 'bi-vinyl-fill', title: 'Cluster DJ', desc: 'Comunidad de DJs de clusterdj.co — Inscripciones de talentos, establecimientos, marcas y proveedores del sector.', count: clusterDjData.length, loading: clusterDjLoading, color: '#0ea5e9', bg: '#e0f2fe' }
+                          { id: 'crm-cluster-dj', icon: 'bi-vinyl-fill', title: 'Cluster DJ', desc: 'Comunidad de DJs de clusterdj.co — Inscripciones de talentos, establecimientos, marcas y proveedores del sector.', count: clusterDjData.length, loading: clusterDjLoading, color: '#0ea5e9', bg: '#e0f2fe' },
+                          { id: 'crm-base-total', icon: 'bi-database-fill', title: 'Base de Datos Total', desc: 'Base de datos general del sector — más de 120.000 registros de personas vinculadas a la industria de bares y restaurantes.', count: baseTotalCount, loading: baseTotalCount === null, color: '#1e293b', bg: '#f1f5f9' }
                   ].map(card => (
                     <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -5503,6 +5528,89 @@ const [clusterDjNotasEdit, setClusterDjNotasEdit] = useState('');
                           <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-base-total' && (() => {
+              const exportBaseTotalExcel = () => {
+                if (baseTotalResults.length === 0) return;
+                const headers = ['#','Nombre','Nombre 2','Apellido','Apellido 2','Género','Ciudad','Perfil Cargo','Profesión','Tipo Doc.','Nº Doc.','Email','Teléfono'];
+                const rows = baseTotalResults.map(r => [r.numero||'', r.nombre||'', r.nombre_2||'', r.apellido||'', r.apellido_2||'', r.genero||'', r.ciudad||'', r.perfil_cargo||'', r.profesion||'', r.tipo_documento||'', r.numero_documento||'', r.email||'', r.telefono||'']);
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+                ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i]||'').length), 10) }));
+                XLSX.utils.book_append_sheet(wb, ws, 'Base Total');
+                XLSX.writeFile(wb, 'base_datos_total_' + new Date().toISOString().slice(0,10) + '.xlsx');
+              };
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div style={{ background: 'white', borderRadius: 12, padding: '12px 20px' }}>
+                      <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>Total registros</p>
+                      <p style={{ fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{baseTotalCount !== null ? baseTotalCount.toLocaleString('es-CO') : '…'}</p>
+                    </div>
+                    {baseTotalSearched && baseTotalResults.length > 0 && (
+                      <div style={{ background: 'white', borderRadius: 12, padding: '12px 20px' }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>Resultados</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{baseTotalResults.length}{baseTotalResults.length === 100 ? '+' : ''}</p>
+                      </div>
+                    )}
+                    {baseTotalResults.length > 0 && (
+                      <button onClick={exportBaseTotalExcel} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+                    <input
+                      type="text"
+                      placeholder="Buscar por nombre, apellido, email, ciudad, profesión o nº documento..."
+                      value={baseTotalSearch}
+                      onChange={e => setBaseTotalSearch(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') searchBaseTotal(baseTotalSearch); }}
+                      style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }}
+                    />
+                    <button onClick={() => searchBaseTotal(baseTotalSearch)} disabled={baseTotalSearch.trim().length < 3 || baseTotalLoading} style={{ padding: '12px 22px', borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 700, fontSize: 14, cursor: baseTotalSearch.trim().length < 3 ? 'default' : 'pointer', opacity: baseTotalSearch.trim().length < 3 ? 0.4 : 1 }}>
+                      {baseTotalLoading ? '…' : 'Buscar'}
+                    </button>
+                  </div>
+                  {!baseTotalSearched ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
+                      <p style={{ fontSize: 48, marginBottom: 12 }}><i className="bi bi-search"></i></p>
+                      <p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Escribe al menos 3 caracteres y presiona Buscar</p>
+                      <p style={{ color: '#64748b', fontSize: 13 }}>Puedes buscar por nombre, apellido, email, ciudad, profesión o número de documento.</p>
+                    </div>
+                  ) : baseTotalLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Buscando...</p></div>
+                  ) : baseTotalResults.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados para "{baseTotalSearch}"</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {baseTotalResults.map((r, i) => (
+                        <div key={i} style={{ background: 'white', borderRadius: 14, padding: 16, border: '1px solid #f1f5f9' }}>
+                          <p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.nombre_2} {r.apellido} {r.apellido_2}</p>
+                          <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{r.profesion} · {r.ciudad}</p>
+                          <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{r.email} · {r.telefono}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.8fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 120px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['NOMBRE COMPLETO','PROFESIÓN','EMAIL','CIUDAD','PERFIL CARGO','Nº DOC.'].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {baseTotalResults.map((r, i) => (
+                        <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.8fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 120px', padding: '13px 16px', gap: 8, borderTop: '1px solid #f8f9fa', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#f8fafc'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{[r.nombre, r.nombre_2, r.apellido, r.apellido_2].filter(Boolean).join(' ')}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.genero}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.profesion}</span>
+                          <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <span style={{ fontSize: 13 }}>{r.ciudad}</span>
+                          <span style={{ fontSize: 12, color: '#64748b' }}>{r.perfil_cargo}</span>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{r.numero_documento}</span>
+                        </div>
+                      ))}
+                      {baseTotalResults.length === 100 && <p style={{ textAlign: 'center', padding: '14px', fontSize: 12, color: '#94a3b8', borderTop: '1px solid #f1f5f9' }}>Mostrando los primeros 100 resultados — refina la búsqueda para ver más.</p>}
                     </div>
                   )}
                 </div>

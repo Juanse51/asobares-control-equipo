@@ -6601,5 +6601,12 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
     const splash = document.getElementById('splash');
     if (splash) { splash.classList.add('hidden'); setTimeout(() => splash.remove(), 350); }
   </script>
+
+  <script>
+    // Service Worker: cachea todos los scripts CDN para que las visitas siguientes sean instantáneas
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
 </body>
 </html>

@@ -5537,8 +5537,8 @@ const [baseTotalSearched, setBaseTotalSearched] = useState(false);
             {view === 'crm-base-total' && (() => {
               const exportBaseTotalExcel = () => {
                 if (baseTotalResults.length === 0) return;
-                const headers = ['#','Nombre','Nombre 2','Apellido','Apellido 2','Género','Ciudad','Perfil Cargo','Profesión','Tipo Doc.','Nº Doc.','Email','Teléfono'];
-                const rows = baseTotalResults.map(r => [r.numero||'', r.nombre||'', r.nombre_2||'', r.apellido||'', r.apellido_2||'', r.genero||'', r.ciudad||'', r.perfil_cargo||'', r.profesion||'', r.tipo_documento||'', r.numero_documento||'', r.email||'', r.telefono||'']);
+                const headers = ['Nombre','Nombre 2','Apellido','Apellido 2','Género','Ciudad','Perfil Cargo','Profesión','Tipo Doc.','Nº Doc.','Email','Teléfono'];
+                const rows = baseTotalResults.map(r => [r.nombre||'', r.nombre_2||'', r.apellido||'', r.apellido_2||'', r.genero||'', r.ciudad||'', r.perfil_cargo||'', r.profesion||'', r.tipo_documento||'', r.numero_documento||'', r.email||'', r.telefono||'']);
                 const wb = XLSX.utils.book_new();
                 const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
                 ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i]||'').length), 10) }));

@@ -1298,7 +1298,8 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
       };
       const saveRegistroEdit = async (reg) => {
         const { id, datos, notas, logo_url } = reg;
-        await supabase.from('envios_formularios').update({ datos, notas: notas||'', logo_url: logo_url||'' }).eq('id', id);
+        const { error } = await supabase.from('envios_formularios').update({ datos, notas: notas||'', logo_url: logo_url||'' }).eq('id', id);
+        if (error) { showNotif('Error al guardar: ' + error.message, 'error'); return; }
         setRegistrosEditando(null);
         await loadRegistros();
         showNotif('Registro actualizado ✓');

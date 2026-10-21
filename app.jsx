@@ -1298,10 +1298,8 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
       };
       const saveRegistroEdit = async (reg) => {
         const { id, datos, notas, logo_url } = reg;
-        if (!id) { showNotif('Error: el registro no tiene ID válido', 'error'); return; }
-        const { data: updated, error } = await supabase.from('envios_formularios').update({ datos, notas: notas||'', logo_url: logo_url||'' }).eq('id', id).select();
+        const { error } = await supabase.from('envios_formularios').update({ datos, notas: notas||'', logo_url: logo_url||'' }).eq('id', id);
         if (error) { showNotif('Error al guardar: ' + error.message, 'error'); return; }
-        if (!updated || updated.length === 0) { showNotif('No se actualizó ningún registro. ID: ' + id, 'error'); return; }
         setRegistrosEditando(null);
         await loadRegistros();
         showNotif('Registro actualizado ✓');

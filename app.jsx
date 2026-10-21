@@ -1788,6 +1788,12 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
         });
       };
       const exportBarWeekExcel = () => exportDynamicExcel(getBarWeekFiltered(), 'Bar Week Bogotá', 'bar_week_bogota');
+      const downloadBarWeekLogos = async () => {
+        const filtered = getBarWeekFiltered().filter(r => r.logo_marca);
+        if (!filtered.length) { showNotif('No hay logos en los registros filtrados', 'error'); return; }
+        const withUrls = filtered.map(r => ({ ...r, _logo_url: SUPABASE_URL + '/storage/v1/object/formularios/' + r.logo_marca }));
+        await downloadArchivosZip(withUrls, 'nombre_establecimiento', [{ key: '_logo_url', folder: 'Logos', suffix: 'logo' }], 'bar_week_logos');
+      };
 
       const loadEspaciosCorp = async () => {
         setEspaciosCorpLoading(true);
@@ -5095,6 +5101,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
                         </select>
                         <button onClick={loadBarWeek} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
                         <button onClick={exportBarWeekExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#d4a017,#b8860b)', color: '#0d0d0d', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                        <button onClick={downloadBarWeekLogos} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>⬇ Logos ZIP</button>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12, marginBottom: 16 }}>
                         {[['Total',barWeekData.length,'#d4a017'],['Pendiente',barWeekData.filter(r=>!r.estado||r.estado==='pendiente').length,'#92400e'],['Confirmado',barWeekData.filter(r=>r.estado==='confirmado').length,'#065f46'],['Rechazado',barWeekData.filter(r=>r.estado==='rechazado').length,'#E84338']].map(([lbl,val,color])=>(

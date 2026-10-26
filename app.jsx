@@ -1322,16 +1322,29 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
           });
         }
         const XLSX = window.XLSX;
-        const headers = ['Fecha envío','Formulario','Nombre establecimiento','Razón social','Identificación','Representante legal','Departamento','Dirección','Email empresa','Teléfono empresa','Celular','Tipo negocio','Concepto','Música en vivo','Horario desde','Horario hasta','Días operación','Aforo','Instagram','Facebook','Página web','Notas admin'];
+        const labelMap = { nombre_establecimiento:'Nombre establecimiento', razon_social:'Razón social', identificacion:'Tipo identificación', num_identificacion:'Nº identificación', nombre_representante:'Nombre rep. legal', apellido_representante:'Apellido rep. legal', departamento_empresa:'Depto empresa', direccion_empresa:'Dirección empresa', telefono_empresa:'Teléfono empresa', email_empresa:'Email empresa', regimen:'Régimen', regimen_cual:'Régimen (cuál)', departamento_establecimiento:'Depto establecimiento', direccion_establecimiento:'Dirección establecimiento', celular_establecimiento:'Celular establecimiento', localidad:'Localidad', estrato:'Estrato', email_establecimiento:'Email establecimiento', tipo_negocio:'Tipo negocio', concepto:'Concepto', musica_en_vivo:'Música en vivo', horario_desde:'Horario desde', horario_hasta:'Horario hasta', dias_operacion:'Días operación', aforo:'Aforo', telefono_reservas:'Tel./link reservas', descripcion_oferta:'Descripción oferta', pagina_web:'Página web', x:'X/Twitter', facebook:'Facebook', instagram:'Instagram', plataformas:'Plataformas', rrhh_nombre:'RRHH — Nombre', rrhh_apellido:'RRHH — Apellido', rrhh_genero:'RRHH — Género', rrhh_departamento:'RRHH — Depto', rrhh_perfil:'RRHH — Perfil', rrhh_profesion:'RRHH — Profesión', rrhh_tipo_documento:'RRHH — Tipo doc', rrhh_numero_documento:'RRHH — Nº doc', rrhh_correo:'RRHH — Correo', rrhh_celular:'RRHH — Celular', contable_nombre:'Contable — Nombre', contable_apellido:'Contable — Apellido', contable_genero:'Contable — Género', contable_departamento:'Contable — Depto', contable_perfil:'Contable — Perfil', contable_profesion:'Contable — Profesión', contable_tipo_documento:'Contable — Tipo doc', contable_numero_documento:'Contable — Nº doc', contable_correo:'Contable — Correo', contable_celular:'Contable — Celular', operaciones_nombre:'Operaciones — Nombre', operaciones_apellido:'Operaciones — Apellido', operaciones_genero:'Operaciones — Género', operaciones_departamento:'Operaciones — Depto', operaciones_perfil:'Operaciones — Perfil', operaciones_profesion:'Operaciones — Profesión', operaciones_tipo_documento:'Operaciones — Tipo doc', operaciones_numero_documento:'Operaciones — Nº doc', operaciones_correo:'Operaciones — Correo', operaciones_celular:'Operaciones — Celular', firma_rep_nombre:'Firma rep. nombre', firma_rep_documento:'Firma rep. doc', firma_func_nombre:'Firma func. nombre', acepta_anticorrupcion:'Acepta anticorrupción', acepta_uso_marca:'Acepta uso de marca', formulario_n:'Nº formulario', afiliacion:'Afiliación', fecha:'Fecha formulario', inscrito_por:'Inscrito por' };
+        const datoKeys = [...new Set(reg.flatMap(r => Object.keys(r.datos || {})))];
+        const headers = ['Fecha envío', 'Formulario', 'Notas admin', ...datoKeys.map(k => labelMap[k] || k.replace(/_/g, ' '))];
         const rows = reg.map(r => {
           const d = r.datos || {};
-          return [r.creado_en?new Date(r.creado_en).toLocaleString('es-CO'):'',r.formulario||'',d.nombre_establecimiento||'',d.razon_social||'',d.identificacion||'',((d.nombre_representante||'')+' '+(d.apellido_representante||'')).trim(),d.departamento_establecimiento||'',d.direccion_establecimiento||'',d.email_empresa||'',d.telefono_empresa||'',d.celular_establecimiento||'',d.tipo_negocio||'',d.concepto||'',d.musica_en_vivo||'',d.horario_desde||'',d.horario_hasta||'',d.dias_operacion||'',d.aforo||'',d.instagram||'',d.facebook||'',d.pagina_web||'',r.notas||''];
+          return [
+            r.creado_en ? new Date(r.creado_en).toLocaleString('es-CO') : '',
+            r.formulario || '',
+            r.notas || '',
+            ...datoKeys.map(k => { const v = d[k]; return Array.isArray(v) ? v.join(', ') : (v || ''); })
+          ];
         });
         const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-        ws['!cols'] = headers.map((h,i) => ({ wch: i < 2 ? 20 : i < 4 ? 30 : 18 }));
+        ws['!cols'] = headers.map(() => ({ wch: 22 }));
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Registros');
         XLSX.writeFile(wb, `registros_asobares_${new Date().toISOString().slice(0,10)}.xlsx`);
+      };
+      const downloadLogosRegistros = async () => {
+        const reg = getRegistrosFiltered().filter(r => r.archivos?.doc_logo);
+        if (!reg.length) { showNotif('No hay logos en los registros filtrados', 'error'); return; }
+        const withUrls = reg.map(r => ({ ...r, _logo_url: SUPABASE_URL + '/storage/v1/object/formularios/' + r.archivos.doc_logo, _nombre: r.datos?.nombre_establecimiento || 'establecimiento' }));
+        await downloadArchivosZip(withUrls, '_nombre', [{ key: '_logo_url', folder: 'Logos', suffix: 'logo' }], 'registros_logos');
       };
       const getRegistrosFiltered = () => {
         const q = registrosSearch.toLowerCase();
@@ -3276,6 +3289,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
                     </select>
                     <button onClick={loadRegistros} aria-label="Actualizar" style={{ padding: '12px 14px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 16 }}><i className="bi bi-arrow-clockwise"></i></button>
                     <button onClick={downloadExcelRegistros} style={{ padding: '12px 18px', borderRadius: 10, border: '2px solid #059669', background: '#f0fdf4', color: '#059669', cursor: 'pointer', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>⬇️ Descargar Excel</button>
+                    <button onClick={downloadLogosRegistros} style={{ padding: '12px 18px', borderRadius: 10, border: '2px solid #7c3aed', background: '#f5f3ff', color: '#7c3aed', cursor: 'pointer', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' }}>⬇️ Logos ZIP</button>
                   </div>
                   {registrosLoading ? (
                     <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando registros...</p></div>

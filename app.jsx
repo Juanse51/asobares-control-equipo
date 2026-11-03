@@ -1005,6 +1005,9 @@ const [baseTotalFiltroCiudad, setBaseTotalFiltroCiudad] = useState('');
 const [baseTotalFiltroPerfil, setBaseTotalFiltroPerfil] = useState('');
 const [baseTotalFiltroProfesion, setBaseTotalFiltroProfesion] = useState('');
 const [baseTotalStats, setBaseTotalStats] = useState(null);
+const [baseTotalOpcionesCiudad, setBaseTotalOpcionesCiudad] = useState([]);
+const [baseTotalOpcionesPerfil, setBaseTotalOpcionesPerfil] = useState([]);
+const [baseTotalOpcionesProfesion, setBaseTotalOpcionesProfesion] = useState([]);
 
 const [afiliadosData, setAfiliadosData] = useState([]);
 const [afiliadosLoading, setAfiliadosLoading] = useState(false);
@@ -1063,7 +1066,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
       useEffect(() => { if (view === 'crm' || view === 'crm-mix-shake') { setMixShakeDetalle(null); loadMixShake(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-circulo-gastro') { setCirculoGastroDetalle(null); loadCirculoGastro(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-cluster-dj') { setClusterDjDetalle(null); loadClusterDj(); } }, [view]);
-      useEffect(() => { if (view === 'crm-base-total') { loadBaseTotalPage(0, ''); loadBaseTotalStats(); } else if (view === 'crm') { loadBaseTotalCount(); } }, [view]);
+      useEffect(() => { if (view === 'crm-base-total') { loadBaseTotalPage(0, ''); loadBaseTotalStats(); loadBaseTotalOpciones(); } else if (view === 'crm') { loadBaseTotalCount(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-afiliados') { setAfiliadosDetalle(null); loadAfiliados(); } }, [view]);
       useEffect(() => { if (view === 'conecta') loadConecta(); }, [view]);
 
@@ -1934,6 +1937,17 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
         const { count } = await supabase.from('base_datos_general').select('*', { count: 'exact', head: true });
         setBaseTotalCount(count);
       };
+      const loadBaseTotalOpciones = async () => {
+        const [r1, r2, r3] = await Promise.all([
+          supabase.from('base_datos_general').select('ciudad').not('ciudad', 'is', null).neq('ciudad', '').limit(5000),
+          supabase.from('base_datos_general').select('perfil_cargo').not('perfil_cargo', 'is', null).neq('perfil_cargo', '').limit(3000),
+          supabase.from('base_datos_general').select('profesion').not('profesion', 'is', null).neq('profesion', '').limit(3000),
+        ]);
+        const uniq = (arr, key) => [...new Set(arr.map(r => r[key]?.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+        setBaseTotalOpcionesCiudad(uniq(r1.data || [], 'ciudad'));
+        setBaseTotalOpcionesPerfil(uniq(r2.data || [], 'perfil_cargo'));
+        setBaseTotalOpcionesProfesion(uniq(r3.data || [], 'profesion'));
+      };
       const loadBaseTotalStats = async () => {
         const [r1, r2] = await Promise.all([
           supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).not('email', 'is', null).neq('email', ''),
@@ -1951,9 +1965,9 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
           const t = search.trim();
           q = q.or(`nombre.ilike.%${t}%,apellido.ilike.%${t}%,email.ilike.%${t}%,ciudad.ilike.%${t}%,profesion.ilike.%${t}%,numero_documento.ilike.%${t}%`);
         }
-        if (ciudad && ciudad.trim()) q = q.ilike('ciudad', `%${ciudad.trim()}%`);
-        if (perfil && perfil.trim()) q = q.ilike('perfil_cargo', `%${perfil.trim()}%`);
-        if (profesion && profesion.trim()) q = q.ilike('profesion', `%${profesion.trim()}%`);
+        if (ciudad && ciudad.trim()) q = q.eq('ciudad', ciudad.trim());
+        if (perfil && perfil.trim()) q = q.eq('perfil_cargo', perfil.trim());
+        if (profesion && profesion.trim()) q = q.eq('profesion', profesion.trim());
         if (conEmail) q = q.not('email', 'is', null).neq('email', '');
         if (conTelefono) q = q.not('telefono', 'is', null).neq('telefono', '');
         const { data, count } = await q.range(from, to);
@@ -1973,9 +1987,9 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
             const t = search.trim();
             q = q.or(`nombre.ilike.%${t}%,apellido.ilike.%${t}%,email.ilike.%${t}%,ciudad.ilike.%${t}%,profesion.ilike.%${t}%,numero_documento.ilike.%${t}%`);
           }
-          if (ciudad && ciudad.trim()) q = q.ilike('ciudad', `%${ciudad.trim()}%`);
-          if (perfil && perfil.trim()) q = q.ilike('perfil_cargo', `%${perfil.trim()}%`);
-          if (profesion && profesion.trim()) q = q.ilike('profesion', `%${profesion.trim()}%`);
+          if (ciudad && ciudad.trim()) q = q.eq('ciudad', ciudad.trim());
+          if (perfil && perfil.trim()) q = q.eq('perfil_cargo', perfil.trim());
+          if (profesion && profesion.trim()) q = q.eq('profesion', profesion.trim());
           if (conEmail) q = q.not('email', 'is', null).neq('email', '');
           if (conTelefono) q = q.not('telefono', 'is', null).neq('telefono', '');
           const { data } = await q.range(from, from + batchSize - 1);
@@ -5660,9 +5674,18 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
                   <div style={{ background: 'white', borderRadius: 14, padding: 16, marginBottom: 16, border: '1px solid #f1f5f9' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 }}>
                       <input type="text" placeholder="🔍 Buscar nombre, email, nº doc..." value={baseTotalSearch} onChange={e => setBaseTotalSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') aplicarFiltros(); }} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13 }} />
-                      <input type="text" placeholder="📍 Ciudad o departamento" value={baseTotalFiltroCiudad} onChange={e => setBaseTotalFiltroCiudad(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') aplicarFiltros(); }} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13 }} />
-                      <input type="text" placeholder="💼 Perfil cargo (bartender, cocinero...)" value={baseTotalFiltroPerfil} onChange={e => setBaseTotalFiltroPerfil(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') aplicarFiltros(); }} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13 }} />
-                      <input type="text" placeholder="🎓 Profesión u oficio" value={baseTotalFiltroProfesion} onChange={e => setBaseTotalFiltroProfesion(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') aplicarFiltros(); }} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13 }} />
+                      <select value={baseTotalFiltroCiudad} onChange={e => setBaseTotalFiltroCiudad(e.target.value)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13, background: 'white', color: baseTotalFiltroCiudad ? '#1e293b' : '#94a3b8' }}>
+                        <option value="">📍 Ciudad o departamento</option>
+                        {baseTotalOpcionesCiudad.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <select value={baseTotalFiltroPerfil} onChange={e => setBaseTotalFiltroPerfil(e.target.value)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13, background: 'white', color: baseTotalFiltroPerfil ? '#1e293b' : '#94a3b8' }}>
+                        <option value="">💼 Perfil cargo</option>
+                        {baseTotalOpcionesPerfil.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                      <select value={baseTotalFiltroProfesion} onChange={e => setBaseTotalFiltroProfesion(e.target.value)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13, background: 'white', color: baseTotalFiltroProfesion ? '#1e293b' : '#94a3b8' }}>
+                        <option value="">🎓 Profesión u oficio</option>
+                        {baseTotalOpcionesProfesion.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
                     </div>
                     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#475569', cursor: 'pointer', userSelect: 'none' }}>

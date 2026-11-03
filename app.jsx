@@ -999,6 +999,10 @@ const [baseTotalResults, setBaseTotalResults] = useState([]);
 const [baseTotalLoading, setBaseTotalLoading] = useState(false);
 const [baseTotalPage, setBaseTotalPage] = useState(0);
 const [baseTotalExporting, setBaseTotalExporting] = useState(false);
+const [baseTotalFiltroGenero, setBaseTotalFiltroGenero] = useState('');
+const [baseTotalFiltroConEmail, setBaseTotalFiltroConEmail] = useState(false);
+const [baseTotalFiltroConTelefono, setBaseTotalFiltroConTelefono] = useState(false);
+const [baseTotalStats, setBaseTotalStats] = useState(null);
 
 const [afiliadosData, setAfiliadosData] = useState([]);
 const [afiliadosLoading, setAfiliadosLoading] = useState(false);
@@ -1057,7 +1061,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
       useEffect(() => { if (view === 'crm' || view === 'crm-mix-shake') { setMixShakeDetalle(null); loadMixShake(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-circulo-gastro') { setCirculoGastroDetalle(null); loadCirculoGastro(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-cluster-dj') { setClusterDjDetalle(null); loadClusterDj(); } }, [view]);
-      useEffect(() => { if (view === 'crm-base-total') { loadBaseTotalPage(0, ''); } else if (view === 'crm') { loadBaseTotalCount(); } }, [view]);
+      useEffect(() => { if (view === 'crm-base-total') { loadBaseTotalPage(0, ''); loadBaseTotalStats(); } else if (view === 'crm') { loadBaseTotalCount(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-afiliados') { setAfiliadosDetalle(null); loadAfiliados(); } }, [view]);
       useEffect(() => { if (view === 'conecta') loadConecta(); }, [view]);
 
@@ -1928,7 +1932,17 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
         const { count } = await supabase.from('base_datos_general').select('*', { count: 'exact', head: true });
         setBaseTotalCount(count);
       };
-      const loadBaseTotalPage = async (page, search) => {
+      const loadBaseTotalStats = async () => {
+        const [r1, r2, r3, r4, r5] = await Promise.all([
+          supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).not('email', 'is', null).neq('email', ''),
+          supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).not('telefono', 'is', null).neq('telefono', ''),
+          supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).not('numero_documento', 'is', null).neq('numero_documento', ''),
+          supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).eq('genero', 'Masculino'),
+          supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).eq('genero', 'Femenino'),
+        ]);
+        setBaseTotalStats({ conEmail: r1.count, conTelefono: r2.count, conDocumento: r3.count, masculino: r4.count, femenino: r5.count });
+      };
+      const loadBaseTotalPage = async (page, search, genero = '', conEmail = false, conTelefono = false) => {
         setBaseTotalLoading(true);
         const perPage = 100;
         const from = page * perPage;
@@ -1938,13 +1952,16 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
           const t = search.trim();
           q = q.or(`nombre.ilike.%${t}%,apellido.ilike.%${t}%,email.ilike.%${t}%,ciudad.ilike.%${t}%,profesion.ilike.%${t}%,numero_documento.ilike.%${t}%`);
         }
+        if (genero) q = q.eq('genero', genero);
+        if (conEmail) q = q.not('email', 'is', null).neq('email', '');
+        if (conTelefono) q = q.not('telefono', 'is', null).neq('telefono', '');
         const { data, count } = await q.range(from, to);
         setBaseTotalResults(data || []);
         setBaseTotalCount(count);
         setBaseTotalPage(page);
         setBaseTotalLoading(false);
       };
-      const exportAllBaseTotal = async (search) => {
+      const exportAllBaseTotal = async (search, genero = '', conEmail = false, conTelefono = false) => {
         setBaseTotalExporting(true);
         const batchSize = 1000;
         let allData = [];
@@ -1955,6 +1972,9 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
             const t = search.trim();
             q = q.or(`nombre.ilike.%${t}%,apellido.ilike.%${t}%,email.ilike.%${t}%,ciudad.ilike.%${t}%,profesion.ilike.%${t}%,numero_documento.ilike.%${t}%`);
           }
+          if (genero) q = q.eq('genero', genero);
+          if (conEmail) q = q.not('email', 'is', null).neq('email', '');
+          if (conTelefono) q = q.not('telefono', 'is', null).neq('telefono', '');
           const { data } = await q.range(from, from + batchSize - 1);
           if (!data || data.length === 0) break;
           allData = [...allData, ...data];
@@ -5608,23 +5628,73 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
 
             {view === 'crm-base-total' && (() => {
               const totalPages = baseTotalCount !== null ? Math.ceil(baseTotalCount / 100) : 0;
-              const goTo = (p) => loadBaseTotalPage(p, baseTotalSearch);
+              const filtrosActivos = baseTotalSearch || baseTotalFiltroGenero || baseTotalFiltroConEmail || baseTotalFiltroConTelefono;
+              const goTo = (p) => loadBaseTotalPage(p, baseTotalSearch, baseTotalFiltroGenero, baseTotalFiltroConEmail, baseTotalFiltroConTelefono);
+              const aplicarFiltros = () => loadBaseTotalPage(0, baseTotalSearch, baseTotalFiltroGenero, baseTotalFiltroConEmail, baseTotalFiltroConTelefono);
+              const limpiarFiltros = () => { setBaseTotalSearch(''); setBaseTotalFiltroGenero(''); setBaseTotalFiltroConEmail(false); setBaseTotalFiltroConTelefono(false); loadBaseTotalPage(0, '', '', false, false); };
+              const fmtN = n => n !== null && n !== undefined ? n.toLocaleString('es-CO') : '…';
+              const pct = (n, total) => total && n !== null ? Math.round(n / total * 100) + '%' : '…';
               return (
                 <div>
-                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-                    <div style={{ background: 'white', borderRadius: 12, padding: '12px 20px' }}>
-                      <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>Total registros</p>
-                      <p style={{ fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{baseTotalCount !== null ? baseTotalCount.toLocaleString('es-CO') : '…'}</p>
+                  {/* Estadísticas */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginBottom: 20 }}>
+                    {[
+                      { label: 'Total registros', value: fmtN(baseTotalCount), icon: 'bi-people-fill', color: '#1e293b' },
+                      { label: 'Con email', value: fmtN(baseTotalStats?.conEmail), sub: pct(baseTotalStats?.conEmail, baseTotalCount), icon: 'bi-envelope-fill', color: '#2563eb' },
+                      { label: 'Con teléfono', value: fmtN(baseTotalStats?.conTelefono), sub: pct(baseTotalStats?.conTelefono, baseTotalCount), icon: 'bi-telephone-fill', color: '#16a34a' },
+                      { label: 'Con documento', value: fmtN(baseTotalStats?.conDocumento), sub: pct(baseTotalStats?.conDocumento, baseTotalCount), icon: 'bi-card-text', color: '#7c3aed' },
+                      { label: 'Masculino', value: fmtN(baseTotalStats?.masculino), sub: pct(baseTotalStats?.masculino, baseTotalCount), icon: 'bi-gender-male', color: '#0891b2' },
+                      { label: 'Femenino', value: fmtN(baseTotalStats?.femenino), sub: pct(baseTotalStats?.femenino, baseTotalCount), icon: 'bi-gender-female', color: '#db2777' },
+                    ].map((s, i) => (
+                      <div key={i} style={{ background: 'white', borderRadius: 14, padding: '14px 16px', border: '1px solid #f1f5f9' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+                          <i className={`bi ${s.icon}`} style={{ fontSize: 14, color: s.color }}></i>
+                          <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</span>
+                        </div>
+                        <p style={{ fontSize: 20, fontWeight: 800, color: s.color, marginBottom: s.sub ? 2 : 0 }}>{s.value}</p>
+                        {s.sub && <p style={{ fontSize: 11, color: '#94a3b8' }}>{s.sub} del total</p>}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Filtros */}
+                  <div style={{ background: 'white', borderRadius: 14, padding: 16, marginBottom: 16, border: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <input type="text" placeholder="Buscar por nombre, email, ciudad, profesión, nº doc..." value={baseTotalSearch} onChange={e => setBaseTotalSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') aplicarFiltros(); }} style={{ flex: '1 1 240px', padding: '10px 14px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13 }} />
+                      <select value={baseTotalFiltroGenero} onChange={e => setBaseTotalFiltroGenero(e.target.value)} style={{ padding: '10px 12px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 13, background: 'white', color: baseTotalFiltroGenero ? '#1e293b' : '#94a3b8' }}>
+                        <option value="">Género: Todos</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                      </select>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#475569', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}>
+                        <input type="checkbox" checked={baseTotalFiltroConEmail} onChange={e => setBaseTotalFiltroConEmail(e.target.checked)} style={{ width: 15, height: 15, cursor: 'pointer' }} />
+                        Solo con email
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#475569', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}>
+                        <input type="checkbox" checked={baseTotalFiltroConTelefono} onChange={e => setBaseTotalFiltroConTelefono(e.target.checked)} style={{ width: 15, height: 15, cursor: 'pointer' }} />
+                        Solo con teléfono
+                      </label>
+                      <button onClick={aplicarFiltros} disabled={baseTotalLoading} style={{ padding: '10px 22px', borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>{baseTotalLoading ? '…' : 'Filtrar'}</button>
+                      {filtrosActivos && <button onClick={limpiarFiltros} style={{ padding: '10px 16px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>✕ Limpiar</button>}
+                      <button onClick={() => exportAllBaseTotal(baseTotalSearch, baseTotalFiltroGenero, baseTotalFiltroConEmail, baseTotalFiltroConTelefono)} disabled={baseTotalExporting} style={{ marginLeft: 'auto', padding: '10px 16px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalExporting ? 'default' : 'pointer', opacity: baseTotalExporting ? 0.6 : 1 }}>
+                        <i className="bi bi-file-earmark-excel"></i> {baseTotalExporting ? 'Descargando...' : 'Exportar Excel'}
+                      </button>
                     </div>
-                    <button onClick={() => exportAllBaseTotal(baseTotalSearch)} disabled={baseTotalExporting} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: baseTotalExporting ? 'default' : 'pointer', opacity: baseTotalExporting ? 0.6 : 1 }}>
-                      <i className="bi bi-file-earmark-excel"></i> {baseTotalExporting ? 'Descargando todo...' : 'Descargar todo en Excel'}
-                    </button>
+                    {filtrosActivos && (
+                      <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {baseTotalSearch && <span style={{ fontSize: 12, background: '#f1f5f9', padding: '4px 10px', borderRadius: 20, color: '#475569' }}>"{baseTotalSearch}"</span>}
+                        {baseTotalFiltroGenero && <span style={{ fontSize: 12, background: '#e0e7ff', padding: '4px 10px', borderRadius: 20, color: '#4338ca' }}>Género: {baseTotalFiltroGenero}</span>}
+                        {baseTotalFiltroConEmail && <span style={{ fontSize: 12, background: '#dcfce7', padding: '4px 10px', borderRadius: 20, color: '#16a34a' }}>Con email</span>}
+                        {baseTotalFiltroConTelefono && <span style={{ fontSize: 12, background: '#dbeafe', padding: '4px 10px', borderRadius: 20, color: '#2563eb' }}>Con teléfono</span>}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-                    <input type="text" placeholder="Filtrar por nombre, apellido, email, ciudad, profesión o nº documento..." value={baseTotalSearch} onChange={e => setBaseTotalSearch(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { loadBaseTotalPage(0, baseTotalSearch); } }} style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
-                    <button onClick={() => loadBaseTotalPage(0, baseTotalSearch)} disabled={baseTotalLoading} style={{ padding: '12px 22px', borderRadius: 10, border: 'none', background: '#1e293b', color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>{baseTotalLoading ? '…' : 'Filtrar'}</button>
-                    {baseTotalSearch && <button onClick={() => { setBaseTotalSearch(''); loadBaseTotalPage(0, ''); }} style={{ padding: '12px 16px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>✕ Limpiar</button>}
-                  </div>
+                  {/* Contador de resultados */}
+                  {baseTotalCount !== null && !baseTotalLoading && (
+                    <p style={{ fontSize: 13, color: '#64748b', fontWeight: 600, marginBottom: 10 }}>
+                      {baseTotalCount.toLocaleString('es-CO')} resultado{baseTotalCount !== 1 ? 's' : ''}
+                      {filtrosActivos ? ' con los filtros aplicados' : ' en total'}
+                    </p>
+                  )}
                   {baseTotalLoading ? (
                     <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando...</p></div>
                   ) : baseTotalResults.length === 0 ? (

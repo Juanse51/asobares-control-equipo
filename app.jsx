@@ -1935,14 +1935,11 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
         setBaseTotalCount(count);
       };
       const loadBaseTotalStats = async () => {
-        const [r1, r2, r3, r4, r5] = await Promise.all([
+        const [r1, r2] = await Promise.all([
           supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).not('email', 'is', null).neq('email', ''),
           supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).not('telefono', 'is', null).neq('telefono', ''),
-          supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).not('numero_documento', 'is', null).neq('numero_documento', ''),
-          supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).not('ciudad', 'is', null).neq('ciudad', ''),
-          supabase.from('base_datos_general').select('*', { count: 'exact', head: true }).not('perfil_cargo', 'is', null).neq('perfil_cargo', ''),
         ]);
-        setBaseTotalStats({ conEmail: r1.count, conTelefono: r2.count, conDocumento: r3.count, conCiudad: r4.count, conPerfil: r5.count });
+        setBaseTotalStats({ conEmail: r1.count, conTelefono: r2.count });
       };
       const loadBaseTotalPage = async (page, search, ciudad = '', perfil = '', profesion = '', conEmail = false, conTelefono = false) => {
         setBaseTotalLoading(true);
@@ -5648,9 +5645,6 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
                       { label: 'Total registros', value: fmtN(baseTotalCount), icon: 'bi-people-fill', color: '#1e293b' },
                       { label: 'Con email', value: fmtN(baseTotalStats?.conEmail), sub: pct(baseTotalStats?.conEmail, baseTotalCount), icon: 'bi-envelope-fill', color: '#2563eb' },
                       { label: 'Con teléfono', value: fmtN(baseTotalStats?.conTelefono), sub: pct(baseTotalStats?.conTelefono, baseTotalCount), icon: 'bi-telephone-fill', color: '#16a34a' },
-                      { label: 'Con documento', value: fmtN(baseTotalStats?.conDocumento), sub: pct(baseTotalStats?.conDocumento, baseTotalCount), icon: 'bi-card-text', color: '#7c3aed' },
-                      { label: 'Con ciudad', value: fmtN(baseTotalStats?.conCiudad), sub: pct(baseTotalStats?.conCiudad, baseTotalCount), icon: 'bi-geo-alt-fill', color: '#ea580c' },
-                      { label: 'Con perfil', value: fmtN(baseTotalStats?.conPerfil), sub: pct(baseTotalStats?.conPerfil, baseTotalCount), icon: 'bi-briefcase-fill', color: '#0891b2' },
                     ].map((s, i) => (
                       <div key={i} style={{ background: 'white', borderRadius: 14, padding: '14px 16px', border: '1px solid #f1f5f9' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>

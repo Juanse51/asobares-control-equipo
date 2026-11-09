@@ -1,0 +1,1947 @@
+<!-- ============================================================
+     BAR WEEK Bogotá 2026 — Widget para Elementor (HTML widget)
+     Prefijo CSS: #bw  |  Assets: https://barweek-bogota.netlify.app/
+     ============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+
+<style>
+/* ── Wrapper full-bleed ───────────────────────────────────────────── */
+#bw {
+  position: relative !important;
+  width: 100vw !important;
+  left: 50% !important;
+  margin-left: -50vw !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box;
+}
+/* ── CSS original scoped bajo #bw ──────────────────────────────────── */
+
+#bw{
+  --negro:#151515; --negro2:#1d1b19; --negro3:#26231f;
+  --crema:#F6E6CF; --oro:#FCAE4C; --cobre:#C87941;
+  --texto:#F6E6CF; --suave:rgba(246,230,207,.66); --tenue:rgba(246,230,207,.4);
+  --linea:rgba(246,230,207,.12); --radio:18px;
+}
+#bw *{box-sizing:border-box;margin:0;padding:0}
+#bw [hidden]{display:none!important}
+#bw{scroll-behavior:smooth}
+#bw{background:var(--negro);color:var(--texto);font-family:Poppins,system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+#bw a{color:inherit}
+#bw img{max-width:100%;display:block}
+#bw button{font-family:inherit;cursor:pointer}
+#bw .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+#bw .eyebrow{font-size:.74rem;letter-spacing:.28em;text-transform:uppercase;color:var(--oro);font-weight:500}
+#bw h2.titulo{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.1;margin:.4em 0 .3em;letter-spacing:-.01em}
+#bw .lead{color:var(--suave);max-width:640px;font-size:1.02rem}
+#bw .oro{color:var(--oro)}
+#bw section{padding:88px 0}
+#bw .btn{display:inline-flex;align-items:center;gap:.5em;border:0;border-radius:999px;padding:.9em 1.5em;font-weight:600;font-size:.95rem;text-decoration:none;transition:transform .15s,background .15s,color .15s}
+#bw .btn:active{transform:scale(.97)}
+#bw .btn-oro{background:var(--oro);color:var(--negro)}
+#bw .btn-oro:hover{background:#ffc070}
+#bw .btn-linea{background:transparent;color:var(--crema);box-shadow:inset 0 0 0 1.5px var(--linea)}
+#bw .btn-linea:hover{box-shadow:inset 0 0 0 1.5px var(--oro);color:var(--oro)}
+#bw .btn-sm{padding:.6em 1.05em;font-size:.84rem}
+#bw .btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* Cinta de propuesta */
+#bw .cinta{background:var(--cobre);color:var(--negro);font-size:.78rem;text-align:center;padding:6px 12px;font-weight:500}
+@media(max-width:700px){#bw .cinta-extra{display:none}}
+
+/* Header */
+#bw header.top{position:sticky;top:0;z-index:900;background:rgba(21,21,21,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--linea)}
+#bw .top .wrap{display:flex;align-items:center;justify-content:space-between;height:66px;gap:16px}
+#bw .top .logo img{height:40px;width:auto}
+#bw .top nav{display:flex;gap:26px;font-size:.88rem}
+#bw .top nav a{text-decoration:none;color:var(--suave)}
+#bw .top nav a:hover{color:var(--oro)}
+#bw .ruta-btn{position:relative}
+#bw .ruta-btn .badge{position:absolute;top:-6px;right:-6px;background:var(--crema);color:var(--negro);font-size:.7rem;font-weight:700;border-radius:999px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 5px}
+@media(max-width:860px){#bw .top nav{display:none}}
+
+/* Hero */
+#bw .hero{position:relative;min-height:88vh;display:flex;align-items:center;padding:80px 0 64px;overflow:hidden}
+#bw .hero::before{content:"";position:absolute;inset:0;background:url(https://barweek-bogota.netlify.app/assets/hero-bg.jpg) center/cover no-repeat;opacity:.9}
+#bw .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(21,21,21,.1) 0%,rgba(21,21,21,.35) 55%,var(--negro) 100%),linear-gradient(90deg,rgba(21,21,21,.75) 0%,rgba(21,21,21,0) 70%)}
+#bw .hero .wrap{position:relative;z-index:1;width:100%}
+#bw .hero-logo{width:min(420px,78vw);margin-bottom:28px;filter:drop-shadow(0 10px 40px rgba(0,0,0,.5))}
+#bw .hero h1{font-size:clamp(2.2rem,6vw,4.4rem);font-weight:800;line-height:1.02;letter-spacing:-.02em;max-width:760px}
+#bw .hero p.sub{margin-top:18px;font-size:clamp(1rem,2vw,1.18rem);color:var(--suave);max-width:560px}
+#bw .hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+#bw .fecha-chip{display:inline-flex;gap:10px;align-items:center;border:1px solid rgba(252,174,76,.45);border-radius:999px;padding:6px 14px;font-size:.82rem;color:var(--oro);margin-bottom:22px;background:rgba(21,21,21,.4)}
+#bw .cuenta{display:flex;gap:10px;margin-top:40px}
+#bw .cuenta div{background:rgba(21,21,21,.6);border:1px solid var(--linea);border-radius:14px;padding:10px 14px;min-width:74px;text-align:center}
+#bw .cuenta b{display:block;font-size:1.6rem;font-weight:700;color:var(--crema);font-variant-numeric:tabular-nums}
+#bw .cuenta span{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tenue)}
+
+/* Cifras */
+#bw .cifras{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);background:var(--negro2)}
+#bw .cifras .wrap{display:grid;grid-template-columns:repeat(4,1fr)}
+#bw .cifras .c{padding:30px 18px;border-right:1px solid var(--linea)}
+#bw .cifras .c:last-child{border-right:0}
+#bw .cifras b{font-size:clamp(1.6rem,3.4vw,2.4rem);font-weight:700;color:var(--oro);display:block;line-height:1.1}
+#bw .cifras span{color:var(--suave);font-size:.86rem}
+@media(max-width:700px){#bw .cifras .wrap{grid-template-columns:repeat(2,1fr)}#bw .cifras .c:nth-child(2){border-right:0}#bw .cifras .c:nth-child(-n+2){border-bottom:1px solid var(--linea)}}
+
+/* Pasos */
+#bw .pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:44px}
+#bw .paso{background:var(--negro2);border:1px solid var(--linea);border-radius:var(--radio);padding:26px 22px}
+#bw .paso .n{font-size:.8rem;font-weight:700;color:var(--negro);background:var(--oro);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;margin-bottom:18px}
+#bw .paso h3{font-size:1.08rem;font-weight:600;margin-bottom:6px}
+#bw .paso p{color:var(--suave);font-size:.9rem}
+@media(max-width:900px){#bw .pasos{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){#bw .pasos{grid-template-columns:1fr}}
+
+/* Menú */
+#bw .menu-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;align-items:stretch;margin-top:10px}
+#bw .menu-card{position:relative;border-radius:24px;padding:40px;background:radial-gradient(120% 120% at 100% 0%,rgba(252,174,76,.28),rgba(200,121,65,.08) 45%,transparent 70%),var(--negro2);border:1px solid rgba(252,174,76,.3);overflow:hidden}
+#bw .menu-card .precio{font-size:clamp(3rem,8vw,5.2rem);font-weight:800;color:var(--oro);line-height:1;letter-spacing:-.03em}
+#bw .menu-card .precio small{font-size:.32em;color:var(--crema);font-weight:500;letter-spacing:0;margin-left:.3em}
+#bw .menu-card ul{list-style:none;margin-top:26px;display:grid;gap:12px}
+#bw .menu-card li{display:flex;gap:12px;align-items:center;font-size:1.02rem}
+#bw .menu-card li i{font-style:normal;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(252,174,76,.14);color:var(--oro)}
+#bw .mensajes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#bw .mensajes div{background:var(--negro2);border:1px solid var(--linea);border-radius:var(--radio);padding:22px}
+#bw .mensajes b{display:block;font-weight:600;margin-bottom:4px}
+#bw .mensajes span{color:var(--suave);font-size:.88rem}
+@media(max-width:860px){#bw .menu-grid{grid-template-columns:1fr}}
+@media(max-width:480px){#bw .mensajes{grid-template-columns:1fr}#bw .menu-card{padding:28px}}
+
+/* Mapa vivo */
+#bw #mapa-vivo{padding-bottom:40px}
+#bw .filtros{display:flex;flex-wrap:wrap;gap:10px;margin:30px 0 8px;align-items:center}
+#bw .filtros input, #bw .filtros select{background:var(--negro2);border:1px solid var(--linea);color:var(--crema);border-radius:999px;padding:.7em 1.1em;font-family:inherit;font-size:.88rem;outline:none}
+#bw .filtros input{flex:1 1 220px;min-width:0}
+#bw .filtros select{flex:0 1 auto;appearance:none;padding-right:2.2em;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23FCAE4C' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+#bw .filtros input:focus, #bw .filtros select:focus{border-color:var(--oro)}
+#bw .filtros select option{background:var(--negro)}
+#bw .chips{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:none}
+#bw .chips::-webkit-scrollbar{display:none}
+#bw .chip{flex:0 0 auto;border:1px solid var(--linea);background:transparent;color:var(--suave);border-radius:999px;padding:.45em 1em;font-size:.82rem;white-space:nowrap}
+#bw .chip:hover{color:var(--crema);border-color:var(--tenue)}
+#bw .chip.on{background:var(--oro);color:var(--negro);border-color:var(--oro);font-weight:600}
+#bw .chip .ct{opacity:.6;margin-left:4px;font-size:.92em}
+#bw .aviso-horario{display:flex;gap:10px;align-items:center;font-size:.8rem;color:var(--tenue);margin:6px 0 18px}
+#bw .aviso-horario .chip{opacity:.5;cursor:not-allowed}
+#bw .explorador{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:18px;height:680px}
+#bw .lista{overflow-y:auto;padding-right:6px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:var(--negro3) transparent}
+#bw .resumen{font-size:.82rem;color:var(--tenue);padding:0 2px 4px}
+#bw .bar{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;background:var(--negro2);border:1px solid var(--linea);border-radius:16px;padding:12px;cursor:pointer;transition:border-color .15s,background .15s}
+#bw .bar:hover, #bw .bar.activo{border-color:rgba(252,174,76,.55);background:#211e1b}
+#bw .bar .ini-img{object-fit:cover;background:#fff;padding:0}
+#bw .ficha-logo{width:64px;height:64px;border-radius:14px;object-fit:cover;margin-right:16px;flex:0 0 auto;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#bw .ficha-top{align-items:center}
+#bw .bar .ini{width:64px;height:64px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:1.15rem;color:var(--negro);background:linear-gradient(135deg,var(--oro),var(--cobre))}
+#bw .bar h4{font-size:.98rem;font-weight:600;line-height:1.25}
+#bw .bar .meta{font-size:.8rem;color:var(--suave);margin-top:2px}
+#bw .bar .tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+#bw .tag{font-size:.7rem;border-radius:6px;padding:2px 7px;background:rgba(246,230,207,.07);color:var(--suave)}
+#bw .add{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--linea);background:transparent;color:var(--oro);font-size:1.3rem;display:grid;place-items:center;flex:0 0 auto}
+#bw .add:hover{border-color:var(--oro)}
+#bw .add.on{background:var(--oro);color:var(--negro);border-color:var(--oro);font-size:1rem}
+#bw #mapa{border-radius:var(--radio);border:1px solid var(--linea);overflow:hidden;background:#1a1a1a;min-height:300px}
+#bw .vacio{padding:40px 20px;text-align:center;color:var(--tenue);border:1px dashed var(--linea);border-radius:16px}
+#bw .toggle-vista{display:none;gap:8px;margin-bottom:12px}
+@media(max-width:900px){
+  #bw .explorador{grid-template-columns:1fr;height:auto}
+  #bw .lista{max-height:none;overflow:visible;padding-right:0}
+  #bw #mapa{height:62vh}
+  #bw .toggle-vista{display:flex}
+  #bw .explorador[data-vista=lista] #mapa{display:none}
+  #bw .explorador[data-vista=mapa] .lista{display:none}
+}
+/* Leaflet en tema */
+#bw .leaflet-container{font-family:Poppins,sans-serif;background:#141414}
+#bw .tiles-oscuros{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.92) saturate(.35) sepia(.25)}
+#bw .pin{width:18px;height:18px;border-radius:50%;background:var(--oro);border:3px solid var(--negro);box-shadow:0 0 0 2px rgba(252,174,76,.45),0 4px 10px rgba(0,0,0,.6)}
+#bw .pin.en-ruta{background:var(--crema);box-shadow:0 0 0 2px var(--crema),0 4px 12px rgba(0,0,0,.6)}
+#bw .pin.activo{transform:scale(1.45)}
+#bw .leaflet-popup-content-wrapper, #bw .leaflet-popup-tip{background:var(--negro2);color:var(--crema);border:1px solid var(--linea);box-shadow:0 10px 30px rgba(0,0,0,.6)}
+#bw .leaflet-popup-content{margin:14px 16px;font-size:.85rem;line-height:1.4}
+#bw .leaflet-popup-content b{font-size:.98rem;display:block;margin-bottom:2px}
+#bw .leaflet-popup-content .pp-meta{color:var(--suave)}
+#bw .leaflet-popup-content button{margin-top:10px}
+#bw .leaflet-container a.leaflet-popup-close-button{color:var(--suave)}
+#bw .leaflet-control-zoom a{background:var(--negro2)!important;color:var(--crema)!important;border-color:var(--linea)!important}
+#bw .leaflet-control-attribution{background:rgba(21,21,21,.7)!important;color:var(--tenue)!important}
+#bw .leaflet-control-attribution a{color:var(--suave)!important}
+#bw .nota-mapa{font-size:.76rem;color:var(--tenue);margin-top:10px}
+
+/* Rutas sugeridas */
+#bw .rutas{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px}
+#bw .ruta{background:var(--negro2);border:1px solid var(--linea);border-radius:var(--radio);padding:24px;display:flex;flex-direction:column;gap:12px}
+#bw .ruta .zona{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cobre);font-weight:600}
+#bw .ruta h3{font-size:1.12rem;font-weight:600;line-height:1.25}
+#bw .ruta ol{list-style:none;counter-reset:p;display:grid;align-content:start;gap:7px;font-size:.88rem;color:var(--suave);flex:1}
+#bw .ruta li{counter-increment:p;display:flex;gap:10px;align-items:baseline}
+#bw .ruta li::before{content:counter(p);font-size:.72rem;font-weight:700;color:var(--oro);min-width:12px}
+@media(max-width:1000px){#bw .rutas{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){#bw .rutas{grid-template-columns:1fr}}
+
+/* VIP */
+#bw .vip{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:40px}
+#bw .vip-card{border-radius:22px;padding:34px;border:1px solid var(--linea);background:var(--negro2);position:relative}
+#bw .vip-card.dest{background:linear-gradient(150deg,rgba(252,174,76,.2),rgba(200,121,65,.06) 60%),var(--negro2);border-color:rgba(252,174,76,.4)}
+#bw .vip-card .pronto{position:absolute;top:22px;right:22px;font-size:.78rem;border:1px solid var(--cobre);color:var(--cobre);border-radius:999px;padding:4px 10px}
+#bw .vip-card h3{font-size:1.4rem;font-weight:700;margin:6px 0 10px}
+#bw .vip-card p{color:var(--suave);font-size:.92rem;margin-bottom:22px}
+@media(max-width:760px){#bw .vip{grid-template-columns:1fr}}
+
+/* Bares participantes */
+#bw .para-bares{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center;background:var(--negro2);border:1px solid var(--linea);border-radius:28px;padding:48px}
+#bw .para-bares ol{list-style:none;display:grid;gap:14px;counter-reset:s}
+#bw .para-bares li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:12px;font-size:.92rem;color:var(--suave)}
+#bw .para-bares li::before{content:counter(s);width:34px;height:34px;border-radius:50%;border:1.5px solid var(--oro);color:var(--oro);display:grid;place-items:center;font-weight:600;font-size:.85rem}
+#bw .para-bares li b{color:var(--crema);display:block;font-weight:600}
+@media(max-width:860px){#bw .para-bares{grid-template-columns:1fr;padding:30px 22px}}
+
+/* Aliados */
+#bw .aliados{border-top:1px solid var(--linea);padding:60px 0}
+#bw .aliados .fila{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:28px}
+#bw .aliado{border:1px solid var(--linea);border-radius:var(--radio);padding:26px;display:flex;flex-direction:column;gap:16px;align-items:flex-start;min-height:150px;justify-content:space-between}
+#bw .aliado .rol{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--tenue)}
+#bw .aliado img{max-height:44px;width:auto;max-width:100%;object-fit:contain}
+#bw .aliado .txt-logo{font-weight:600;font-size:1.05rem;line-height:1.25}
+#bw .patros{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:14px}
+#bw .patros div{border:1px dashed var(--linea);border-radius:12px;height:72px;display:grid;place-items:center;color:var(--tenue);font-size:.74rem}
+@media(max-width:760px){#bw .aliados .fila{grid-template-columns:1fr}#bw .patros{grid-template-columns:repeat(2,1fr)}}
+
+#bw footer{border-top:1px solid var(--linea);padding:40px 0 60px;font-size:.82rem;color:var(--tenue)}
+#bw footer .legal{border:1px solid var(--linea);border-radius:12px;padding:14px 16px;color:var(--suave);margin-bottom:22px;font-size:.8rem}
+#bw footer .pie{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+#bw footer .pie img{height:22px;width:auto;display:inline-block;vertical-align:middle;margin-left:6px}
+
+/* Panel lateral: mi ruta */
+#bw .velo{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1500;opacity:0;pointer-events:none;transition:opacity .2s}
+#bw .velo.on{opacity:1;pointer-events:auto}
+#bw .panel{position:fixed;top:0;right:0;height:100%;width:min(440px,100%);background:var(--negro);border-left:1px solid var(--linea);z-index:1600;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column}
+#bw .panel.on{transform:none}
+#bw .panel .cab{display:flex;justify-content:space-between;align-items:center;padding:22px;border-bottom:1px solid var(--linea)}
+#bw .panel .cab h3{font-size:1.2rem;font-weight:700}
+#bw .cerrar{background:transparent;border:1px solid var(--linea);color:var(--crema);width:36px;height:36px;border-radius:50%;font-size:1.1rem}
+#bw .panel .cuerpo{flex:1;overflow-y:auto;padding:18px 22px}
+#bw .panel .pie-panel{padding:18px 22px;border-top:1px solid var(--linea);display:grid;gap:10px}
+#bw .parada{display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--linea)}
+#bw .parada .num{width:30px;height:30px;border-radius:50%;background:var(--oro);color:var(--negro);font-weight:700;display:grid;place-items:center;font-size:.85rem}
+#bw .parada b, #bw .parada-nom{font-weight:600;font-size:.95rem;display:block;line-height:1.25}
+#bw .parada-nom{background:none;border:0;padding:0;color:var(--crema);text-align:left;cursor:pointer;font-family:inherit}
+#bw .parada-nom:hover{color:var(--oro)}
+#bw .parada-res{display:inline-block;margin-top:6px;font-size:.78rem;font-weight:600;color:var(--negro);background:var(--oro);border-radius:999px;padding:.3em .8em;text-decoration:none}
+#bw .parada-res:hover{background:#ffc070}
+#bw .parada span{font-size:.78rem;color:var(--suave)}
+#bw .parada .acc{display:flex;gap:4px}
+#bw .parada .acc button{background:transparent;border:1px solid var(--linea);color:var(--suave);width:30px;height:30px;border-radius:8px;font-size:.85rem}
+#bw .parada .acc button:hover{color:var(--oro);border-color:var(--oro)}
+#bw .total-ruta{display:flex;justify-content:space-between;font-size:.9rem;color:var(--suave)}
+#bw .total-ruta b{color:var(--oro)}
+
+/* Modal ficha */
+#bw .modal{position:fixed;inset:0;z-index:1700;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.7)}
+#bw .modal .caja{background:var(--negro);border:1px solid var(--linea);border-radius:24px;width:min(560px,100%);max-height:92vh;overflow-y:auto;position:relative}
+#bw .ficha-top{height:150px;background:radial-gradient(90% 140% at 100% 0%,rgba(252,174,76,.55),rgba(200,121,65,.25) 45%,transparent 75%),var(--negro2);display:flex;align-items:flex-end;padding:22px;border-radius:24px 24px 0 0;position:relative}
+#bw .ficha-top .foto-nota{position:absolute;top:16px;left:22px;font-size:.7rem;color:var(--tenue);letter-spacing:.12em;text-transform:uppercase}
+#bw .ficha-top h3{font-size:1.6rem;font-weight:700;line-height:1.1}
+#bw .modal .cerrar{position:absolute;top:14px;right:14px;background:rgba(21,21,21,.6)}
+#bw .ficha-body{padding:22px;display:grid;gap:18px}
+#bw .ficha-menu{border:1px solid rgba(252,174,76,.35);border-radius:16px;padding:16px 18px;background:rgba(252,174,76,.06)}
+#bw .ficha-menu .p{font-size:1.5rem;font-weight:800;color:var(--oro)}
+#bw .dl{display:grid;grid-template-columns:110px 1fr;gap:8px 14px;font-size:.88rem}
+#bw .dl dt{color:var(--tenue)}
+#bw .pend{color:var(--cobre);font-style:italic}
+#bw .ficha-acc{display:flex;gap:10px;flex-wrap:wrap}
+
+/* Modal de reserva / edad */
+#bw .form{display:grid;gap:12px;margin-top:6px}
+#bw .form label{font-size:.8rem;color:var(--suave);display:grid;gap:6px}
+#bw .form input, #bw .form select{background:var(--negro2);border:1px solid var(--linea);color:var(--crema);border-radius:12px;padding:.75em .9em;font-family:inherit;font-size:.92rem}
+#bw .form .dos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#bw .edad{text-align:center;padding:40px 28px}
+#bw .edad img{width:220px;margin:0 auto 20px}
+#bw .edad h3{font-size:1.3rem;margin-bottom:8px}
+#bw .edad p{color:var(--suave);font-size:.9rem;margin-bottom:22px}
+#bw .edad .ctas{display:flex;gap:10px;justify-content:center}
+#bw .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--crema);color:var(--negro);padding:.75em 1.3em;border-radius:999px;font-size:.88rem;font-weight:500;z-index:2000;opacity:0;transition:all .2s;pointer-events:none}
+#bw .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== Rediseño editorial (v2) ===== */
+#bw .titulo.grande{font-size:clamp(2.4rem,6vw,4.6rem);line-height:.98;letter-spacing:-.03em;font-weight:800}
+#bw .cab-sec{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:44px}
+#bw .cab-sec .lead{justify-self:end;max-width:420px}
+@media(max-width:800px){#bw .cab-sec{grid-template-columns:1fr;gap:14px}#bw .cab-sec .lead{justify-self:start}}
+
+#bw .hero{position:relative;min-height:100vh;display:flex;align-items:flex-end;padding:0 0 56px;overflow:hidden}
+#bw .hero::before, #bw .hero::after{content:none}
+#bw .hero-foto{position:absolute;inset:0;background:url(https://barweek-bogota.netlify.app/assets/hero-zonat.jpg?v=2) center 30%/cover no-repeat;transform:scale(1.04);animation:respira 18s ease-in-out infinite alternate}
+@keyframes respira{to{transform:scale(1.12)}}
+#bw .hero-foto::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(21,21,21,.55) 0%,rgba(21,21,21,.05) 30%,rgba(21,21,21,.35) 55%,rgba(21,21,21,.97) 92%)}
+#bw .hero-in{position:relative;z-index:1;width:100%}
+#bw .hero-logo{position:absolute;z-index:1;top:48px;left:max(20px,calc((100vw - 1200px)/2 + 20px));width:min(260px,48vw);margin:0;filter:drop-shadow(0 8px 30px rgba(0,0,0,.6))}
+#bw .hero h1{font-size:clamp(3rem,min(10.5vw,15vh),9.6rem);font-weight:800;line-height:.9;letter-spacing:-.045em;max-width:none}
+#bw .hero h1 em{font-style:normal;color:var(--oro);display:block}
+#bw .hero-meta{display:grid;grid-template-columns:1fr 1fr 1fr 1.2fr;border-top:1px solid rgba(246,230,207,.28);margin-top:34px}
+#bw .hero-meta>div{padding:18px 18px 0 0}
+#bw .hero-meta b{display:block;font-size:1.15rem;font-weight:700;letter-spacing:-.01em}
+#bw .hero-meta span{font-size:.85rem;color:var(--suave)}
+#bw .hero-cta{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+#bw .faltan{font-size:.82rem!important}
+#bw .faltan b{display:inline!important;font-size:inherit!important;color:var(--oro)}
+@media(max-width:900px){#bw .hero-meta{grid-template-columns:1fr 1fr}#bw .hero-cta{grid-column:1/-1}}
+@media(max-width:520px){#bw .hero{min-height:92vh}#bw .hero-logo{top:32px}}
+
+#bw .ticker{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);overflow:hidden;padding:34px 0;background:var(--negro);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+#bw .ticker-in{display:flex;align-items:center;gap:72px;width:max-content;padding-right:72px;animation:corre 70s linear infinite}
+#bw .ticker-in img{height:58px;width:auto;max-width:150px;object-fit:contain;opacity:.82;transition:opacity .2s}
+#bw .ticker:hover .ticker-in{animation-play-state:paused}
+#bw .ticker-in img:hover{opacity:1}
+@media(max-width:600px){#bw .ticker{padding:24px 0}#bw .ticker-in{gap:44px;padding-right:44px}#bw .ticker-in img{height:42px;max-width:110px}}
+@keyframes corre{to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){#bw .ticker-in, #bw .hero-foto{animation:none}}
+
+#bw .como{padding:110px 0}
+#bw .como-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+#bw .como-foto{margin:0;aspect-ratio:4/5;overflow:hidden;border-radius:4px}
+#bw .como-foto img{width:100%;height:100%;object-fit:cover}
+#bw .pasos-lista{list-style:none;margin-top:40px}
+#bw .pasos-lista li{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:20px 0;border-top:1px solid var(--linea)}
+#bw .pasos-lista li:last-child{border-bottom:1px solid var(--linea)}
+#bw .pasos-lista .num{font-size:2rem;font-weight:300;color:var(--cobre);line-height:1;letter-spacing:-.04em}
+#bw .pasos-lista b{font-size:1.2rem;font-weight:600}
+#bw .pasos-lista p{color:var(--suave);font-size:.92rem;margin-top:2px}
+@media(max-width:860px){#bw .como-grid{grid-template-columns:1fr;gap:36px}#bw .como-foto{aspect-ratio:4/3}}
+
+#bw .menu-full{position:relative;min-height:92vh;display:flex;align-items:center;overflow:hidden;padding:0}
+#bw .menu-foto{position:absolute;inset:0;background:url(https://barweek-bogota.netlify.app/assets/barra-tapas.jpg) center/cover no-repeat}
+#bw .menu-foto::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(21,21,21,.94) 0%,rgba(21,21,21,.7) 45%,rgba(21,21,21,.15) 100%),linear-gradient(180deg,var(--negro) 0%,transparent 14%,transparent 86%,var(--negro) 100%)}
+#bw .menu-in{position:relative;z-index:1;width:100%}
+#bw .precio-gigante{font-size:clamp(4.4rem,15vw,13rem);font-weight:800;letter-spacing:-.06em;line-height:.85;color:var(--oro)}
+#bw .menu-txt{font-size:clamp(1.15rem,2.4vw,1.7rem);font-weight:500;line-height:1.3;margin-top:22px;max-width:640px}
+#bw .menu-lineas{margin-top:38px;color:var(--suave);font-size:.95rem;max-width:none}
+#bw .menu-lineas i{font-style:normal;color:var(--cobre);margin:0 .5em}
+
+#bw .barrios{padding-top:110px}
+#bw .mosaico{display:grid;grid-template-columns:1.25fr 1fr 1fr;grid-template-rows:280px 280px;gap:14px}
+#bw .tile{position:relative;border:0;border-radius:4px;overflow:hidden;text-align:left;color:var(--crema);background:var(--negro2);padding:22px;display:flex;flex-direction:column;justify-content:flex-end;font-family:inherit}
+#bw .tile::before{content:"";position:absolute;inset:0;background:var(--img) center/cover no-repeat;transition:transform .6s ease}
+#bw .tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(21,21,21,.88) 100%)}
+#bw .tile:hover::before{transform:scale(1.06)}
+#bw .tile>*{position:relative;z-index:1}
+#bw .t-alta{grid-row:1/3}
+#bw .t-nom{font-size:clamp(1.4rem,2.6vw,2.2rem);font-weight:700;letter-spacing:-.02em;line-height:1}
+#bw .t-n{font-size:.85rem;color:var(--suave);margin-top:6px}
+#bw .t-tipo{background:var(--oro);color:var(--negro)}
+#bw .t-tipo::before, #bw .t-tipo::after{content:none}
+#bw .t-tipo .t-n{color:rgba(21,21,21,.7)}
+#bw .t-big{font-size:clamp(3.6rem,7vw,6rem);font-weight:800;letter-spacing:-.05em;line-height:.85;margin-bottom:auto}
+#bw .t-oscuro{background:var(--negro2);color:var(--crema);border:1px solid var(--linea)}
+#bw .t-oscuro .t-big{color:var(--cobre)}
+#bw .t-oscuro .t-n{color:var(--suave)}
+@media(max-width:860px){#bw .mosaico{grid-template-columns:1fr 1fr;grid-template-rows:300px 220px 220px}#bw .t-alta{grid-column:1/-1;grid-row:auto}}
+@media(max-width:520px){#bw .mosaico{grid-template-columns:1fr;grid-template-rows:none;grid-auto-rows:220px}}
+
+#bw .ruta{padding:0;overflow:hidden;border-radius:4px}
+#bw .ruta .r-foto{aspect-ratio:16/10;background:var(--img) center/cover no-repeat}
+#bw .ruta .r-cuerpo{padding:22px;display:flex;flex-direction:column;gap:12px;flex:1}
+#bw .ruta h3{font-size:1.3rem;font-weight:700;letter-spacing:-.01em}
+#bw .ruta .zona{letter-spacing:0;text-transform:none;font-size:.82rem;color:var(--cobre);font-weight:500}
+#bw .paso, #bw .vip-card, #bw .para-bares, #bw .aliado, #bw .bar, #bw #mapa{border-radius:6px}
+#bw .aliado{min-height:130px}
+#bw .aliado .rol{letter-spacing:0;text-transform:none;font-size:.8rem}
+
+</style>
+
+<div id="bw">
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#inicio" aria-label="BAR WEEK Bogotá"><img src="https://barweek-bogota.netlify.app/assets/barweek-logo.png" alt="BAR WEEK"></a>
+    <nav>
+      <a href="#como">Cómo funciona</a>
+      <a href="#menu">El menú</a>
+      <a href="#mapa-vivo">Mapa de bares</a>
+      <a href="#rutas">Rutas</a>
+      <a href="#vip">Acceso VIP</a>
+      <a href="https://asobares.org/inscripcion-bar-week-bogota/" target="_blank" rel="noopener">Inscribe tu bar ↗</a>
+    </nav>
+    <button class="btn btn-oro btn-sm ruta-btn" id="abrirRuta">Mi ruta <span class="badge" id="badgeRuta" hidden>0</span></button>
+  </div>
+</header>
+
+<section class="hero" id="inicio">
+  <div class="hero-foto" role="img" aria-label="Zona T de Bogotá de noche"></div>
+  <img class="hero-logo" src="https://barweek-bogota.netlify.app/assets/barweek-logo.png" alt="BAR WEEK">
+  <div class="wrap hero-in">
+    <h1>La ciudad se recorre <em>en una noche.</em></h1>
+    <div class="hero-meta">
+      <div><b>28.11 — 07.12</b><span>2026 · Bogotá D. C.</span></div>
+      <div><b><span id="nBares">+50</span> bares</b><span><span id="nLocalidades">10</span> localidades, de día y de noche</span></div>
+      <div><b>$35.000</b><span>cóctel de autor + tapa</span></div>
+      <div class="hero-cta"><a class="btn btn-oro" href="#mapa-vivo">Arma tu ruta →</a><span class="faltan" id="cuenta">Faltan <b id="cd-d">--</b> días</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker" aria-label="Bares participantes"><div class="ticker-in" id="ticker"></div></div>
+
+<section class="como" id="como">
+  <div class="wrap como-grid">
+    <figure class="como-foto"><img src="https://barweek-bogota.netlify.app/assets/bartender.jpg" alt="Bartender preparando un cóctel en un bar de Bogotá" loading="lazy"></figure>
+    <div>
+      <h2 class="titulo grande">Un bar nuevo<br>cada noche.</h2>
+      <ol class="pasos-lista">
+        <li><span class="num">01</span><div><b>Explora el mapa</b><p>Filtra los bares por localidad, cocina y música.</p></div></li>
+        <li><span class="num">02</span><div><b>Arma tu ruta</b><p>Guarda tus paradas o carga una ruta por zona.</p></div></li>
+        <li><span class="num">03</span><div><b>Reserva</b><p>Asegura tu mesa, solo o con tu grupo.</p></div></li>
+        <li><span class="num">04</span><div><b>Pide tu BAR WEEK</b><p>Cóctel de autor + tapa. Disfruta con responsabilidad.</p></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="menu-full" id="menu">
+  <div class="menu-foto" role="img" aria-label="Amigos en una barra con cócteles y tapas"></div>
+  <div class="wrap menu-in">
+    <div class="precio-gigante">$35.000</div>
+    <p class="menu-txt">Un cóctel de autor y una tapa de barra.<br>El mismo precio en cada bar del circuito.</p>
+    <p class="menu-lineas">Coctelería de autor <i>/</i> Gastronomía de barra <i>/</i> Música en vivo y DJs <i>/</i> Los bares de la ciudad</p>
+  </div>
+</section>
+
+<section class="barrios" id="barrios">
+  <div class="wrap">
+    <div class="cab-sec">
+      <h2 class="titulo grande">Cada localidad<br>es una parada.</h2>
+      <p class="lead">De La Candelaria a Usaquén, de Modelia a la Zona T. Toca una zona para ver sus bares en el mapa.</p>
+    </div>
+    <div class="mosaico">
+      <button class="tile t-alta" data-ir-loc="Chapinero" style="--img:url(https://barweek-bogota.netlify.app/assets/rooftop.jpg)"><span class="t-nom">Chapinero</span><span class="t-n" data-n="Chapinero"></span></button>
+      <button class="tile" data-ir-loc="Usaquén" style="--img:url(https://barweek-bogota.netlify.app/assets/usaquen.jpg)"><span class="t-nom">Usaquén</span><span class="t-n" data-n="Usaquén"></span></button>
+      <button class="tile" data-ir-loc="La Candelaria" style="--img:url(https://barweek-bogota.netlify.app/assets/candelaria.jpg)"><span class="t-nom">La Candelaria</span><span class="t-n" data-n="La Candelaria"></span></button>
+      <button class="tile t-tipo" data-ir-loc="Fontibón"><span class="t-big" data-n-solo="Fontibón"></span><span class="t-nom">Fontibón</span><span class="t-n">Modelia y Hayuelos</span></button>
+      <button class="tile t-tipo t-oscuro" data-ir-loc=""><span class="t-big" data-n-otras></span><span class="t-nom">bares en <span data-n-locs></span> localidades más</span><span class="t-n">Barrios Unidos, Teusaquillo, Suba, Kennedy…</span></button>
+    </div>
+  </div>
+</section>
+
+<section id="mapa-vivo">
+  <div class="wrap">
+    <h2 class="titulo">Encuentra tu próximo bar.</h2>
+    <p class="lead">Toca <b class="oro">+</b> para sumarlo a tu ruta.</p>
+
+    <div class="filtros">
+      <input id="q" type="search" placeholder="Buscar bar, barrio o cocina…" aria-label="Buscar">
+      <select id="fCocina" aria-label="Tipo de cocina"><option value="">Toda la cocina</option></select>
+      <select id="fMusica" aria-label="Música"><option value="">Toda la música</option></select>
+    </div>
+    <div class="chips" id="chipsLoc" role="group" aria-label="Localidad"></div>
+    <div class="aviso-horario">
+      <span class="chip" aria-disabled="true">Día ▾</span><span class="chip" aria-disabled="true">Horario ▾</span>
+      <span>Filtro por día y horario: se activa cuando cada bar confirme sus horarios BAR WEEK.</span>
+    </div>
+
+    <div class="toggle-vista">
+      <button class="chip on" data-vista="lista">Lista</button>
+      <button class="chip" data-vista="mapa">Mapa</button>
+    </div>
+    <div class="explorador" id="explorador" data-vista="lista">
+      <div class="lista" id="lista"></div>
+      <div id="mapa" aria-label="Mapa de bares"></div>
+    </div>
+    <p class="nota-mapa">Ubicaciones aproximadas en esta propuesta; la versión final usa la dirección exacta de cada bar.</p>
+  </div>
+</section>
+
+<section id="rutas" style="padding-top:40px">
+  <div class="wrap">
+    <div class="cab-sec">
+      <h2 class="titulo grande">Rutas para<br>empezar.</h2>
+      <p class="lead">Recorridos por zona para descubrir bares que no conoces. Cárgalos en tu ruta y ajústalos a tu gusto.</p>
+    </div>
+    <div class="rutas" id="rutasGrid"></div>
+  </div>
+</section>
+
+<section id="vip" style="padding-top:20px">
+  <div class="wrap">
+    <h2 class="titulo">Acceso VIP y pre-compra.</h2>
+    <div class="vip">
+      <div class="vip-card dest">
+        <span class="pronto">Próximamente</span>
+        <h3>Pase VIP BAR WEEK</h3>
+        <p>Beneficios exclusivos de aliados y patrocinadores durante la semana. Cupos limitados.</p>
+        <button class="btn btn-oro" disabled>Disponible pronto</button>
+      </div>
+      <div class="vip-card">
+        <span class="pronto">Próximamente</span>
+        <h3>Compra tu menú por adelantado</h3>
+        <p>Paga tu menú BAR WEEK antes de llegar y preséntalo en el bar.</p>
+        <button class="btn btn-linea" disabled>Disponible pronto</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="bares" style="padding-top:20px">
+  <div class="wrap">
+    <div class="para-bares">
+      <div>
+        <h2 class="titulo">¿Tienes un bar? Súmate al circuito.</h2>
+        <p class="lead" style="margin-bottom:26px">Inclusión en el mapa y en las piezas oficiales, promoción digital y de prensa, formación con acompañamiento experto y apoyo de proveedores para tu propuesta gastronómica.</p>
+        <a class="btn btn-oro" href="https://asobares.org/inscripcion-bar-week-bogota/" target="_blank" rel="noopener">Inscripción en Asobares →</a>
+      </div>
+      <ol>
+        <li><div><b>Inscripción</b>Formulario de Asobares.</div></li>
+        <li><div><b>Curaduría</b>Selección de 50 establecimientos.</div></li>
+        <li><div><b>Compromiso</b>Menú a $35.000, días y horarios, uso de marca.</div></li>
+        <li><div><b>Capacitación</b>Con bartenders, chefs y marcas aliadas.</div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<div class="aliados">
+  <div class="wrap">
+    <div class="fila">
+      <div class="aliado"><img src="https://barweek-bogota.netlify.app/assets/asobares.png" alt="Asobares Colombia"><span class="rol">Organiza</span></div>
+      <div class="aliado"><span class="txt-logo">Instituto Distrital<br>de Turismo · IDT</span><span class="rol">En alianza con</span></div>
+      <div class="aliado"><img src="https://barweek-bogota.netlify.app/assets/cluvi.png" alt="Cluvi"><span class="rol">Tecnología</span></div>
+    </div>
+    <div class="patros"><div>Patrocinador</div><div>Patrocinador</div><div>Patrocinador</div><div>Patrocinador</div><div>Patrocinador</div></div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="legal">El exceso de alcohol es perjudicial para la salud. Ley 30 de 1986. Prohíbase el expendio de bebidas embriagantes a menores de edad. Ley 124 de 1994. Si vas a beber, no manejes.</div>
+    <div class="pie">
+      <span>BAR WEEK Bogotá 2026 · Asobares Colombia</span>
+      <span>Plataforma desarrollada por <img src="https://barweek-bogota.netlify.app/assets/cluvi.png" alt="Cluvi"></span>
+    </div>
+  </div>
+</footer>
+
+<!-- Panel: mi ruta -->
+<div class="velo" id="velo"></div>
+<aside class="panel" id="panelRuta" aria-label="Mi ruta" aria-hidden="true">
+  <div class="cab"><h3>Mi ruta BAR WEEK</h3><button class="cerrar" data-cerrar-ruta aria-label="Cerrar">✕</button></div>
+  <div class="cuerpo" id="paradas"></div>
+  <div class="pie-panel">
+    <div class="total-ruta"><span id="rutaN">0 paradas</span><span>Menús: <b id="rutaTotal">$0</b></span></div>
+    <button class="btn btn-oro" id="verMaps">Ver recorrido en Google Maps</button>
+    <button class="btn btn-linea" id="compartir">Compartir por WhatsApp</button>
+  </div>
+</aside>
+
+<!-- Modal: ficha del bar -->
+<div class="modal" id="modalBar" hidden><div class="caja" id="fichaBar"></div></div>
+
+<!-- Modal: mayoría de edad -->
+<div class="modal" id="modalEdad" hidden>
+  <div class="caja edad">
+    <img src="https://barweek-bogota.netlify.app/assets/barweek-logo.png" alt="BAR WEEK">
+    <h3>¿Eres mayor de 18 años?</h3>
+    <p>Este sitio contiene información sobre bebidas alcohólicas.</p>
+    <div class="ctas"><button class="btn btn-oro" id="edadSi">Sí, soy mayor de edad</button><button class="btn btn-linea" id="edadNo">No</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+window.BARES = [
+ {
+  "id": 1,
+  "nombre": "Campo Dei Fiori",
+  "barrio": "Usaquén",
+  "localidad": "Usaquén",
+  "direccion": "Carrera 7 120-20 piso 2",
+  "concepto": "Cocina italiana",
+  "cocina": "Mediterránea e italiana",
+  "musicaTxt": "Italiana, entre otras",
+  "musica": "Variada",
+  "capacidad": 140,
+  "instagram": "campodeifiori.bog",
+  "reserva": {
+   "via": "Sistema propio",
+   "url": "https://serattagroup.com/reservas-campodeifiori"
+  },
+  "lat": 4.69203,
+  "lon": -74.04056
+ },
+ {
+  "id": 2,
+  "nombre": "Gallo Colorado",
+  "barrio": "Zona Rosa",
+  "localidad": "Chapinero",
+  "direccion": "Calle 81 13-05 cc atlantis piso 4",
+  "concepto": "Cocina mexicana",
+  "cocina": "Mexicana",
+  "musicaTxt": "Mexicana entre otros",
+  "musica": "Variada",
+  "capacidad": 40,
+  "instagram": "gallocolorado.bog",
+  "reserva": {
+   "via": "Sistema propio",
+   "url": "https://serattagroup.com/reservas-gallocolorado"
+  },
+  "lat": 4.66463,
+  "lon": -74.05627
+ },
+ {
+  "id": 3,
+  "nombre": "Restaurante Omm",
+  "barrio": "Usaquén bajo",
+  "localidad": "Usaquén",
+  "direccion": "Autopista norte 114-44 piso 3",
+  "concepto": "Cocina kaiseki para compartir (asiática)",
+  "cocina": "Asiática",
+  "musicaTxt": "Electrónica",
+  "musica": "Electrónica y house",
+  "capacidad": 120,
+  "instagram": "omm.rest",
+  "reserva": {
+   "via": "Sistema propio",
+   "url": "https://serattagroup.com/reservas-omm"
+  },
+  "lat": 4.6975,
+  "lon": -74.056
+ },
+ {
+  "id": 4,
+  "nombre": "Petronio cocina de Autor",
+  "barrio": "El Polo",
+  "localidad": "Barrios Unidos",
+  "direccion": "carrera 22-84-99",
+  "concepto": "Cocina y mixologia inspirada en el pacífico Colombiano",
+  "cocina": "Colombiana",
+  "musicaTxt": "Salsa",
+  "musica": "Salsa y tropical",
+  "capacidad": null,
+  "instagram": "petroniobogota",
+  "reserva": {
+   "via": "OpenTable",
+   "url": "https://www.opentable.com/r/petronio-cocina-de-autor-reservations-bogota?restref=1426642"
+  },
+  "lat": 4.67307,
+  "lon": -74.06134
+ },
+ {
+  "id": 5,
+  "nombre": "Tasca La Puerta De Alcala",
+  "barrio": "Usaquen",
+  "localidad": "Usaquén",
+  "direccion": "CALL 118 5 13",
+  "concepto": "COLOMBIANA",
+  "cocina": "Colombiana",
+  "musicaTxt": "VARIADO",
+  "musica": "Variada",
+  "capacidad": 130,
+  "instagram": "tascalapuertadealcala",
+  "reserva": {
+   "via": "CoverManager",
+   "url": "https://tascalapuertadealcala.com/reservas/"
+  },
+  "lat": 4.68908,
+  "lon": -74.03983
+ },
+ {
+  "id": 6,
+  "nombre": "Colombia Social Club",
+  "barrio": "Usaquen",
+  "localidad": "Usaquén",
+  "direccion": "CARRERA 6 119 23",
+  "concepto": "COLOMBIANA",
+  "cocina": "Colombiana",
+  "musicaTxt": "VARIADO",
+  "musica": "Variada",
+  "capacidad": 200,
+  "instagram": "colombiasocialclubusaquen",
+  "reserva": {
+   "via": "Precompro",
+   "url": "https://colombiasocialclub.precompro.com/select/?source=instagram"
+  },
+  "lat": 4.69055,
+  "lon": -74.04019
+ },
+ {
+  "id": 7,
+  "nombre": "Japonico Sushi & Wok",
+  "barrio": "Modelia",
+  "localidad": "Fontibón",
+  "direccion": "Cra 75 # 24c-46",
+  "concepto": "Comida Japonesa",
+  "cocina": "Asiática",
+  "musicaTxt": "Electrónica, rock, tecno",
+  "musica": "Electrónica y house",
+  "capacidad": 40,
+  "instagram": "japonicosushiwok",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.link/0ktzg6"
+  },
+  "lat": 4.66023,
+  "lon": -74.11459
+ },
+ {
+  "id": 8,
+  "nombre": "Seventy Five vip",
+  "barrio": "Modelia",
+  "localidad": "Fontibón",
+  "direccion": "Cr 80 a # 24 c 36",
+  "concepto": "Gastro bar",
+  "cocina": "Gastrobar",
+  "musicaTxt": "Crossover",
+  "musica": "Crossover",
+  "capacidad": 150,
+  "instagram": "seventyvip",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "http://wa.me/573204177938"
+  },
+  "lat": 4.66358,
+  "lon": -74.11791
+ },
+ {
+  "id": 9,
+  "nombre": "Tejo La Embajada",
+  "barrio": "San Felipe",
+  "localidad": "Barrios Unidos",
+  "direccion": "Avenida Carrera 24 # 76 - 20",
+  "concepto": "l concepto gastronómico de Tejo La Embajada es una propuesta de cocina colombiana contemporánea, inspirada en los sabores tradicionales del país y reinterpretada de manera creativa, que integra la gastronomía con la cultura del tejo, la cerveza artesanal y la celebración alrededor de la mesa.",
+  "cocina": "Colombiana",
+  "musicaTxt": "Crossover",
+  "musica": "Crossover",
+  "capacidad": 300,
+  "instagram": "tejolaembajada",
+  "reserva": {
+   "via": "Sistema propio",
+   "url": "https://tejolaembajada.com/reservar"
+  },
+  "lat": 4.66797,
+  "lon": -74.06508
+ },
+ {
+  "id": 10,
+  "nombre": "Caña Aguardienteria & Bodega",
+  "barrio": "Chapinero",
+  "localidad": "Chapinero",
+  "direccion": "Cl. 54a #4-26",
+  "concepto": "GASTRO BAR",
+  "cocina": "Gastrobar",
+  "musicaTxt": "Electrónica, crossover y música variada con presentaciones de DJs en vivo",
+  "musica": "Electrónica y house",
+  "capacidad": 80,
+  "instagram": "lacasanegra.bog",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/+573503087342"
+  },
+  "lat": 4.63685,
+  "lon": -74.0584
+ },
+ {
+  "id": 11,
+  "nombre": "Andres D.C",
+  "barrio": "El Retiro",
+  "localidad": "Chapinero",
+  "direccion": "Calle 82 12-21ero",
+  "concepto": "Restaurante Bar Rumbiadero",
+  "cocina": "Gastrobar",
+  "musicaTxt": "Crossover",
+  "musica": "Crossover",
+  "capacidad": 1000,
+  "instagram": "andres_c_de_res",
+  "reserva": {
+   "via": "Precompro",
+   "url": "https://andresdc.precompro.com/select/?bybranch=1"
+  },
+  "lat": 4.66476,
+  "lon": -74.0553
+ },
+ {
+  "id": 12,
+  "nombre": "Sirvalo pues zona t",
+  "barrio": "Retiro",
+  "localidad": "Chapinero",
+  "direccion": "Calle 84#13a-47",
+  "concepto": "Para picar",
+  "cocina": "Gastrobar",
+  "musicaTxt": "Popular",
+  "musica": "Popular y ranchera",
+  "capacidad": 250,
+  "instagram": null,
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573143989841?text=Hola%2C%20quiero%20reservar%20en%20Sirvalo%20pues%20zona%20t%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.66705,
+  "lon": -74.05536
+ },
+ {
+  "id": 13,
+  "nombre": "Arrogante",
+  "barrio": "Retiro",
+  "localidad": "Chapinero",
+  "direccion": "CALLE 84A 9 11",
+  "concepto": "COMIDA ITALIANA ATIPICO",
+  "cocina": "Mediterránea e italiana",
+  "musicaTxt": "CLASICO COMTEMPORANEO EVENTOS ESPECIALES",
+  "musica": "Variada",
+  "capacidad": 300,
+  "instagram": "arrogantebogota",
+  "reserva": {
+   "via": "Menüpp",
+   "url": "https://app.menupp.co/restaurant/arrogante"
+  },
+  "lat": 4.66437,
+  "lon": -74.05271
+ },
+ {
+  "id": 14,
+  "nombre": "Teo 114",
+  "barrio": "San Patricio",
+  "localidad": "Usaquén",
+  "direccion": "Cra. 19 #114-6",
+  "concepto": "Comida griega, mediterránea",
+  "cocina": "Mediterránea e italiana",
+  "musicaTxt": "Covers Jazz",
+  "musica": "Jazz y blues",
+  "capacidad": 75,
+  "instagram": "teorestratorio84",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573189673681?text=Hola%2C%20quiero%20reservar%20en%20Teo%20114%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.69523,
+  "lon": -74.05033
+ },
+ {
+  "id": 15,
+  "nombre": "Pub Beer Salitre Plaza",
+  "barrio": "Salitre",
+  "localidad": "Fontibón",
+  "direccion": "C.C. Salitre Plaza - Piso 1 - Plaza de la lun",
+  "concepto": "Pub restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "Rock, pop, reggae, ska",
+  "musica": "Rock y ska",
+  "capacidad": null,
+  "instagram": "pub_beer",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573217573601?text=Hola%2C%20quiero%20reservar%20en%20Pub%20Beer%20Salitre%20Plaza%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.6522,
+  "lon": -74.1093
+ },
+ {
+  "id": 16,
+  "nombre": "Pub Beer La Felicidad",
+  "barrio": "La felicidad",
+  "localidad": "Fontibón",
+  "direccion": "CL. 19A # 72-57 PISO 3 local C - 147",
+  "concepto": "Pub restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "Rock, pop, reggae, ska",
+  "musica": "Rock y ska",
+  "capacidad": null,
+  "instagram": "pub_beer",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573217585203?text=Hola%2C%20quiero%20reservar%20en%20Pub%20Beer%20La%20Felicidad%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.65419,
+  "lon": -74.1141
+ },
+ {
+  "id": 17,
+  "nombre": "Pub Beer Gran Estación",
+  "barrio": "Salitre",
+  "localidad": "Teusaquillo",
+  "direccion": "Cl. 26 # 62-47 Piso 3",
+  "concepto": "Pub restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "Rock, pop, reggae, ska",
+  "musica": "Rock y ska",
+  "capacidad": null,
+  "instagram": "pub_beer",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573217554571?text=Hola%2C%20quiero%20reservar%20en%20Pub%20Beer%20Gran%20Estaci%C3%B3n%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.65313,
+  "lon": -74.10535
+ },
+ {
+  "id": 18,
+  "nombre": "Pub Beer Cedritos",
+  "barrio": "Cedritos",
+  "localidad": "Usaquén",
+  "direccion": "CL. 140 # 12 - 54 L. 01",
+  "concepto": "Pub restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "Rock, pop, reggae, ska",
+  "musica": "Rock y ska",
+  "capacidad": null,
+  "instagram": "pub_beer",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573217531838?text=Hola%2C%20quiero%20reservar%20en%20Pub%20Beer%20Cedritos%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.71149,
+  "lon": -74.03787
+ },
+ {
+  "id": 19,
+  "nombre": "Mapache Bar 8",
+  "barrio": "Paseo Del Faro",
+  "localidad": "Barrios Unidos",
+  "direccion": "CL 85 NO. 11 53",
+  "concepto": "BAR",
+  "cocina": "Gastrobar",
+  "musicaTxt": "Electrónica, crossover y música variada con presentaciones de DJs en vivo",
+  "musica": "Electrónica y house",
+  "capacidad": 400,
+  "instagram": "mapache_bar",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573102954918?text=Hola%2C%20quiero%20reservar%20en%20Mapache%20Bar%208%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.66651,
+  "lon": -74.05374
+ },
+ {
+  "id": 20,
+  "nombre": "Pub Beer Martires",
+  "barrio": "Martires",
+  "localidad": "Los Mártires",
+  "direccion": "CL. 19 # 28 - 80 3er piso",
+  "concepto": "Pub restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "Rock, pop, reggae, ska",
+  "musica": "Rock y ska",
+  "capacidad": 220,
+  "instagram": "pub_beer",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573217539392?text=Hola%2C%20quiero%20reservar%20en%20Pub%20Beer%20Martires%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.62473,
+  "lon": -74.08487
+ },
+ {
+  "id": 21,
+  "nombre": "Sexy Seoul CC Gran Estación",
+  "barrio": "Ciudad Salitre Oriental",
+  "localidad": "Teusaquillo",
+  "direccion": "Ac. 26 #62-47 local 1-49",
+  "concepto": "RESTAURANTE /BAR FUSION ASIATICA KOREANA BBQ",
+  "cocina": "Asiática",
+  "musicaTxt": "CROSSOVER",
+  "musica": "Crossover",
+  "capacidad": 100,
+  "instagram": "sexyseoulbbq",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573157042954?text=Hola%2C%20quiero%20reservar%20en%20Sexy%20Seoul%20CC%20Gran%20Estaci%C3%B3n%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.65338,
+  "lon": -74.1051
+ },
+ {
+  "id": 22,
+  "nombre": "Sexy Seoul CC Santafe",
+  "barrio": "Mirandela",
+  "localidad": "Suba",
+  "direccion": "Cl. 185 #45-3 Local 19",
+  "concepto": "RESTAURANTE /BAR FUSION ASIATICA KOREANA BBQ",
+  "cocina": "Asiática",
+  "musicaTxt": "CROSSOVER",
+  "musica": "Crossover",
+  "capacidad": 80,
+  "instagram": "sexyseoulbbq",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573157042954?text=Hola%2C%20quiero%20reservar%20en%20Sexy%20Seoul%20CC%20Santafe%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.76984,
+  "lon": -74.04626
+ },
+ {
+  "id": 23,
+  "nombre": "Sexy Seoul BBQ Zona Rosa",
+  "barrio": "Chapinero",
+  "localidad": "Chapinero",
+  "direccion": "Calle 85 # 12-11",
+  "concepto": "RESTAURANTE /BAR FUSION ASIATICA KOREANA BBQ",
+  "cocina": "Asiática",
+  "musicaTxt": "CROSSOVER",
+  "musica": "Crossover",
+  "capacidad": 100,
+  "instagram": "sexyseoulbbq",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573157042954?text=Hola%2C%20quiero%20reservar%20en%20Sexy%20Seoul%20BBQ%20Zona%20Rosa%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.66718,
+  "lon": -74.0544
+ },
+ {
+  "id": 24,
+  "nombre": "Sírvalo pues cantina",
+  "barrio": "Santa issbel",
+  "localidad": "Los Mártires",
+  "direccion": "Calle 1g#26a17",
+  "concepto": null,
+  "cocina": "Por confirmar",
+  "musicaTxt": "Popular",
+  "musica": "Popular y ranchera",
+  "capacidad": 200,
+  "instagram": null,
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573157868769?text=Hola%2C%20quiero%20reservar%20en%20S%C3%ADrvalo%20pues%20cantina%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.602,
+  "lon": -74.096
+ },
+ {
+  "id": 25,
+  "nombre": "Pub Beer Usaquén",
+  "barrio": "Usaquén",
+  "localidad": "Usaquén",
+  "direccion": "CL. 127 # 15A - 03 L. III",
+  "concepto": "Pub restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "Rock, pop, reggae, ska",
+  "musica": "Rock y ska",
+  "capacidad": 170,
+  "instagram": "pub_beer",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573217591571?text=Hola%2C%20quiero%20reservar%20en%20Pub%20Beer%20Usaqu%C3%A9n%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.70302,
+  "lon": -74.04377
+ },
+ {
+  "id": 26,
+  "nombre": "Pub Beer Hayuelos",
+  "barrio": "Fontibon",
+  "localidad": "Fontibón",
+  "direccion": "C.C. Hayuelos Pisó 1 - Local 0 - 02",
+  "concepto": "Pub restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "Rock, pop, reggae, ska",
+  "musica": "Rock y ska",
+  "capacidad": 172,
+  "instagram": "pub_beer",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573217553293?text=Hola%2C%20quiero%20reservar%20en%20Pub%20Beer%20Hayuelos%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.664,
+  "lon": -74.1313
+ },
+ {
+  "id": 27,
+  "nombre": "Pub Beer Plaza de las Américas",
+  "barrio": "La Igualdad",
+  "localidad": "Kennedy",
+  "direccion": "C.C. Plaza de las Américas - Vía verde - Local 2936",
+  "concepto": "Pub restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "Rock, pop, reggae, ska",
+  "musica": "Rock y ska",
+  "capacidad": 96,
+  "instagram": "pub_beer",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573054264047?text=Hola%2C%20quiero%20reservar%20en%20Pub%20Beer%20Plaza%20de%20las%20Am%C3%A9ricas%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.6185,
+  "lon": -74.1355
+ },
+ {
+  "id": 28,
+  "nombre": "Pub Beer Nuestro Bogotá",
+  "barrio": "Alamos Norte",
+  "localidad": "Engativá",
+  "direccion": "C.C. Nuestro Bogotá 3 Piso",
+  "concepto": "Pub restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "Rock, pop, reggae, ska",
+  "musica": "Rock y ska",
+  "capacidad": 150,
+  "instagram": "pub_beer",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573332820120?text=Hola%2C%20quiero%20reservar%20en%20Pub%20Beer%20Nuestro%20Bogot%C3%A1%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.682,
+  "lon": -74.108
+ },
+ {
+  "id": 29,
+  "nombre": "Pub Beer Parque Colina",
+  "barrio": "Colina Campestre",
+  "localidad": "Suba",
+  "direccion": "C.C. Parque Colina - Cra. 58 D # 146-51",
+  "concepto": "Pub restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "Rock, pop, reggae, ska",
+  "musica": "Rock y ska",
+  "capacidad": 120,
+  "instagram": "pub_beer",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573332820466?text=Hola%2C%20quiero%20reservar%20en%20Pub%20Beer%20Parque%20Colina%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.733,
+  "lon": -74.064
+ },
+ {
+  "id": 30,
+  "nombre": "Tokio Restaurant Rooftop",
+  "barrio": "Granada",
+  "localidad": "Chapinero",
+  "direccion": "cr 5 # 65-14",
+  "concepto": "COMIDA ASIATICA- SUSHI",
+  "cocina": "Asiática",
+  "musicaTxt": "CROSSOVER",
+  "musica": "Crossover",
+  "capacidad": 50,
+  "instagram": "tokyorooftopp",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573157042954?text=Hola%2C%20quiero%20reservar%20en%20Tokio%20Restaurant%20Rooftop%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.64638,
+  "lon": -74.05576
+ },
+ {
+  "id": 31,
+  "nombre": "El Humero Y Maduro",
+  "barrio": "Chico",
+  "localidad": "Chapinero",
+  "direccion": "CARRERA 14 93 20",
+  "concepto": "PARRILLA CARNES CERVEZA",
+  "cocina": "Parrilla y ahumados",
+  "musicaTxt": "TROPICAL",
+  "musica": "Salsa y tropical",
+  "capacidad": 80,
+  "instagram": "elhumeroymaduro",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573113503115?text=Hola%2C%20quiero%20reservar%20en%20El%20Humero%20Y%20Maduro%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.67497,
+  "lon": -74.05332
+ },
+ {
+  "id": 32,
+  "nombre": "Compañia Criolla",
+  "barrio": "El Retiro",
+  "localidad": "Chapinero",
+  "direccion": "Cll 84 a # 12-25",
+  "concepto": "COMIDA TIPICA COLOMBIANA",
+  "cocina": "Colombiana",
+  "musicaTxt": "CROSSOVER",
+  "musica": "Crossover",
+  "capacidad": 60,
+  "instagram": "companiacriolla",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573157042954?text=Hola%2C%20quiero%20reservar%20en%20Compa%C3%B1ia%20Criolla%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.66638,
+  "lon": -74.0547
+ },
+ {
+  "id": 33,
+  "nombre": "Latin Chan Chan",
+  "barrio": "Chico",
+  "localidad": "Chapinero",
+  "direccion": "CARRERA 14 # 93 - 14",
+  "concepto": "RESTAURANTE DOND SE VIVE LA ESENCIA CARIBE, SALSA Y SABOR",
+  "cocina": "Gastrobar",
+  "musicaTxt": "SALSA, SON CUBANO, MUSICA EN VIVO",
+  "musica": "Salsa y tropical",
+  "capacidad": 120,
+  "instagram": "chanchanlatino",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573113503115?text=Hola%2C%20quiero%20reservar%20en%20Latin%20Chan%20Chan%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.67522,
+  "lon": -74.05307
+ },
+ {
+  "id": 34,
+  "nombre": "Bombay Rooftop",
+  "barrio": "La Cabrera",
+  "localidad": "Chapinero",
+  "direccion": "Kr 13 #85-65 Piso 8",
+  "concepto": "GASTROBAR-COMIDA INTERNACIONAL INDIA",
+  "cocina": "Gastrobar",
+  "musicaTxt": "CROSSOVER",
+  "musica": "Crossover",
+  "capacidad": 120,
+  "instagram": "bombayrooftop",
+  "reserva": {
+   "via": "Apparta",
+   "url": "https://www.apparta.co/bombay-rooftop/reservas"
+  },
+  "lat": 4.66785,
+  "lon": -74.05506
+ },
+ {
+  "id": 35,
+  "nombre": "Leonor Speackeasy",
+  "barrio": "La Cabrera",
+  "localidad": "Chapinero",
+  "direccion": "Kr 13 # 85-65 piso 8",
+  "concepto": "GASTROBAR COMIDAS,COMIDAS PARA COMPARTIR",
+  "cocina": "Gastrobar",
+  "musicaTxt": "DISCO FUNK",
+  "musica": "Disco y funk",
+  "capacidad": 100,
+  "instagram": "leonor_speakeasy",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573006934496?text=Hola%2C%20quiero%20reservar%20en%20Leonor%20Speackeasy%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.6681,
+  "lon": -74.05481
+ },
+ {
+  "id": 36,
+  "nombre": "Oak Ahumados y Brebajes",
+  "barrio": "Quinta Camacho",
+  "localidad": "Chapinero",
+  "direccion": "Calle 69 a # 10-15",
+  "concepto": "Smoke House",
+  "cocina": "Parrilla y ahumados",
+  "musicaTxt": "Jazz, blues y country.",
+  "musica": "Jazz y blues",
+  "capacidad": 100,
+  "instagram": "oak.ab",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.link/oakahumados"
+  },
+  "lat": 4.65295,
+  "lon": -74.05788
+ },
+ {
+  "id": 37,
+  "nombre": "Huerta Bar",
+  "barrio": "Chapinero",
+  "localidad": "Chapinero",
+  "direccion": "CRA 12 A 83-64",
+  "concepto": "restaurante bar",
+  "cocina": "Gastrobar",
+  "musicaTxt": "House",
+  "musica": "Electrónica y house",
+  "capacidad": 120,
+  "instagram": "huertabarbog",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.link/huerta"
+  },
+  "lat": 4.66557,
+  "lon": -74.055
+ },
+ {
+  "id": 38,
+  "nombre": "Tiendita Mexicana Antro",
+  "barrio": "Modelia",
+  "localidad": "Fontibón",
+  "direccion": "CALLE 24C 75 21",
+  "concepto": "GASTRTOBAR",
+  "cocina": "Gastrobar",
+  "musicaTxt": "CORSSOVER",
+  "musica": "Crossover",
+  "capacidad": 120,
+  "instagram": null,
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573118389252?text=Hola%2C%20quiero%20reservar%20en%20Tiendita%20Mexicana%20Antro%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.66048,
+  "lon": -74.11434
+ },
+ {
+  "id": 39,
+  "nombre": "2tone",
+  "barrio": "El Retiro",
+  "localidad": "Chapinero",
+  "direccion": "Cr 14 a # 83-68",
+  "concepto": "PUB CERVECERIA",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "SKA, ROCK EN ESPAÑOL",
+  "musica": "Rock y ska",
+  "capacidad": 40,
+  "instagram": "2tonepub",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573247577526?text=Hola%2C%20quiero%20reservar%20en%202tone%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.66691,
+  "lon": -74.05633
+ },
+ {
+  "id": 40,
+  "nombre": "La Bombi Tacos & Ahumados",
+  "barrio": "Chapinero",
+  "localidad": "Chapinero",
+  "direccion": "calle 84a 12a-32",
+  "concepto": "Restaurante Bar",
+  "cocina": "Gastrobar",
+  "musicaTxt": "House",
+  "musica": "Electrónica y house",
+  "capacidad": 80,
+  "instagram": "labombicol",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573152137002?text=Hola%2C%20quiero%20reservar%20en%20La%20Bombi%20Tacos%20%26%20Ahumados%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.66663,
+  "lon": -74.05445
+ },
+ {
+  "id": 41,
+  "nombre": "Radio Estrella",
+  "barrio": "Chico",
+  "localidad": "Chapinero",
+  "direccion": "CARRERA 15 # 99-23",
+  "concepto": "CASUAL FOODS",
+  "cocina": "Gastrobar",
+  "musicaTxt": "ELECTRONICA - REGGATTON",
+  "musica": "Electrónica y house",
+  "capacidad": 800,
+  "instagram": "radioestrella.bog",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573209083311?text=Hola%2C%20quiero%20reservar%20en%20Radio%20Estrella%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.68047,
+  "lon": -74.05218
+ },
+ {
+  "id": 42,
+  "nombre": "Sudoku Gourmet",
+  "barrio": "Modelia",
+  "localidad": "Fontibón",
+  "direccion": "Av esperanza 74 28",
+  "concepto": "Japonés fusión",
+  "cocina": "Asiática",
+  "musicaTxt": "Hause",
+  "musica": "Electrónica y house",
+  "capacidad": 28,
+  "instagram": "sudokugourmet",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.link/uacxwz"
+  },
+  "lat": 4.65956,
+  "lon": -74.11392
+ },
+ {
+  "id": 43,
+  "nombre": "Acertijo",
+  "barrio": "Chapinero",
+  "localidad": "Chapinero",
+  "direccion": "CL 57 NO. 4 29",
+  "concepto": "BAR",
+  "cocina": "Gastrobar",
+  "musicaTxt": "CROSOVEER",
+  "musica": "Crossover",
+  "capacidad": 30,
+  "instagram": "acertijo_bar",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.link/ci61ji"
+  },
+  "lat": 4.63927,
+  "lon": -74.0575
+ },
+ {
+  "id": 44,
+  "nombre": "Tacho Y Ya",
+  "barrio": "Chapinero Alto",
+  "localidad": "Chapinero",
+  "direccion": "carrera 5 #58-65",
+  "concepto": "cerveceria restaurante",
+  "cocina": "Pub y cervecería",
+  "musicaTxt": "variada latina",
+  "musica": "Variada",
+  "capacidad": 70,
+  "instagram": "tachoyya",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573138522148?text=Hola%2C%20quiero%20reservar%20en%20Tacho%20Y%20Ya%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.64074,
+  "lon": -74.05787
+ },
+ {
+  "id": 45,
+  "nombre": "Teo 84",
+  "barrio": "La Cabrera",
+  "localidad": "Chapinero",
+  "direccion": "Calle 84 bis # 13-54",
+  "concepto": "Comida griega, mediterránea",
+  "cocina": "Mediterránea e italiana",
+  "musicaTxt": "Covers Jazz",
+  "musica": "Jazz y blues",
+  "capacidad": 75,
+  "instagram": "teorestratorio84",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573189673681?text=Hola%2C%20quiero%20reservar%20en%20Teo%2084%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.6673,
+  "lon": -74.05511
+ },
+ {
+  "id": 46,
+  "nombre": "Aquelarre La Candelaria",
+  "barrio": "La Candelaria",
+  "localidad": "La Candelaria",
+  "direccion": "CALLE 11 # 2-80",
+  "concepto": "COMIDA TRADICIONAL COLOMBIANA",
+  "cocina": "Colombiana",
+  "musicaTxt": "CROSSOVER",
+  "musica": "Crossover",
+  "capacidad": 60,
+  "instagram": "elaquelarre.restaurantebar",
+  "reserva": {
+   "via": "Sistema propio",
+   "url": "https://elaquelarre.com.co/reservas/"
+  },
+  "lat": 4.60087,
+  "lon": -74.07
+ },
+ {
+  "id": 47,
+  "nombre": "El Aquelarre San Felipe",
+  "barrio": "San Felipe",
+  "localidad": "Barrios Unidos",
+  "direccion": "Cra. 22 #74A-38",
+  "concepto": "COMIDA TRADICIONAL COLOMBIANA",
+  "cocina": "Colombiana",
+  "musicaTxt": "CROSSOVER",
+  "musica": "Crossover",
+  "capacidad": 50,
+  "instagram": "elaquelarre.restaurantebar",
+  "reserva": {
+   "via": "Sistema propio",
+   "url": "https://elaquelarre.com.co/reservas/"
+  },
+  "lat": 4.66502,
+  "lon": -74.06435
+ },
+ {
+  "id": 48,
+  "nombre": "Tulia restaurante",
+  "barrio": "Modelia",
+  "localidad": "Fontibón",
+  "direccion": "Carrera 75#24c-22",
+  "concepto": "Cocina colombiana",
+  "cocina": "Colombiana",
+  "musicaTxt": "No",
+  "musica": "Variada",
+  "capacidad": 60,
+  "instagram": "tulia.restaurante",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573107588620?text=Hola%2C%20quiero%20reservar%20en%20Tulia%20restaurante%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.66073,
+  "lon": -74.11409
+ },
+ {
+  "id": 49,
+  "nombre": "Taqueria María bonita",
+  "barrio": "Modelia",
+  "localidad": "Fontibón",
+  "direccion": "Carrera 75#24b-48",
+  "concepto": "Comida mexicana",
+  "cocina": "Mexicana",
+  "musicaTxt": "No",
+  "musica": "Variada",
+  "capacidad": 50,
+  "instagram": null,
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573107588620?text=Hola%2C%20quiero%20reservar%20en%20Taqueria%20Mar%C3%ADa%20bonita%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.66098,
+  "lon": -74.11384
+ },
+ {
+  "id": 50,
+  "nombre": "La Chabela Rooftop",
+  "barrio": "Modelia",
+  "localidad": "Fontibón",
+  "direccion": "Calle 23#75-41",
+  "concepto": "Rooftop de coctelería clásica y de autor acompañada de un menu de Burguers y sandwich",
+  "cocina": "Cocina de autor",
+  "musicaTxt": "Variado",
+  "musica": "Variada",
+  "capacidad": 70,
+  "instagram": "lachabela.rooftop",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/message/UELQTB7ADGQ6E1"
+  },
+  "lat": 4.65942,
+  "lon": -74.11489
+ },
+ {
+  "id": 51,
+  "nombre": "Tavo Izakaya Sushi-Bar",
+  "barrio": "Modelia",
+  "localidad": "Fontibón",
+  "direccion": "carrera 75#23a-23",
+  "concepto": "Restaurante japonés fusion latina",
+  "cocina": "Asiática",
+  "musicaTxt": "Hip hop 80´s",
+  "musica": "Variada",
+  "capacidad": 44,
+  "instagram": "tavo_izakaya",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573235117592?text=Hola%2C%20quiero%20reservar%20en%20Tavo%20Izakaya%20Sushi-Bar%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.65967,
+  "lon": -74.11464
+ },
+ {
+  "id": 52,
+  "nombre": "PIKA",
+  "barrio": "Chapinero",
+  "localidad": "Chapinero",
+  "direccion": "Diagonal 55#4-14",
+  "concepto": "COCINA DE AUTOR",
+  "cocina": "Cocina de autor",
+  "musicaTxt": "variado",
+  "musica": "Variada",
+  "capacidad": 60,
+  "instagram": "pika.restaurante",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573052302708?text=Hola%2C%20quiero%20reservar%20en%20PIKA%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.63766,
+  "lon": -74.0581
+ },
+ {
+  "id": 53,
+  "nombre": "amen ramen",
+  "barrio": "Chapinero",
+  "localidad": "Chapinero",
+  "direccion": "Carrera 6#53-51",
+  "concepto": "fusion colombo asiatica",
+  "cocina": "Asiática",
+  "musicaTxt": "variado",
+  "musica": "Variada",
+  "capacidad": 70,
+  "instagram": "amenramenya",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573178868482?text=Hola%2C%20quiero%20reservar%20en%20amen%20ramen%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.63739,
+  "lon": -74.06003
+ },
+ {
+  "id": 54,
+  "nombre": "ODEM",
+  "barrio": "Chapinero",
+  "localidad": "Chapinero",
+  "direccion": "CALLE 63 # 13 -11",
+  "concepto": "COMIDA MEXICANA",
+  "cocina": "Mexicana",
+  "musicaTxt": "ELECTRONICA - REGGATTON",
+  "musica": "Electrónica y house",
+  "capacidad": 800,
+  "instagram": null,
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573143489438?text=Hola%2C%20quiero%20reservar%20en%20ODEM%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.65013,
+  "lon": -74.06168
+ },
+ {
+  "id": 55,
+  "nombre": "Salsa y son",
+  "barrio": "Chico lago",
+  "localidad": "Chapinero",
+  "direccion": "Cra 14 # 82-87",
+  "concepto": null,
+  "cocina": "Por confirmar",
+  "musicaTxt": "Salsa",
+  "musica": "Salsa y tropical",
+  "capacidad": null,
+  "instagram": "salsaysonoficial",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573227283910?text=Hola%2C%20quiero%20reservar%20en%20Salsa%20y%20son%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.6661,
+  "lon": -74.05663
+ },
+ {
+  "id": 56,
+  "nombre": "Corazón herido",
+  "barrio": "Chico lago",
+  "localidad": "Chapinero",
+  "direccion": "Carrera 14a # 83-06",
+  "concepto": null,
+  "cocina": "Por confirmar",
+  "musicaTxt": "Popular",
+  "musica": "Popular y ranchera",
+  "capacidad": null,
+  "instagram": "corazonheridobar",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.link/ebodyd"
+  },
+  "lat": 4.66716,
+  "lon": -74.05608
+ },
+ {
+  "id": 57,
+  "nombre": "Casa de la ranchera",
+  "barrio": "Chico lago",
+  "localidad": "Chapinero",
+  "direccion": "Calle 83 # 14-31",
+  "concepto": null,
+  "cocina": "Por confirmar",
+  "musicaTxt": "Popular",
+  "musica": "Popular y ranchera",
+  "capacidad": null,
+  "instagram": "casadelarancherabta",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.link/xki38p"
+  },
+  "lat": 4.66741,
+  "lon": -74.05583
+ },
+ {
+  "id": 58,
+  "nombre": "Rayar",
+  "barrio": "Navarra",
+  "localidad": "Usaquén",
+  "direccion": "Cra 19 No 23 Norte 96 Navarra Casa 10",
+  "concepto": null,
+  "cocina": "Por confirmar",
+  "musicaTxt": "Prueba",
+  "musica": "Variada",
+  "capacidad": null,
+  "instagram": "vamosarayar",
+  "reserva": {
+   "via": "WhatsApp",
+   "url": "https://wa.me/573116088109?text=Hola%2C%20quiero%20reservar%20en%20Rayar%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+  },
+  "lat": 4.695,
+  "lon": -74.047
+ }
+];
+</script>
+<script>
+(function(){
+const BARES = window.BARES || [];
+const PRECIO = 35000;
+const fmt = n => '$' + n.toLocaleString('es-CO');
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+const iniciales = n => n.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9 ]/g,'').split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
+
+/* ---------- Edad ---------- */
+if (!store.get('bw_edad', false)) $('#modalEdad').hidden = false;
+$('#edadSi').onclick = () => { store.set('bw_edad', true); $('#modalEdad').hidden = true; };
+$('#edadNo').onclick = () => { document.querySelector('#modalEdad .edad p').textContent = 'Lo sentimos: BAR WEEK es solo para mayores de 18 años.'; };
+
+/* ---------- Cuenta regresiva ---------- */
+const inicio = new Date('2026-11-28T00:00:00-05:00');
+function tic(){
+  let ms = inicio - new Date();
+  if (ms <= 0) { $('#cuenta').textContent = 'BAR WEEK está en curso'; return; }
+  $('#cd-d').textContent = Math.ceil(ms/864e5);
+}
+tic(); setInterval(tic, 30000);
+
+/* ---------- Cifras ---------- */
+const localidades = [...new Set(BARES.map(b => b.localidad))];
+$('#nLocalidades').textContent = localidades.length;
+$('#nBares').textContent = BARES.length >= 50 ? '+50' : BARES.length;
+const cLocAll = BARES.reduce((m,b) => (m[b.localidad]=(m[b.localidad]||0)+1, m), {});
+document.querySelectorAll('[data-n]').forEach(el => { const n = cLocAll[el.dataset.n]||0; el.textContent = n + (n===1?' bar':' bares'); });
+document.querySelectorAll('[data-n-solo]').forEach(el => el.textContent = cLocAll[el.dataset.nSolo]||0);
+document.querySelectorAll('[data-n-otras]').forEach(el => el.textContent = '+' + (BARES.length - ['Chapinero','Usaquén','La Candelaria','Fontibón'].reduce((s,l)=>s+(cLocAll[l]||0),0)));
+const LOGOS = ["acertijo_bar", "amenramenya", "arrogantebogota", "bombayrooftop", "campodeifiori.bog", "casadelarancherabta", "chanchanlatino", "colombiasocialclubusaquen", "companiacriolla", "elaquelarre.restaurantebar", "elhumeroymaduro", "gallocolorado.bog", "huertabarbog", "lacasanegra.bog", "lachabela.rooftop", "leonor_speakeasy", "mapache_bar", "oak.ab", "omm.rest", "petroniobogota", "pika.restaurante", "pub_beer", "radioestrella.bog", "salsaysonoficial", "sexyseoulbbq", "sudokugourmet", "tachoyya", "tascalapuertadealcala", "tavo_izakaya", "tejolaembajada", "tokyorooftopp", "vamosarayar"];
+const nombreDe = h => (BARES.find(b => b.instagram === h) || {}).nombre || (h === 'pub_beer' ? 'Pub Beer' : h);
+const tk = LOGOS.map(h => `<img src="https://barweek-bogota.netlify.app/assets/logos/${h}.png" alt="${esc(nombreDe(h))}">`).join('');
+$('#ticker').innerHTML = tk + tk;
+document.querySelectorAll('[data-n-locs]').forEach(el => el.textContent = Object.keys(cLocAll).length - 4);
+
+/* ---------- Estado ---------- */
+let ruta = store.get('bw_ruta', []).filter(id => BARES.some(b => b.id === id));
+const filtro = { q:'', loc:'', cocina:'', musica:'' };
+
+/* ---------- Filtros ---------- */
+const cuenta = key => BARES.reduce((m,b) => (m[b[key]] = (m[b[key]]||0)+1, m), {});
+const cLoc = cuenta('localidad');
+const chips = $('#chipsLoc');
+const mkChip = (val, label, n) => `<button class="chip${filtro.loc===val?' on':''}" data-loc="${esc(val)}">${esc(label)}<span class="ct">${n}</span></button>`;
+function pintarChips(){
+  chips.innerHTML = mkChip('', 'Todas las localidades', BARES.length) +
+    Object.entries(cLoc).sort((a,b) => b[1]-a[1]).map(([l,n]) => mkChip(l, l, n)).join('');
+}
+pintarChips();
+chips.onclick = e => { const b = e.target.closest('[data-loc]'); if (!b) return; filtro.loc = b.dataset.loc; pintarChips(); render(true); };
+function llenarSelect(sel, key){
+  Object.entries(cuenta(key)).sort((a,b) => a[0].localeCompare(b[0],'es')).forEach(([v,n]) => {
+    const o = document.createElement('option'); o.value = v; o.textContent = `${v} (${n})`; sel.appendChild(o);
+  });
+}
+llenarSelect($('#fCocina'), 'cocina');
+llenarSelect($('#fMusica'), 'musica');
+$('#fCocina').onchange = e => { filtro.cocina = e.target.value; render(true); };
+$('#fMusica').onchange = e => { filtro.musica = e.target.value; render(true); };
+$('#q').oninput = e => { filtro.q = e.target.value.trim().toLowerCase(); render(true); };
+
+const norm = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+function filtrados(){
+  const q = norm(filtro.q);
+  return BARES.filter(b =>
+    (!filtro.loc || b.localidad === filtro.loc) &&
+    (!filtro.cocina || b.cocina === filtro.cocina) &&
+    (!filtro.musica || b.musica === filtro.musica) &&
+    (!q || norm([b.nombre,b.barrio,b.localidad,b.cocina,b.concepto,b.musicaTxt].join(' ')).includes(q))
+  );
+}
+
+/* ---------- Mapa ---------- */
+let mapa = null, marcadores = {}, activo = null;
+if (window.L) {
+  mapa = L.map('mapa', { zoomControl:true, scrollWheelZoom:false }).setView([4.665,-74.075], 12);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, className: 'tiles-oscuros',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(mapa);
+  mapa.on('focus', () => mapa.scrollWheelZoom.enable());
+  BARES.forEach(b => {
+    if (b.lat == null) return;
+    const m = L.marker([b.lat, b.lon], { icon: icono(b) });
+    m.bindPopup(`<b>${esc(b.nombre)}</b><span class="pp-meta">${esc(b.barrio)} · ${esc(b.localidad)}</span><br><button class="btn btn-oro btn-sm" data-ver="${b.id}">Ver bar</button>`);
+    m.on('click', () => marcarActivo(b.id, false));
+    marcadores[b.id] = m;
+  });
+} else {
+  $('#mapa').innerHTML = '<div class="vacio" style="margin:20px">No se pudo cargar el mapa.</div>';
+}
+function icono(b){
+  const cls = 'pin' + (ruta.includes(b.id) ? ' en-ruta' : '') + (activo === b.id ? ' activo' : '');
+  return L.divIcon({ className:'', html:`<div class="${cls}"></div>`, iconSize:[18,18], iconAnchor:[9,9], popupAnchor:[0,-10] });
+}
+function refrescarIconos(){ if (!mapa) return; BARES.forEach(b => marcadores[b.id] && marcadores[b.id].setIcon(icono(b))); }
+
+/* ---------- Lista ---------- */
+const AVATARES = new Set(["2tonepub", "acertijo_bar", "amenramenya", "arrogantebogota", "bombayrooftop", "campodeifiori.bog", "casadelarancherabta", "chanchanlatino", "colombiasocialclubusaquen", "companiacriolla", "corazonheridobar", "elaquelarre.restaurantebar", "elhumeroymaduro", "gallocolorado.bog", "huertabarbog", "labombicol", "lacasanegra.bog", "lachabela.rooftop", "leonor_speakeasy", "mapache_bar", "oak.ab", "omm.rest", "petroniobogota", "pika.restaurante", "pub_beer", "radioestrella.bog", "salsaysonoficial", "seventyvip", "sexyseoulbbq", "sudokugourmet", "tachoyya", "tascalapuertadealcala", "tavo_izakaya", "tejolaembajada", "tokyorooftopp", "vamosarayar"]);
+const avatar = b => {
+  const h = /^Pub Beer/.test(b.nombre) ? 'pub_beer' : b.instagram;
+  return h && AVATARES.has(h) ? `https://barweek-bogota.netlify.app/assets/avatars/${h}.jpg` : null;
+};
+function tarjeta(b){
+  const en = ruta.includes(b.id);
+  return `<article class="bar${activo===b.id?' activo':''}" data-id="${b.id}">
+    ${avatar(b) ? `<img class="ini ini-img" src="${avatar(b)}" alt="Logo de ${esc(b.nombre)}">` : `<div class="ini">${esc(iniciales(b.nombre))}</div>`}
+    <div><h4>${esc(b.nombre)}</h4><div class="meta">${esc(b.barrio)} · ${esc(b.localidad)}</div>
+      <div class="tags"><span class="tag">${esc(b.cocina)}</span><span class="tag">♪ ${esc(b.musica)}</span></div></div>
+    <button class="add${en?' on':''}" data-add="${b.id}" aria-label="${en?'Quitar de':'Agregar a'} mi ruta">${en?'✓':'+'}</button>
+  </article>`;
+}
+function render(ajustar){
+  const lst = filtrados();
+  $('#lista').innerHTML = `<div class="resumen">${lst.length} ${lst.length===1?'bar':'bares'}${filtro.loc?' en '+esc(filtro.loc):''}</div>` +
+    (lst.length ? lst.map(tarjeta).join('') : '<div class="vacio">Ningún bar coincide con tu búsqueda.</div>');
+  if (mapa) {
+    const ids = new Set(lst.map(b => b.id));
+    BARES.forEach(b => { const m = marcadores[b.id]; if (!m) return; ids.has(b.id) ? m.addTo(mapa) : m.remove(); });
+    if (ajustar && lst.length) {
+      const pts = lst.filter(b => b.lat != null).map(b => [b.lat,b.lon]);
+      if (pts.length) mapa.fitBounds(pts, { padding:[40,40], maxZoom:15 });
+    }
+  }
+}
+$('#lista').onclick = e => {
+  const add = e.target.closest('[data-add]');
+  if (add) { alternar(+add.dataset.add); return; }
+  const card = e.target.closest('.bar');
+  if (card) { const id = +card.dataset.id; marcarActivo(id, true); abrirFicha(id); }
+};
+function marcarActivo(id, volar){
+  activo = id;
+  document.querySelectorAll('.bar').forEach(el => el.classList.toggle('activo', +el.dataset.id === id));
+  refrescarIconos();
+  const b = BARES.find(x => x.id === id);
+  const mapaVisible = window.innerWidth > 900 || $('#explorador').dataset.vista === 'mapa';
+  if (mapa && volar && mapaVisible && b && b.lat != null) {
+    mapa.setView([b.lat,b.lon], 15);
+    marcadores[id].openPopup();
+  }
+}
+document.addEventListener('click', e => { const v = e.target.closest('[data-ver]'); if (v) abrirFicha(+v.dataset.ver); });
+
+/* Vista lista/mapa en móvil */
+document.querySelectorAll('.toggle-vista .chip').forEach(btn => btn.onclick = () => {
+  document.querySelectorAll('.toggle-vista .chip').forEach(b => b.classList.toggle('on', b === btn));
+  $('#explorador').dataset.vista = btn.dataset.vista;
+  if (btn.dataset.vista === 'mapa' && mapa) setTimeout(() => { mapa.invalidateSize(); render(true); }, 50);
+});
+
+/* ---------- Ruta ---------- */
+function guardar(){ store.set('bw_ruta', ruta); pintarRuta(); render(false); refrescarIconos(); }
+function alternar(id){
+  const b = BARES.find(x => x.id === id);
+  if (ruta.includes(id)) { ruta = ruta.filter(x => x !== id); toast(`${b.nombre} salió de tu ruta`); }
+  else { ruta.push(id); toast(`${b.nombre} está en tu ruta (${ruta.length})`); }
+  guardar();
+  if (!$('#modalBar').hidden) abrirFicha(id);
+}
+function pintarRuta(){
+  const n = ruta.length;
+  $('#badgeRuta').hidden = !n; $('#badgeRuta').textContent = n;
+  $('#rutaN').textContent = `${n} ${n===1?'parada':'paradas'}`;
+  $('#rutaTotal').textContent = fmt(n*PRECIO);
+  $('#verMaps').disabled = n < 1; $('#compartir').disabled = n < 1;
+  $('#paradas').innerHTML = n ? ruta.map((id,i) => {
+    const b = BARES.find(x => x.id === id);
+    return `<div class="parada"><div class="num">${i+1}</div><div><button class="parada-nom" data-ficha="${id}">${esc(b.nombre)}</button><span>${esc(b.barrio)} · ${esc(b.localidad)}</span>${botonReserva(b, 'parada-res')}</div>
+      <div class="acc"><button data-sube="${id}" aria-label="Subir"${i===0?' disabled':''}>↑</button><button data-baja="${id}" aria-label="Bajar"${i===n-1?' disabled':''}>↓</button><button data-quita="${id}" aria-label="Quitar">✕</button></div></div>`;
+  }).join('') : '<div class="vacio">Tu ruta está vacía.<br>Toca <b class="oro">+</b> en un bar o carga una ruta sugerida.</div>';
+}
+$('#paradas').onclick = e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.ficha) { abrirFicha(+t.dataset.ficha); return; }
+  const mover = (id, d) => { const i = ruta.indexOf(id), j = i + d; if (j < 0 || j >= ruta.length) return; [ruta[i], ruta[j]] = [ruta[j], ruta[i]]; guardar(); };
+  if (t.dataset.sube) mover(+t.dataset.sube, -1);
+  if (t.dataset.baja) mover(+t.dataset.baja, 1);
+  if (t.dataset.quita) { ruta = ruta.filter(x => x !== +t.dataset.quita); guardar(); }
+};
+const abrirPanel = on => { $('#panelRuta').classList.toggle('on', on); $('#velo').classList.toggle('on', on); $('#panelRuta').setAttribute('aria-hidden', !on); };
+$('#abrirRuta').onclick = () => abrirPanel(true);
+$('#velo').onclick = () => abrirPanel(false);
+document.querySelector('[data-cerrar-ruta]').onclick = () => abrirPanel(false);
+const dirTxt = b => `${b.direccion}, Bogotá, Colombia`;
+$('#verMaps').onclick = () => {
+  const bs = ruta.map(id => BARES.find(x => x.id === id));
+  if (!bs.length) return;
+  const dest = bs[bs.length-1];
+  const params = new URLSearchParams({ api:'1', destination: dirTxt(dest), travelmode:'driving' });
+  if (bs.length > 1) params.set('waypoints', bs.slice(0,-1).map(dirTxt).join('|'));
+  window.open('https://www.google.com/maps/dir/?' + params.toString(), '_blank', 'noopener');
+};
+$('#compartir').onclick = () => {
+  const bs = ruta.map(id => BARES.find(x => x.id === id));
+  const txt = `Mi ruta BAR WEEK Bogotá 🍸\n` + bs.map((b,i) => `${i+1}. ${b.nombre} (${b.barrio})`).join('\n') + `\n\nCóctel de autor + tapa a $35.000 · 28 nov – 7 dic`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+};
+
+/* ---------- Rutas sugeridas ---------- */
+const RUTAS = [
+  { img:'rooftop', zona:'Chapinero', titulo:'Zona T y La Cabrera', f: b => b.localidad==='Chapinero' && /retiro|cabrera|zona rosa|chico/i.test(b.barrio) },
+  { img:'usaquen', zona:'Usaquén', titulo:'Usaquén de noche', f: b => b.localidad==='Usaquén' },
+  { img:'barra-tapas', zona:'Fontibón', titulo:'Modelia gastronómica', f: b => /modelia/i.test(b.barrio) },
+  { img:'bartender', zona:'Chapinero · Barrios Unidos', titulo:'Chapinero clásico y San Felipe', f: b => (b.localidad==='Chapinero' && /^chapinero/i.test(b.barrio)) || /san felipe|polo/i.test(b.barrio) },
+];
+function armarRuta(r){
+  const vistos = new Set(), sel = [];
+  for (const b of BARES.filter(r.f)) {          // una sola sede por marca
+    const marca = b.nombre.split(' ').slice(0,2).join(' ').toLowerCase();
+    if (vistos.has(marca)) continue;
+    vistos.add(marca); sel.push(b);
+    if (sel.length === 4) break;
+  }
+  return sel;
+}
+$('#rutasGrid').innerHTML = RUTAS.map((r,i) => {
+  const bs = armarRuta(r);
+  return `<div class="ruta"><div class="r-foto" style="--img:url(https://barweek-bogota.netlify.app/assets/${r.img}.jpg)"></div><div class="r-cuerpo"><span class="zona">${esc(r.zona)}</span><h3>${esc(r.titulo)}</h3>
+    <ol>${bs.map(b => `<li>${esc(b.nombre)}</li>`).join('')}</ol>
+    <button class="btn btn-linea btn-sm" data-ruta="${i}">Cargar en mi ruta</button></div></div>`;
+}).join('');
+$('#rutasGrid').onclick = e => {
+  const t = e.target.closest('[data-ruta]'); if (!t) return;
+  ruta = armarRuta(RUTAS[+t.dataset.ruta]).map(b => b.id);
+  guardar(); abrirPanel(true);
+};
+
+/* ---------- Reserva: enlace directo al canal del bar ---------- */
+const seguro = u => typeof u === 'string' && /^https:\/\//i.test(u.replace(/^http:/i,'https:')) ? u : null;
+const textoReserva = r => !r ? 'Reservar' : r.via === 'WhatsApp' ? 'Reservar por WhatsApp' : r.via === 'Sistema propio' ? 'Reservar en su web' : `Reservar en ${r.via}`;
+const botonReserva = (b, cls) => {
+  const u = b.reserva && seguro(b.reserva.url);
+  return u ? `<a class="${cls}" href="${esc(u)}" target="_blank" rel="noopener">${esc(textoReserva(b.reserva))}</a>` : '';
+};
+
+/* ---------- Ficha ---------- */
+function abrirFicha(id){
+  const b = BARES.find(x => x.id === id); if (!b) return;
+  const en = ruta.includes(id);
+  const maps = 'https://www.google.com/maps/search/?' + new URLSearchParams({ api:'1', query: dirTxt(b) });
+  $('#fichaBar').innerHTML = `
+    <div class="ficha-top"><span class="foto-nota">Foto real del bar</span>${avatar(b) ? `<img class="ficha-logo" src="${avatar(b)}" alt="">` : ''}<h3>${esc(b.nombre)}</h3></div>
+    <button class="cerrar" data-cerrar="modalBar" aria-label="Cerrar">✕</button>
+    <div class="ficha-body">
+      <div style="color:var(--suave);font-size:.9rem">${esc(b.barrio)} · ${esc(b.localidad)}</div>
+      <div class="ficha-menu"><div class="p">${fmt(PRECIO)}</div>
+        <div style="font-size:.88rem;color:var(--suave)">Cóctel de autor + tapa · <span class="pend">el bar publica su menú antes del lanzamiento</span></div></div>
+      <dl class="dl">
+        <dt>Cocina</dt><dd>${esc(b.concepto || b.cocina)}</dd>
+        <dt>Música</dt><dd>${esc(b.musicaTxt && b.musicaTxt !== 'nan' ? b.musicaTxt : b.musica)}</dd>
+        <dt>Horario</dt><dd class="pend">Por confirmar</dd>
+        ${b.capacidad ? `<dt>Capacidad</dt><dd>${b.capacidad} personas</dd>` : ''}
+        <dt>Dirección</dt><dd>${esc(b.direccion)}</dd>
+        ${b.instagram ? `<dt>Instagram</dt><dd><a href="https://instagram.com/${encodeURIComponent(b.instagram)}" target="_blank" rel="noopener" class="oro">@${esc(b.instagram)}</a></dd>` : ''}
+      </dl>
+      <div class="ficha-acc">
+        ${botonReserva(b, 'btn btn-oro')}
+        <button class="btn btn-linea" data-add="${b.id}">${en ? '✓ En mi ruta' : '+ Agregar a mi ruta'}</button>
+        <a class="btn btn-linea" href="${maps}" target="_blank" rel="noopener">Cómo llegar</a>
+      </div>
+    </div>`;
+  $('#modalBar').hidden = false;
+}
+$('#modalBar').onclick = e => {
+  if (e.target.id === 'modalBar') { $('#modalBar').hidden = true; return; }
+  const add = e.target.closest('[data-add]'); if (add) alternar(+add.dataset.add);
+};
+document.addEventListener('click', e => { const c = e.target.closest('[data-cerrar]'); if (c) $('#'+c.dataset.cerrar).hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('#modalBar').hidden = true; abrirPanel(false); } });
+
+/* ---------- Toast ---------- */
+let tt;
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
+
+document.querySelectorAll('[data-ir-loc]').forEach(t => t.onclick = () => {
+  filtro.loc = t.dataset.irLoc; pintarChips(); render(true);
+  document.querySelector('#mapa-vivo').scrollIntoView({ behavior:'smooth' });
+});
+pintarRuta();
+render(true);
+})();
+</script>
+</div>

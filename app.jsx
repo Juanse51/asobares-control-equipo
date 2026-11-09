@@ -1908,7 +1908,8 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
       };
       const loadMyNameIs = async () => {
         setMyNameIsLoading(true);
-        const { data } = await supabase.from('inscripciones_my_name_is').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabase.from('inscripciones_my_name_is').select('*').order('created_at', { ascending: false });
+        if (error) console.error('[MNI] Error cargando inscripciones:', error.message, error.code);
         setMyNameIsData(data || []);
         setMyNameIsLoading(false);
       };
@@ -5530,6 +5531,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
                         <p style={{ fontSize: 22, fontWeight: 700, color }}>{myNameIsLoading ? '…' : val}</p>
                       </div>
                     ))}
+                    <button onClick={loadMyNameIs} style={{ padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i> Recargar</button>
                     <button onClick={exportMyNameIsExcel} disabled={filtered.length === 0} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
                   </div>
                   <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>

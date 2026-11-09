@@ -186,23 +186,29 @@
 .mni-req-mark{color:var(--mni-red) !important;}
 
 /* ---- CHECKBOXES ---- */
-.mni-checks{display:flex;flex-direction:column;gap:8px;margin-bottom:14px !important;}
-.mni-checks__label{font-size:15px;font-weight:600;color:var(--mni-white70);margin-bottom:10px !important;display:block;}
+.mni-checks{display:flex;flex-direction:column;gap:4px;margin-bottom:14px !important;}
+.mni-checks__label{font-size:15px;font-weight:600;color:var(--mni-white70);margin-bottom:8px !important;display:block;}
 .mni-check{
   display:flex;align-items:center;gap:12px;
   font-size:15px;color:var(--mni-white70);cursor:pointer;
-  padding:10px 14px !important;border-radius:9px;
-  border:1.5px solid transparent;
-  transition:background .18s,border-color .18s;
+  padding:11px 14px !important;border-radius:8px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(239,246,255,.1);
+  transition:background .15s,border-color .15s,color .15s;
 }
-.mni-check:hover{background:rgba(29,111,232,.12);border-color:rgba(29,111,232,.3);}
+.mni-check:hover{background:rgba(29,111,232,.1);border-color:rgba(29,111,232,.35);}
+.mni-check.mni-check--checked{
+  background:rgba(29,111,232,.14) !important;
+  border-color:rgba(29,111,232,.5) !important;
+  color:var(--mni-white) !important;
+}
 .mni-check input[type="checkbox"]{
   width:20px !important;height:20px !important;
   flex-shrink:0;cursor:pointer;
   appearance:none !important;
   -webkit-appearance:none !important;
-  background:rgba(255,255,255,.08) !important;
-  border:2px solid rgba(239,246,255,.35) !important;
+  background:rgba(255,255,255,.1) !important;
+  border:2px solid rgba(239,246,255,.3) !important;
   border-radius:5px !important;
   position:relative;
   transition:background .15s,border-color .15s !important;
@@ -220,8 +226,7 @@
   border-top:none;border-left:none;
   transform:rotate(45deg);
 }
-.mni-check.mni-check--checked{background:rgba(29,111,232,.15);border-color:rgba(29,111,232,.5);}
-.mni-otro-wrap{margin-top:6px !important;padding-left:4px !important;}
+.mni-otro-wrap{margin-top:8px !important;padding-left:4px !important;}
 .mni-otro-wrap input{margin-top:4px !important;}
 
 /* ---- POLÍTICA ---- */

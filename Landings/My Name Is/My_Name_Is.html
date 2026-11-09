@@ -187,12 +187,12 @@
 .mni-req-mark{color:var(--mni-red) !important;}
 
 /* ---- CHECKBOXES ---- */
-.mni-checks{display:flex;flex-direction:column;gap:2px;margin-bottom:14px !important;}
+.mni-checks{display:flex;flex-direction:column;gap:0;margin-bottom:14px !important;}
 .mni-checks__label{font-size:15px;font-weight:600;color:var(--mni-white70);margin-bottom:10px !important;display:block;}
 .mni-check{
   display:flex;align-items:center;gap:14px;
   font-size:15px;color:var(--mni-white70);cursor:pointer;
-  padding:10px 12px !important;border-radius:8px;
+  padding:7px 10px !important;border-radius:6px;
   background:transparent;border:none;
   transition:background .15s,color .15s;
   line-height:1.4;
@@ -200,13 +200,13 @@
 .mni-check:hover{background:rgba(29,111,232,.1);}
 .mni-check.mni-check--checked{color:var(--mni-white) !important;}
 .mni-check input[type="checkbox"]{
-  width:24px !important;height:24px !important;
+  width:22px !important;height:22px !important;
   flex-shrink:0;cursor:pointer;
   appearance:none !important;
   -webkit-appearance:none !important;
   background:rgba(255,255,255,.08) !important;
-  border:2px solid rgba(239,246,255,.35) !important;
-  border-radius:6px !important;
+  border:2px solid rgba(239,246,255,.4) !important;
+  border-radius:3px !important;
   position:relative;
   margin:0 !important;
   transition:background .15s,border-color .15s !important;
@@ -218,7 +218,7 @@
 .mni-check input[type="checkbox"]:checked::after{
   content:'';
   position:absolute;
-  left:7px;top:3px;
+  left:6px;top:2px;
   width:7px;height:12px;
   border:2.5px solid #fff;
   border-top:none;border-left:none;

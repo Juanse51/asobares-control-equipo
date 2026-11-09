@@ -978,6 +978,12 @@
       const [mixShakeFiltroEstado, setMixShakeFiltroEstado] = useState('all');
       const [mixShakeDetalle, setMixShakeDetalle] = useState(null);
       const [mixShakeNotasEdit, setMixShakeNotasEdit] = useState('');
+      const [myNameIsData, setMyNameIsData] = useState([]);
+      const [myNameIsLoading, setMyNameIsLoading] = useState(false);
+      const [myNameIsSearch, setMyNameIsSearch] = useState('');
+      const [myNameIsFiltroEstado, setMyNameIsFiltroEstado] = useState('all');
+      const [myNameIsDetalle, setMyNameIsDetalle] = useState(null);
+      const [myNameIsNotasEdit, setMyNameIsNotasEdit] = useState('');
 
 const [circuloGastroData, setCirculoGastroData] = useState([]);
 const [circuloGastroLoading, setCirculoGastroLoading] = useState(false);
@@ -1064,6 +1070,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
       useEffect(() => { if (view === 'crm' || view === 'crm-espacios-corp') { setEspaciosCorpDetalle(null); loadEspaciosCorp(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-ecosistema-dj') { loadEcosistemaDj(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-mix-shake') { setMixShakeDetalle(null); loadMixShake(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-my-name-is') { setMyNameIsDetalle(null); loadMyNameIs(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-circulo-gastro') { setCirculoGastroDetalle(null); loadCirculoGastro(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-cluster-dj') { setClusterDjDetalle(null); loadClusterDj(); } }, [view]);
       useEffect(() => { if (view === 'crm-base-total') { loadBaseTotalPage(0, ''); loadBaseTotalStats(); loadBaseTotalOpciones(); } else if (view === 'crm') { loadBaseTotalCount(); } }, [view]);
@@ -1899,6 +1906,56 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
           return true;
         });
       };
+      const loadMyNameIs = async () => {
+        setMyNameIsLoading(true);
+        const { data } = await supabase.from('inscripciones_my_name_is').select('*').order('created_at', { ascending: false });
+        setMyNameIsData(data || []);
+        setMyNameIsLoading(false);
+      };
+      const updateMyNameIsEstado = async (id, estado) => {
+        await supabase.from('inscripciones_my_name_is').update({ estado }).eq('id', id);
+        setMyNameIsData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setMyNameIsDetalle(prev => prev?.id === id ? { ...prev, estado } : prev);
+      };
+      const saveMyNameIsNotas = async (id, notas) => {
+        await supabase.from('inscripciones_my_name_is').update({ notas }).eq('id', id);
+        setMyNameIsData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setMyNameIsDetalle(prev => prev?.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteMyNameIs = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_my_name_is').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setMyNameIsData(prev => prev.filter(r => r.id !== id));
+        setMyNameIsDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getMyNameIsFiltered = () => {
+        const q = myNameIsSearch.toLowerCase();
+        return myNameIsData.filter(r => {
+          if (myNameIsFiltroEstado !== 'all' && r.estado !== myNameIsFiltroEstado) return false;
+          if (q && ![r.nombre, r.apellidos, r.email, r.cargo, r.ciudad, r.departamento, r.nombre_comercial, r.numero_identificacion].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportMyNameIsExcel = () => {
+        const filtered = getMyNameIsFiltered();
+        const headers = ['Fecha','Nombre','Apellidos','Email','Teléfono','Tipo ID','Nº ID','Género','Etnia','Grupos Poblacionales','Cargo','Rango Edad','Nivel Inglés','Razón Social','NIT','Nombre Comercial','Tipo Establecimiento','Tipo Est. Otro','Departamento','Ciudad','Dirección','Cómo se enteró','Estado','Notas'];
+        const rows = filtered.map(r => [
+          r.created_at ? new Date(r.created_at).toLocaleDateString('es-CO') : '',
+          r.nombre, r.apellidos, r.email, r.telefono, r.tipo_identificacion, r.numero_identificacion,
+          r.genero, r.etnia || '', r.grupos_poblacionales || '', r.cargo, r.rango_edad, r.nivel_ingles,
+          r.razon_social, r.nit, r.nombre_comercial, r.tipo_establecimiento || '', r.tipo_establecimiento_otro || '',
+          r.departamento, r.ciudad, r.direccion, r.como_se_entero, r.estado || '', r.notas || ''
+        ]);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length), 10) }));
+        XLSX.utils.book_append_sheet(wb, ws, 'My Name Is');
+        XLSX.writeFile(wb, 'my_name_is_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      };
+
       const loadAfiliados = async () => {
         setAfiliadosLoading(true);
         const { data } = await supabase.from('afiliados').select('*').order('razon_social');
@@ -2701,7 +2758,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div>
               <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>RECURSOS</p>
               <button onClick={() => setView('docs')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'docs' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'docs' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'docs' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2-open" style={{fontSize:18,marginRight:8}}></i>Documentación</button>
-              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
+              {currentUser.role !== 'invitado' && <button onClick={() => setView('crm')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados','crm-my-name-is'].includes(view) ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-aev-bootcamp2','crm-aev-seguridad','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados','crm-my-name-is'].includes(view) ? 'white' : '#94a3b8', fontSize: 15, fontWeight: ['crm','crm-aev','crm-aev-folder','fontur','registros','crm-gastro','crm-aev-lab','crm-armenia-folder','crm-armenia-cap','crm-armenia-diag','crm-armenia-asistencia','crm-armenia-guia','crm-armenia-postgastro','crm-bar-week','crm-espacios-corp','crm-ecosistema-dj','crm-mix-shake','crm-circulo-gastro','crm-cluster-dj','crm-base-total','crm-afiliados','crm-my-name-is'].includes(view) ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-folder2" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>CRM</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('certificaciones')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'certificaciones' ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'transparent', color: view === 'certificaciones' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'certificaciones' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-mortarboard" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Certificaciones</button>}
               {currentUser.role !== 'invitado' && <button onClick={() => setView('conecta')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === 'conecta' ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === 'conecta' ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === 'conecta' ? 600 : 400, cursor: 'pointer', textAlign: 'left', width: '100%' }}><i className="bi bi-handshake" style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>Conecta</button>}
               {currentUser.role === 'admin' && (<><div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '16px 0' }}></div><p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, padding: '0 16px', marginBottom: 8, letterSpacing: 1 }}>ADMINISTRACIÓN</p>{[{ id: 'team', icon: 'bi-people', label: 'Gestión de Equipo' }, { id: 'analytics', icon: 'bi-graph-up', label: 'KPIs y Estadísticas' }].map(item => (<button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 10, border: 'none', background: view === item.id ? 'linear-gradient(135deg, #E84338, #c41e16)' : 'transparent', color: view === item.id ? 'white' : '#94a3b8', fontSize: 15, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left' }}><i className={'bi '+item.icon} style={{fontSize:18,lineHeight:1,verticalAlign:'middle'}}></i>{item.label}</button>))}</>)}
@@ -2717,7 +2774,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'crm-ecosistema-dj' && 'El Ecosistema DJ'}{view === 'crm-mix-shake' && 'Mix And Shake'}
                 {view === 'crm-circulo-gastro' && 'Círculo Gastro'}
                 {view === 'crm-cluster-dj' && 'Cluster DJ'}
-                {view === 'crm-base-total' && 'Base de Datos Total'}{view === 'crm-afiliados' && 'Afiliados'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
+                {view === 'crm-base-total' && 'Base de Datos Total'}{view === 'crm-afiliados' && 'Afiliados'}{view === 'crm-my-name-is' && 'My Name Is… — Inglés especializado en Mesa y Bar'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
               <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'center', flexShrink: 0 }}>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => { setShowNotifPanel(!showNotifPanel); if (!showNotifPanel) markAllRead(); }} className={bellShaking ? 'bell-shake' : ''} style={{ width: 44, height: 44, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 20, cursor: 'pointer', position: 'relative' }}><i className="bi bi-bell"></i>{unreadCount > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: '#E84338', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center' }}>{unreadCount}</span>}</button>
@@ -2935,7 +2992,8 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
                           { id: 'crm-circulo-gastro', icon: 'bi-fork-knife', title: 'Círculo Gastro', desc: 'Comunidad gastronómica de circulogastro.com — Inscripciones de profesionales, establecimientos, marcas y proveedores.', count: circuloGastroData.length, loading: circuloGastroLoading, color: '#e67e22', bg: '#fef3e2' },
                           { id: 'crm-cluster-dj', icon: 'bi-vinyl-fill', title: 'Cluster DJ', desc: 'Comunidad de DJs de clusterdj.co — Inscripciones de talentos, establecimientos, marcas y proveedores del sector.', count: clusterDjData.length, loading: clusterDjLoading, color: '#0ea5e9', bg: '#e0f2fe' },
                           { id: 'crm-base-total', icon: 'bi-database-fill', title: 'Base de Datos Total', desc: 'Base de datos general del sector — más de 120.000 registros de personas vinculadas a la industria de bares y restaurantes.', count: baseTotalCount, loading: baseTotalCount === null, color: '#1e293b', bg: '#f1f5f9' },
-                          { id: 'crm-afiliados', icon: 'bi-patch-check-fill', title: 'Afiliados', desc: 'Establecimientos afiliados a Asobares — razón social, representante legal, documentos y datos de contacto.', count: afiliadosData.length, loading: afiliadosLoading, color: '#16a34a', bg: '#dcfce7' }
+                          { id: 'crm-afiliados', icon: 'bi-patch-check-fill', title: 'Afiliados', desc: 'Establecimientos afiliados a Asobares — razón social, representante legal, documentos y datos de contacto.', count: afiliadosData.length, loading: afiliadosLoading, color: '#16a34a', bg: '#dcfce7' },
+                          { id: 'crm-my-name-is', icon: 'bi-translate', title: 'My Name Is…', desc: 'Inscripciones al programa My Name Is… — Inglés especializado en Mesa y Bar. Financiado por Fontur.', count: myNameIsData.length, loading: myNameIsLoading, color: '#0ea5e9', bg: '#e0f2fe' }
                   ].map(card => (
                     <div key={card.id} onClick={() => setView(card.id)} style={{ background: 'white', borderRadius: 20, padding: 28, cursor: 'pointer', border: '2px solid #f1f5f9', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.borderColor = card.color; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px ${card.color}22`; }} onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -5391,6 +5449,125 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
                           <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
                           <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
                           <div><p style={{ fontSize: 13 }}>{r.profesion}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
+                          {badge(r.estado)}
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-my-name-is' && (() => {
+              const mniEstados = { inscrito: { label: 'Inscrito', color: '#0ea5e9', bg: '#e0f2fe' }, confirmado: { label: 'Confirmado', color: '#10b981', bg: '#d1fae5' }, activo: { label: 'Activo', color: '#6366f1', bg: '#eef2ff' }, inactivo: { label: 'Inactivo', color: '#94a3b8', bg: '#f1f5f9' } };
+              const filtered = getMyNameIsFiltered();
+              const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+              const badge = (estado) => { const e = mniEstados[estado] || mniEstados.inscrito; return <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: e.bg, color: e.color }}>{e.label}</span>; };
+              const cell = (lbl, val) => <div style={{ padding: '10px 12px', background: '#f8f9fa', borderRadius: 8 }}><p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>{lbl}</p><p style={{ fontSize: 13, fontWeight: 600, color: val ? '#1a1a2e' : '#cbd5e1', wordBreak: 'break-word' }}>{val || '—'}</p></div>;
+              const sec = t => <p style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 10, marginTop: 4 }}>{t}</p>;
+              if (myNameIsDetalle) {
+                const r = myNameIsDetalle;
+                return (
+                  <div>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '2px solid #f1f5f9', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button onClick={() => setMyNameIsDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>← Inscritos</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{r.nombre} {r.apellidos}</h2>
+                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{r.cargo} · {r.ciudad}{r.departamento ? ', ' + r.departamento : ''} · {fmtDate(r.created_at)}</p>
+                      </div>
+                      {badge(r.estado)}
+                      <button onClick={() => { if (window.confirm(`¿Eliminar el registro de ${r.nombre} ${r.apellidos}?`)) deleteMyNameIs(r.id); }} style={{ padding: '8px 14px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('DATOS PERSONALES')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Nombre', r.nombre)}{cell('Apellidos', r.apellidos)}{cell('Email', r.email)}{cell('Teléfono', r.telefono)}{cell('Género', r.genero)}{cell('Etnia', r.etnia)}{cell('Grupos Poblacionales', r.grupos_poblacionales)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('IDENTIFICACIÓN Y PERFIL')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Tipo ID', r.tipo_identificacion)}{cell('Nº ID', r.numero_identificacion)}{cell('Cargo', r.cargo)}{cell('Rango de Edad', r.rango_edad)}{cell('Nivel de Inglés', r.nivel_ingles)}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          {sec('INFORMACIÓN DEL ESTABLECIMIENTO')}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                            {cell('Razón Social', r.razon_social)}{cell('NIT', r.nit)}{cell('Nombre Comercial', r.nombre_comercial)}{cell('Tipo Establecimiento', r.tipo_establecimiento)}{r.tipo_establecimiento_otro && cell('Tipo Est. (Otro)', r.tipo_establecimiento_otro)}{cell('Departamento', r.departamento)}{cell('Ciudad', r.ciudad)}{cell('Dirección', r.direccion)}{cell('Cómo se enteró', r.como_se_entero)}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>ESTADO</p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {Object.entries(mniEstados).map(([key, e]) => (
+                              <button key={key} onClick={() => updateMyNameIsEstado(r.id, key)} style={{ padding: '10px 14px', borderRadius: 10, border: '2px solid', borderColor: r.estado === key ? e.color : '#e5e7eb', background: r.estado === key ? e.bg : 'white', color: r.estado === key ? e.color : '#64748b', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>{e.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ background: 'white', borderRadius: 16, padding: 20 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 12 }}>NOTAS INTERNAS</p>
+                          <textarea value={myNameIsNotasEdit !== '' ? myNameIsNotasEdit : (r.notas || '')} onChange={e => setMyNameIsNotasEdit(e.target.value)} onFocus={() => setMyNameIsNotasEdit(r.notas || '')} rows={5} placeholder="Agrega notas internas..." style={{ width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          <button onClick={() => { saveMyNameIsNotas(r.id, myNameIsNotasEdit !== '' ? myNameIsNotasEdit : (r.notas || '')); setMyNameIsNotasEdit(''); }} style={{ marginTop: 10, width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              const counts = { inscrito: 0, confirmado: 0, activo: 0, inactivo: 0 };
+              myNameIsData.forEach(r => { if (counts[r.estado] !== undefined) counts[r.estado]++; });
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    {[['Total', myNameIsData.length, '#0ea5e9'], ['Inscrito', counts.inscrito, '#0ea5e9'], ['Confirmado', counts.confirmado, '#10b981'], ['Activo', counts.activo, '#6366f1'], ['Inactivo', counts.inactivo, '#94a3b8']].map(([lbl, val, color]) => (
+                      <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '12px 20px', minWidth: 100 }}>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>{lbl}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color }}>{myNameIsLoading ? '…' : val}</p>
+                      </div>
+                    ))}
+                    <button onClick={exportMyNameIsExcel} disabled={filtered.length === 0} style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', color: '#475569', fontWeight: 600, fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer' }}><i className="bi bi-file-earmark-excel"></i> Exportar Excel</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+                    <input type="text" placeholder="Buscar por nombre, ID, email, cargo, ciudad o empresa..." value={myNameIsSearch} onChange={e => setMyNameIsSearch(e.target.value)} style={{ flex: 1, minWidth: 220, padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14 }} />
+                    <select value={myNameIsFiltroEstado} onChange={e => setMyNameIsFiltroEstado(e.target.value)} style={{ padding: '11px 16px', borderRadius: 10, border: '2px solid #e5e7eb', fontSize: 14, background: 'white' }}>
+                      <option value="all">Todos los estados</option>
+                      {Object.entries(mniEstados).map(([k, e]) => <option key={k} value={k}>{e.label}</option>)}
+                    </select>
+                  </div>
+                  {myNameIsLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}><div className="loading" style={{ width: 40, height: 40, margin: '0 auto 16px' }}></div><p style={{ color: '#64748b' }}>Cargando inscripciones...</p></div>
+                  ) : myNameIsData.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🌍</p><p style={{ fontWeight: 600, color: '#1a1a2e', marginBottom: 6 }}>Sin inscripciones aún</p><p style={{ color: '#64748b', fontSize: 13 }}>Aquí aparecerán los registros del formulario My Name Is…</p></div>
+                  ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}><p style={{ fontSize: 48, marginBottom: 12 }}>🔍</p><p style={{ fontWeight: 600 }}>Sin resultados</p></div>
+                  ) : isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setMyNameIsDetalle(r); setMyNameIsNotasEdit(''); }} style={{ background: 'white', borderRadius: 14, padding: 16, cursor: 'pointer', border: '1px solid #f1f5f9' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                            <div><p style={{ fontSize: 14, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 12, color: '#64748b' }}>{r.cargo} · {r.ciudad}</p></div>
+                            {badge(r.estado)}
+                          </div>
+                          <p style={{ fontSize: 11, color: '#94a3b8' }}>{r.email} · {fmtDate(r.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '10px 16px', background: '#f8f9fa', gap: 8 }}>
+                        {['FECHA','NOMBRE','EMAIL','CARGO / CIUDAD','ESTADO',''].map((h, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</span>)}
+                      </div>
+                      {filtered.map(r => (
+                        <div key={r.id} onClick={() => { setMyNameIsDetalle(r); setMyNameIsNotasEdit(''); }} style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) 110px 80px', padding: '14px 16px', gap: 8, borderTop: '1px solid #f8f9fa', cursor: 'pointer', alignItems: 'center' }} onMouseEnter={e => e.currentTarget.style.background='#f0f9ff'} onMouseLeave={e => e.currentTarget.style.background='white'}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>{fmtDate(r.created_at)}</span>
+                          <div><p style={{ fontSize: 13, fontWeight: 700 }}>{r.nombre} {r.apellidos}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.numero_identificacion}</p></div>
+                          <span style={{ fontSize: 13, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                          <div><p style={{ fontSize: 13 }}>{r.cargo}</p><p style={{ fontSize: 11, color: '#94a3b8' }}>{r.ciudad}</p></div>
                           {badge(r.estado)}
                           <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
                         </div>

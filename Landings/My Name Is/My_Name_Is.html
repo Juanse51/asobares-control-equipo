@@ -1,0 +1,767 @@
+<!-- ============================================================
+     MY NAME IS… — Inglés especializado en Mesa y Bar
+     Módulo HTML para Elementor (widget HTML)  |  Prefijo: mni-
+     Supabase → inscripciones_my_name_is
+     ============================================================ -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<div class="mni-root" id="mni-root">
+
+<style>
+/* ---- TOKENS ---- */
+.mni-root{
+  --mni-dark:#0A1A2E;
+  --mni-dark2:#0F2340;
+  --mni-blue:#1D6FE8;
+  --mni-blue-soft:rgba(29,111,232,.18);
+  --mni-teal:#0EA5E9;
+  --mni-gold:#F59E0B;
+  --mni-gold-soft:rgba(245,158,11,.18);
+  --mni-red:#E84338;
+  --mni-white:#EFF6FF;
+  --mni-white70:rgba(239,246,255,.7);
+  --mni-white40:rgba(239,246,255,.4);
+  --mni-line:rgba(239,246,255,.12);
+  --mni-font:'Outfit',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mni-max:1100px;
+}
+
+/* ---- FULL-BLEED + RESET ---- */
+.mni-root{
+  position:relative !important;
+  width:var(--mni-vw,100vw) !important;
+  left:50% !important; right:50% !important;
+  margin-left:calc(var(--mni-vw,100vw) / -2) !important;
+  margin-right:calc(var(--mni-vw,100vw) / -2) !important;
+  background:var(--mni-dark) !important;
+  color:var(--mni-white) !important;
+  font-family:var(--mni-font) !important;
+  font-size:16px !important;
+  line-height:1.65 !important;
+  overflow-x:hidden !important;
+  -webkit-font-smoothing:antialiased;
+}
+.mni-root *,.mni-root *::before,.mni-root *::after{box-sizing:border-box !important;}
+.mni-root p,.mni-root h1,.mni-root h2,.mni-root h3,.mni-root ul,.mni-root li{margin:0 !important;padding:0 !important;}
+.mni-root ul{list-style:none !important;}
+.mni-root img{max-width:100% !important;height:auto !important;display:block !important;}
+.mni-root a{text-decoration:none !important;color:inherit !important;}
+.mni-wrap{max-width:var(--mni-max) !important;margin:0 auto !important;padding:0 24px !important;}
+.mni-section{padding:80px 0 !important;}
+
+/* ---- HERO ---- */
+.mni-hero{
+  position:relative;
+  padding:80px 0 72px !important;
+  background:
+    radial-gradient(800px 500px at 90% 10%, rgba(29,111,232,.4), transparent 60%),
+    radial-gradient(600px 400px at 10% 90%, rgba(14,165,233,.2), transparent 60%),
+    linear-gradient(180deg,#0A1A2E 0%,#0C2040 100%) !important;
+  border-bottom:1px solid var(--mni-line) !important;
+}
+.mni-hero__badges{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:28px !important;}
+.mni-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(29,111,232,.18);border:1px solid rgba(29,111,232,.4);
+  border-radius:999px;padding:5px 14px;
+  font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--mni-teal);
+  text-transform:uppercase;
+}
+.mni-badge--gold{background:var(--mni-gold-soft);border-color:rgba(245,158,11,.4);color:var(--mni-gold);}
+.mni-hero__eyebrow{
+  font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--mni-teal);margin-bottom:14px !important;
+}
+.mni-hero__title{
+  font-size:clamp(42px,6vw,82px) !important;
+  font-weight:800 !important;
+  line-height:.95 !important;
+  color:#fff !important;
+  margin-bottom:10px !important;
+  letter-spacing:-.01em;
+}
+.mni-hero__title span{color:var(--mni-teal);}
+.mni-hero__subtitle{
+  font-size:clamp(18px,2vw,22px) !important;
+  font-weight:300 !important;
+  color:var(--mni-white70) !important;
+  margin-bottom:28px !important;
+  max-width:56ch !important;
+}
+.mni-hero__chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:34px !important;}
+.mni-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.07);border:1px solid var(--mni-line);
+  border-radius:10px;padding:9px 16px;
+  font-size:13px;font-weight:500;color:var(--mni-white70);
+}
+.mni-chip__icon{font-size:16px;}
+.mni-hero__btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--mni-blue);color:#fff !important;
+  font-family:var(--mni-font) !important;font-size:14px;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;
+  padding:16px 34px !important;border-radius:999px;border:none;
+  cursor:pointer;
+  box-shadow:0 10px 34px rgba(29,111,232,.4);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.mni-hero__btn:hover{transform:translateY(-2px);box-shadow:0 14px 42px rgba(29,111,232,.55);}
+.mni-hero__logos{
+  display:flex;align-items:center;gap:18px;margin-top:36px !important;
+  padding-top:28px !important;border-top:1px solid var(--mni-line) !important;
+}
+.mni-hero__logos img{height:36px !important;width:auto !important;opacity:.85;filter:brightness(0) invert(1);}
+.mni-hero__logos span{font-size:11px;color:var(--mni-white40);letter-spacing:.06em;text-transform:uppercase;}
+
+/* ---- INTRO ---- */
+.mni-intro{background:var(--mni-dark2) !important;border-bottom:1px solid var(--mni-line) !important;}
+.mni-intro__grid{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start;}
+.mni-rule{width:52px;height:3px;background:linear-gradient(90deg,var(--mni-blue),var(--mni-teal));border-radius:2px;margin-bottom:20px !important;}
+.mni-h2{font-size:clamp(28px,3.4vw,42px) !important;font-weight:700 !important;line-height:1.1 !important;color:#fff !important;}
+.mni-lead{font-size:clamp(15px,1.5vw,17px) !important;color:var(--mni-white70) !important;font-weight:300 !important;}
+.mni-lead + .mni-lead{margin-top:14px !important;}
+.mni-cities{
+  background:rgba(29,111,232,.1);border:1px solid rgba(29,111,232,.3);
+  border-radius:16px;padding:24px !important;margin-top:0 !important;
+}
+.mni-cities h3{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mni-teal);margin-bottom:14px !important;}
+.mni-cities__grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;}
+.mni-city{
+  display:flex;align-items:center;gap:8px;
+  font-size:13.5px;font-weight:500;color:var(--mni-white70);
+  padding:5px 0 !important;
+}
+.mni-city::before{content:"";display:block;width:6px;height:6px;border-radius:50%;background:var(--mni-teal);flex-shrink:0;}
+.mni-req{margin-top:20px !important;}
+.mni-req__item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 0 !important;border-bottom:1px solid var(--mni-line);
+  font-size:14px;color:var(--mni-white70);
+}
+.mni-req__item:last-child{border-bottom:0;}
+.mni-req__icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+
+/* ---- FORMULARIO ---- */
+.mni-form-section{background:var(--mni-dark) !important;}
+.mni-form-wrap{
+  max-width:760px !important;margin:0 auto !important;
+  background:rgba(255,255,255,.04);border:1px solid var(--mni-line);
+  border-radius:20px;padding:44px 48px !important;
+}
+.mni-form-title{font-size:clamp(22px,2.4vw,28px) !important;font-weight:700 !important;color:#fff !important;margin-bottom:6px !important;}
+.mni-form-lead{font-size:14px;color:var(--mni-white40);margin-bottom:30px !important;}
+.mni-form-sec{
+  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--mni-teal);padding-bottom:10px !important;
+  border-bottom:1px solid var(--mni-line);
+  margin:28px 0 18px !important;
+}
+.mni-form-sec:first-of-type{margin-top:0 !important;}
+.mni-fg{margin-bottom:14px !important;}
+.mni-fg label{display:block;font-size:13px;font-weight:600;color:var(--mni-white70);margin-bottom:6px !important;}
+.mni-fg input,.mni-fg select,.mni-fg textarea{
+  width:100% !important;
+  background:rgba(255,255,255,.07) !important;
+  border:1.5px solid var(--mni-line) !important;
+  border-radius:10px !important;
+  color:var(--mni-white) !important;
+  font-family:var(--mni-font) !important;
+  font-size:14px !important;
+  padding:11px 14px !important;
+  transition:border-color .2s ease !important;
+  -webkit-appearance:none !important;
+}
+.mni-fg select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(239,246,255,.5)' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;background-repeat:no-repeat !important;background-position:right 14px center !important;padding-right:36px !important;}
+.mni-fg input::placeholder{color:rgba(239,246,255,.22) !important;}
+.mni-fg input:focus,.mni-fg select:focus,.mni-fg textarea:focus{outline:none !important;border-color:var(--mni-blue) !important;}
+.mni-fg select option{background:#0A1A2E;color:#EFF6FF;}
+.mni-g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px !important;}
+.mni-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px !important;}
+.mni-req-mark{color:var(--mni-red) !important;}
+
+/* ---- CHECKBOXES ---- */
+.mni-checks{display:flex;flex-direction:column;gap:8px;margin-bottom:14px !important;}
+.mni-checks__label{font-size:13px;font-weight:600;color:var(--mni-white70);margin-bottom:8px !important;display:block;}
+.mni-check{
+  display:flex;align-items:center;gap:10px;
+  font-size:13.5px;color:var(--mni-white70);cursor:pointer;
+  padding:9px 12px !important;border-radius:9px;
+  border:1.5px solid transparent;
+  transition:background .18s,border-color .18s;
+}
+.mni-check:hover{background:rgba(29,111,232,.12);border-color:rgba(29,111,232,.3);}
+.mni-check input[type="checkbox"]{
+  width:17px !important;height:17px !important;
+  border-radius:5px !important;
+  accent-color:var(--mni-blue) !important;
+  cursor:pointer;flex-shrink:0;
+}
+.mni-check.mni-check--checked{background:rgba(29,111,232,.15);border-color:rgba(29,111,232,.5);}
+.mni-otro-wrap{margin-top:6px !important;padding-left:4px !important;}
+.mni-otro-wrap input{margin-top:4px !important;}
+
+/* ---- POLÍTICA ---- */
+.mni-politica{
+  background:rgba(29,111,232,.08);border:1px solid rgba(29,111,232,.25);
+  border-radius:12px;padding:16px 18px !important;margin-bottom:22px !important;
+}
+.mni-politica label{
+  display:flex;align-items:flex-start;gap:12px;
+  font-size:13px;color:var(--mni-white70);cursor:pointer;
+}
+.mni-politica input[type="checkbox"]{
+  width:18px !important;height:18px !important;
+  accent-color:var(--mni-blue) !important;
+  flex-shrink:0;margin-top:2px;
+}
+
+/* ---- SUBMIT ---- */
+.mni-submit{
+  width:100% !important;
+  background:linear-gradient(100deg,var(--mni-blue),var(--mni-teal)) !important;
+  color:#fff !important;
+  font-family:var(--mni-font) !important;font-size:15px !important;font-weight:700 !important;
+  letter-spacing:.08em;text-transform:uppercase;
+  padding:17px 24px !important;border-radius:12px !important;border:none !important;
+  cursor:pointer;margin-top:8px !important;
+  box-shadow:0 10px 30px rgba(29,111,232,.35) !important;
+  transition:transform .18s ease,box-shadow .18s ease,opacity .18s ease !important;
+}
+.mni-submit:hover{transform:translateY(-2px) !important;box-shadow:0 14px 38px rgba(29,111,232,.5) !important;}
+.mni-submit:disabled{opacity:.5 !important;cursor:default !important;transform:none !important;}
+.mni-form-legal{font-size:12px;color:var(--mni-white40);text-align:center;margin-top:14px !important;}
+.mni-err{
+  background:rgba(232,67,56,.12);border:1px solid rgba(232,67,56,.35);
+  border-radius:10px;padding:12px 16px !important;
+  font-size:13.5px;color:#fca5a5;margin-bottom:14px !important;display:none;
+}
+.mni-success{
+  display:none;
+  background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.3);
+  border-radius:16px;padding:44px 32px !important;text-align:center;
+}
+.mni-success__icon{font-size:52px;margin-bottom:16px !important;}
+.mni-success h3{font-size:24px;font-weight:700;color:#fff;margin-bottom:10px !important;}
+.mni-success p{font-size:15px;color:var(--mni-white70);max-width:46ch;margin:0 auto !important;}
+
+/* ---- FOOTER ---- */
+.mni-footer{
+  padding:36px 0 !important;
+  border-top:1px solid var(--mni-line) !important;
+  text-align:center;
+}
+.mni-footer img{height:28px !important;width:auto !important;opacity:.5;filter:brightness(0) invert(1);margin:0 auto 10px !important;}
+.mni-footer p{font-size:12px;color:var(--mni-white40);}
+
+/* ---- RESPONSIVE ---- */
+@media(max-width:760px){
+  .mni-intro__grid{grid-template-columns:1fr !important;}
+  .mni-g2,.mni-g3{grid-template-columns:1fr !important;}
+  .mni-form-wrap{padding:28px 20px !important;}
+  .mni-cities__grid{grid-template-columns:1fr 1fr !important;}
+  .mni-hero__logos{flex-wrap:wrap;}
+}
+@media(prefers-reduced-motion:reduce){.mni-root *{animation:none !important;transition:none !important;}}
+</style>
+
+<!-- ======== HERO ======== -->
+<section class="mni-hero" id="mni-top">
+  <div class="mni-wrap">
+    <div class="mni-hero__badges">
+      <span class="mni-badge">Programa de formación</span>
+      <span class="mni-badge mni-badge--gold">Con apoyo de Fontur</span>
+    </div>
+    <p class="mni-hero__eyebrow">Asobares Colombia presenta</p>
+    <h1 class="mni-hero__title">My Name Is<span>…</span></h1>
+    <p class="mni-hero__subtitle">Inglés especializado en Mesa y Bar — fortalece tu comunicación y eleva la experiencia de tus clientes.</p>
+    <div class="mni-hero__chips">
+      <span class="mni-chip"><span class="mni-chip__icon">🕐</span>20 horas presenciales + 3 horas virtuales</span>
+      <span class="mni-chip"><span class="mni-chip__icon">🎓</span>Certificado con 100 % de asistencia</span>
+      <span class="mni-chip"><span class="mni-chip__icon">📍</span>12 ciudades de Colombia</span>
+      <span class="mni-chip"><span class="mni-chip__icon">💼</span>Gratuito — financiado por Fontur</span>
+    </div>
+    <a href="#mni-form" class="mni-hero__btn">Inscríbete ahora →</a>
+    <div class="mni-hero__logos">
+      <span>Organiza:</span>
+      <img src="https://asobares.org/wp-content/uploads/2024/01/Asobares-logo-blanco.png" alt="Asobares Colombia">
+      <span>Con el apoyo de:</span>
+      <img src="https://asobares.org/wp-content/uploads/2025/09/FONTUR.png" alt="Fontur">
+    </div>
+  </div>
+</section>
+
+<!-- ======== INTRO ======== -->
+<section class="mni-section mni-intro">
+  <div class="mni-wrap">
+    <div class="mni-intro__grid">
+      <div>
+        <div class="mni-rule"></div>
+        <h2 class="mni-h2">¿De qué se trata<br>el programa?</h2>
+        <p class="mni-lead" style="margin-top:18px !important;">¡Hola! Te damos la bienvenida al proceso de inscripción del programa <strong>My Name Is…</strong> – Inglés especializado en Mesa y Bar, organizado por Asobares con el apoyo de Fontur.</p>
+        <p class="mni-lead">Antes de diligenciar el formulario, ten en cuenta la siguiente información:</p>
+        <div class="mni-req" style="margin-top:20px !important;">
+          <div class="mni-req__item">
+            <span class="mni-req__icon">🕐</span>
+            <span>El programa contempla <strong>20 horas de formación presencial</strong> y <strong>3 horas de formación virtual</strong>.</span>
+          </div>
+          <div class="mni-req__item">
+            <span class="mni-req__icon">🎓</span>
+            <span>Recibirás un <strong>certificado de asistencia</strong> únicamente si cumples con el <strong>100 % de participación</strong> en las actividades de formación.</span>
+          </div>
+          <div class="mni-req__item">
+            <span class="mni-req__icon">🌍</span>
+            <span>Esta formación se desarrollará exclusivamente en las <strong>ciudades habilitadas</strong>. La inscripción está dirigida únicamente a personas que residan o trabajen en alguna de ellas.</span>
+          </div>
+        </div>
+        <p class="mni-lead" style="margin-top:22px !important;">¡Gracias por tu interés en fortalecer tus habilidades en inglés y mejorar la atención y el servicio en el sector de Mesa y Bar! <strong>¡Te esperamos en My Name Is…!</strong></p>
+      </div>
+      <div>
+        <div class="mni-cities">
+          <h3>📍 Ciudades habilitadas</h3>
+          <div class="mni-cities__grid">
+            <span class="mni-city">Bogotá</span>
+            <span class="mni-city">Zipaquirá</span>
+            <span class="mni-city">Medellín</span>
+            <span class="mni-city">Cali</span>
+            <span class="mni-city">Barranquilla</span>
+            <span class="mni-city">Cartagena</span>
+            <span class="mni-city">Pereira</span>
+            <span class="mni-city">Manizales</span>
+            <span class="mni-city">Armenia</span>
+            <span class="mni-city">Tunja</span>
+            <span class="mni-city">Montería</span>
+            <span class="mni-city">Valledupar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== FORMULARIO ======== -->
+<section class="mni-section mni-form-section" id="mni-form">
+  <div class="mni-wrap">
+    <div class="mni-form-wrap" id="mniFormWrap">
+      <div id="mniCard">
+        <h2 class="mni-form-title">Formulario de inscripción</h2>
+        <p class="mni-form-lead">Todos los campos marcados con <span class="mni-req-mark">*</span> son obligatorios.</p>
+
+        <form id="mniForm" novalidate>
+
+          <!-- POLÍTICA DE DATOS -->
+          <div class="mni-politica">
+            <label>
+              <input type="checkbox" name="acepta_datos" id="mniAcepta" required>
+              <span><strong>Autorización de tratamiento de datos personales <span class="mni-req-mark">*</span></strong><br>
+              Acepto que mis datos personales sean utilizados por Asobares Colombia para gestionar mi inscripción al programa My Name Is… y para comunicarme información relacionada con el mismo, de acuerdo con la política de protección de datos personales.</span>
+            </label>
+          </div>
+
+          <!-- SECCIÓN B — INFORMACIÓN PERSONAL -->
+          <span class="mni-form-sec">B — Información personal</span>
+
+          <div class="mni-g2">
+            <div class="mni-fg">
+              <label>Nombres <span class="mni-req-mark">*</span></label>
+              <input type="text" name="nombre" placeholder="Tus nombres" required>
+            </div>
+            <div class="mni-fg">
+              <label>Apellidos <span class="mni-req-mark">*</span></label>
+              <input type="text" name="apellidos" placeholder="Tus apellidos" required>
+            </div>
+          </div>
+
+          <div class="mni-g2">
+            <div class="mni-fg">
+              <label>Tipo de documento <span class="mni-req-mark">*</span></label>
+              <select name="tipo_identificacion" required>
+                <option value="">Selecciona...</option>
+                <option>Cédula de ciudadanía</option>
+                <option>Pasaporte</option>
+                <option>PPT</option>
+                <option>Cédula de Extranjería</option>
+              </select>
+            </div>
+            <div class="mni-fg">
+              <label>Número de documento <span class="mni-req-mark">*</span></label>
+              <input type="text" name="numero_identificacion" placeholder="Número de documento" required>
+            </div>
+          </div>
+
+          <div class="mni-fg">
+            <label>Género <span class="mni-req-mark">*</span></label>
+            <select name="genero" required>
+              <option value="">Selecciona...</option>
+              <option>Femenino</option>
+              <option>Masculino</option>
+              <option>Prefiere no responder</option>
+            </select>
+          </div>
+
+          <!-- Pregunta 5: Etnia -->
+          <div class="mni-fg">
+            <span class="mni-checks__label">De acuerdo con su cultura, pueblo o rasgos físicos, ¿se reconoce como? <span class="mni-req-mark">*</span></span>
+            <div class="mni-checks" id="mniEtniaChecks">
+              <label class="mni-check"><input type="checkbox" name="etnia" value="Indígena"> Indígena</label>
+              <label class="mni-check"><input type="checkbox" name="etnia" value="Negro, mulato, afrodescendiente o afrocolombiano"> Negro, mulato, afrodescendiente o afrocolombiano</label>
+              <label class="mni-check"><input type="checkbox" name="etnia" value="Raizal (del Archipiélago de San Andrés, Providencia y Santa Catalina)"> Raizal (del Archipiélago de San Andrés, Providencia y Santa Catalina)</label>
+              <label class="mni-check"><input type="checkbox" name="etnia" value="Palenquero (de San Basilio de Palenque)"> Palenquero (de San Basilio de Palenque)</label>
+              <label class="mni-check"><input type="checkbox" name="etnia" value="Ninguna de las anteriores"> Ninguna de las anteriores</label>
+            </div>
+          </div>
+
+          <!-- Pregunta 6: Grupos poblacionales -->
+          <div class="mni-fg">
+            <span class="mni-checks__label">¿Pertenece o se identifica con alguno de los siguientes grupos o colectivos poblacionales? (Seleccione todas las que apliquen) <span class="mni-req-mark">*</span></span>
+            <div class="mni-checks" id="mniGruposChecks">
+              <label class="mni-check"><input type="checkbox" name="grupos_poblacionales" value="Sectores sociales LGBTIQ+"> Sectores sociales LGBTIQ+</label>
+              <label class="mni-check"><input type="checkbox" name="grupos_poblacionales" value="Persona con discapacidad"> Persona con discapacidad</label>
+              <label class="mni-check"><input type="checkbox" name="grupos_poblacionales" value="Víctima del conflicto armado"> Víctima del conflicto armado</label>
+              <label class="mni-check"><input type="checkbox" name="grupos_poblacionales" value="Población campesina o rural"> Población campesina o rural</label>
+              <label class="mni-check"><input type="checkbox" name="grupos_poblacionales" value="Población migrante o refugiada"> Población migrante o refugiada</label>
+              <label class="mni-check"><input type="checkbox" name="grupos_poblacionales" value="Ninguna de las anteriores"> Ninguna de las anteriores</label>
+            </div>
+          </div>
+
+          <div class="mni-g2">
+            <div class="mni-fg">
+              <label>Correo electrónico <span class="mni-req-mark">*</span></label>
+              <input type="email" name="email" placeholder="tu@correo.com" required>
+            </div>
+            <div class="mni-fg">
+              <label>Número de celular / WhatsApp <span class="mni-req-mark">*</span></label>
+              <input type="tel" name="telefono" placeholder="3001234567" required>
+            </div>
+          </div>
+
+          <div class="mni-fg">
+            <label>¿Cuál es tu cargo o rol dentro de la empresa? <span class="mni-req-mark">*</span></label>
+            <select name="cargo" required>
+              <option value="">Selecciona tu cargo...</option>
+              <option>Gerente</option>
+              <option>Administrador</option>
+              <option>Chef Ejecutivo / Jefe de Cocina</option>
+              <option>Cocineros de Línea</option>
+              <option>Auxiliar de cocina</option>
+              <option>Steward / Lavaplatos</option>
+              <option>Bartender / Jefe de Barra / Barman</option>
+              <option>Maître / Capitán de Sala / Capitan de servicio</option>
+              <option>Host / Hostess</option>
+              <option>Meseros / Camareros</option>
+              <option>Cajero</option>
+              <option>Personal de Seguridad / Puerta / Logístico</option>
+              <option>Personal de Limpieza / Mantenimiento</option>
+            </select>
+          </div>
+
+          <div class="mni-g2">
+            <div class="mni-fg">
+              <label>¿Cuál es tu rango de edad? <span class="mni-req-mark">*</span></label>
+              <select name="rango_edad" required>
+                <option value="">Selecciona...</option>
+                <option>18 – 20 años</option>
+                <option>21 – 24 años</option>
+                <option>25 – 28 años</option>
+                <option>29 – 35 años</option>
+                <option>35 – 50 años</option>
+                <option>Más de 50 años</option>
+              </select>
+            </div>
+            <div class="mni-fg">
+              <label>¿Cuál es tu nivel actual de inglés? <span class="mni-req-mark">*</span></label>
+              <select name="nivel_ingles" required>
+                <option value="">Selecciona...</option>
+                <option>Nulo o sin conocimiento previo</option>
+                <option>Básico</option>
+                <option>Medio</option>
+                <option>Avanzado</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- SECCIÓN C — INFORMACIÓN LABORAL -->
+          <span class="mni-form-sec">C — Información laboral</span>
+
+          <div class="mni-g2">
+            <div class="mni-fg">
+              <label>Razón social de la empresa <span class="mni-req-mark">*</span></label>
+              <input type="text" name="razon_social" placeholder="Nombre legal registrado" required>
+            </div>
+            <div class="mni-fg">
+              <label>NIT de la empresa <span class="mni-req-mark">*</span></label>
+              <input type="text" name="nit" placeholder="Ej: 900123456-1" required>
+            </div>
+          </div>
+
+          <div class="mni-fg">
+            <label>Nombre comercial del establecimiento <span class="mni-req-mark">*</span></label>
+            <input type="text" name="nombre_comercial" placeholder="Nombre del bar, restaurante o establecimiento" required>
+          </div>
+
+          <!-- Tipo de establecimiento (checkboxes) -->
+          <div class="mni-fg">
+            <span class="mni-checks__label">¿Qué tipo de empresa o establecimiento representa? <span class="mni-req-mark">*</span></span>
+            <div class="mni-checks" id="mniTipoChecks">
+              <label class="mni-check"><input type="checkbox" name="tipo_establecimiento" value="Restaurante"> Restaurante</label>
+              <label class="mni-check"><input type="checkbox" name="tipo_establecimiento" value="Gastrobar"> Gastrobar</label>
+              <label class="mni-check"><input type="checkbox" name="tipo_establecimiento" value="Bar"> Bar</label>
+              <label class="mni-check"><input type="checkbox" name="tipo_establecimiento" value="Discoteca"> Discoteca</label>
+              <label class="mni-check"><input type="checkbox" name="tipo_establecimiento" value="Otro"> Otro</label>
+            </div>
+            <div class="mni-otro-wrap" id="mniOtroWrap" style="display:none;">
+              <input type="text" name="tipo_establecimiento_otro" placeholder="¿Cuál tipo de establecimiento?">
+            </div>
+          </div>
+
+          <div class="mni-g2">
+            <div class="mni-fg">
+              <label>Departamento del establecimiento <span class="mni-req-mark">*</span></label>
+              <select name="departamento" id="mniDepto" required>
+                <option value="">Selecciona...</option>
+                <option value="Bogotá D.C.">Bogotá D.C.</option>
+                <option value="Cundinamarca">Cundinamarca</option>
+                <option value="Antioquia">Antioquia</option>
+                <option value="Valle del Cauca">Valle del Cauca</option>
+                <option value="Atlántico">Atlántico</option>
+                <option value="Bolívar">Bolívar</option>
+                <option value="Risaralda">Risaralda</option>
+                <option value="Caldas">Caldas</option>
+                <option value="Quindío">Quindío</option>
+                <option value="Boyacá">Boyacá</option>
+                <option value="Córdoba">Córdoba</option>
+                <option value="Cesar">Cesar</option>
+              </select>
+            </div>
+            <div class="mni-fg">
+              <label>Ciudad del establecimiento <span class="mni-req-mark">*</span></label>
+              <select name="ciudad" id="mniCiudad" required>
+                <option value="">Selecciona departamento primero</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mni-fg">
+            <label>Dirección del establecimiento <span class="mni-req-mark">*</span></label>
+            <input type="text" name="direccion" placeholder="Calle, carrera, número..." required>
+          </div>
+
+          <div class="mni-fg" style="margin-bottom:0 !important;">
+            <label>¿Por qué medio se enteró de este programa? <span class="mni-req-mark">*</span></label>
+            <select name="como_se_entero" required>
+              <option value="">Selecciona...</option>
+              <option>Instagram</option>
+              <option>Facebook</option>
+              <option>Correo electrónico</option>
+              <option>Invitación de jefe o directivos de la empresa</option>
+              <option>Un amigo me compartió</option>
+            </select>
+          </div>
+
+          <div class="mni-err" id="mniErr"></div>
+
+          <button type="submit" class="mni-submit" id="mniSubmit">Enviar inscripción →</button>
+          <p class="mni-form-legal">Al registrarte autorizas el uso de tus datos para gestionar tu inscripción al programa My Name Is… de Asobares Colombia, en cumplimiento de la Ley 1581 de 2012.</p>
+
+        </form>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="mni-success" id="mniSuccess">
+        <div class="mni-success__icon">✅</div>
+        <h3>¡Inscripción recibida!</h3>
+        <p>Tu registro al programa <strong>My Name Is…</strong> fue enviado exitosamente. Revisa tu correo electrónico — te enviaremos una confirmación con los detalles del programa. <br><br>¡Te esperamos en My Name Is…! 🌟</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== FOOTER ======== -->
+<footer class="mni-footer">
+  <div class="mni-wrap">
+    <img src="https://asobares.org/wp-content/uploads/2024/01/Asobares-logo-blanco.png" alt="Asobares Colombia">
+    <p>Programa financiado por Fontur — Fondo Nacional de Turismo de Colombia</p>
+    <p style="margin-top:6px !important;">© 2026 Asobares Colombia. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+</div><!-- /.mni-root -->
+
+<script>
+(function(){
+  'use strict';
+  var root = document.getElementById('mni-root');
+  if(!root) return;
+
+  /* Ancho real del viewport */
+  function mniVW(){
+    var vw = document.documentElement.clientWidth || window.innerWidth;
+    root.style.setProperty('--mni-vw', vw + 'px');
+  }
+  mniVW();
+  window.addEventListener('resize', mniVW);
+  window.addEventListener('orientationchange', mniVW);
+
+  /* Departamento → Ciudad */
+  var CIUDADES = {
+    'Bogotá D.C.': ['Bogotá'],
+    'Cundinamarca': ['Zipaquirá'],
+    'Antioquia': ['Medellín'],
+    'Valle del Cauca': ['Cali'],
+    'Atlántico': ['Barranquilla'],
+    'Bolívar': ['Cartagena'],
+    'Risaralda': ['Pereira'],
+    'Caldas': ['Manizales'],
+    'Quindío': ['Armenia'],
+    'Boyacá': ['Tunja'],
+    'Córdoba': ['Montería'],
+    'Cesar': ['Valledupar']
+  };
+  var depto = document.getElementById('mniDepto');
+  var ciudad = document.getElementById('mniCiudad');
+  if(depto && ciudad){
+    depto.addEventListener('change', function(){
+      var opts = CIUDADES[depto.value] || [];
+      ciudad.innerHTML = opts.length
+        ? opts.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('')
+        : '<option value="">Selecciona departamento primero</option>';
+    });
+  }
+
+  /* Mostrar campo "Otro" en tipo establecimiento */
+  var otraWrap = document.getElementById('mniOtroWrap');
+  document.querySelectorAll('[name="tipo_establecimiento"]').forEach(function(cb){
+    cb.addEventListener('change', function(){
+      var checked = document.querySelectorAll('[name="tipo_establecimiento"]:checked');
+      var hasOtro = Array.prototype.some.call(checked, function(c){ return c.value === 'Otro'; });
+      if(otraWrap) otraWrap.style.display = hasOtro ? 'block' : 'none';
+    });
+  });
+
+  /* Efecto visual en checkboxes */
+  root.querySelectorAll('.mni-check').forEach(function(label){
+    var cb = label.querySelector('input[type="checkbox"]');
+    if(!cb) return;
+    cb.addEventListener('change', function(){
+      label.classList.toggle('mni-check--checked', cb.checked);
+    });
+  });
+
+  /* Formulario */
+  function initForm(){
+    if(typeof window.supabase === 'undefined'){ setTimeout(initForm, 100); return; }
+
+    var SUPABASE_URL = 'https://pbqmkodwmntujezbokgo.supabase.co';
+    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBicW1rb2R3bW50dWplemJva2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NTQzOTIsImV4cCI6MjA4NjQzMDM5Mn0.C9sw9cix0J9Z2eTh-lr_4S6_gZmHIVwpzsxrZMCKl34';
+    var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    var form      = document.getElementById('mniForm');
+    var card      = document.getElementById('mniCard');
+    var success   = document.getElementById('mniSuccess');
+    var submitBtn = document.getElementById('mniSubmit');
+    var errBox    = document.getElementById('mniErr');
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      errBox.style.display = 'none';
+
+      /* Validar política */
+      if(!document.getElementById('mniAcepta').checked){
+        errBox.textContent = 'Debes aceptar la política de tratamiento de datos para continuar.';
+        errBox.style.display = 'block'; return;
+      }
+
+      var fd = new FormData(form);
+      var d  = Object.fromEntries(fd.entries());
+
+      /* Validar teléfono */
+      if(!/^\d{10}$/.test(d.telefono)){
+        errBox.textContent = 'El número de celular debe tener 10 dígitos (ej: 3001234567).';
+        errBox.style.display = 'block'; return;
+      }
+
+      /* Recolectar checkboxes múltiples */
+      var etnia = Array.prototype.map.call(
+        document.querySelectorAll('[name="etnia"]:checked'), function(c){ return c.value; }
+      );
+      var gruposPob = Array.prototype.map.call(
+        document.querySelectorAll('[name="grupos_poblacionales"]:checked'), function(c){ return c.value; }
+      );
+      var tipoEst = Array.prototype.map.call(
+        document.querySelectorAll('[name="tipo_establecimiento"]:checked'), function(c){ return c.value; }
+      );
+
+      if(!etnia.length){ errBox.textContent = 'Selecciona al menos una opción en el campo de reconocimiento étnico.'; errBox.style.display = 'block'; return; }
+      if(!gruposPob.length){ errBox.textContent = 'Selecciona al menos una opción en el campo de grupos poblacionales.'; errBox.style.display = 'block'; return; }
+      if(!tipoEst.length){ errBox.textContent = 'Selecciona al menos un tipo de establecimiento.'; errBox.style.display = 'block'; return; }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+
+      var payload = {
+        nombre:                   d.nombre.trim(),
+        apellidos:                d.apellidos.trim(),
+        tipo_identificacion:      d.tipo_identificacion,
+        numero_identificacion:    d.numero_identificacion,
+        genero:                   d.genero,
+        etnia:                    etnia.join(', '),
+        grupos_poblacionales:     gruposPob.join(', '),
+        email:                    d.email.trim().toLowerCase(),
+        telefono:                 d.telefono,
+        cargo:                    d.cargo,
+        rango_edad:               d.rango_edad,
+        nivel_ingles:             d.nivel_ingles,
+        razon_social:             d.razon_social.trim(),
+        nit:                      d.nit.trim(),
+        nombre_comercial:         d.nombre_comercial.trim(),
+        tipo_establecimiento:     tipoEst.join(', '),
+        tipo_establecimiento_otro: d.tipo_establecimiento_otro || null,
+        departamento:             d.departamento,
+        ciudad:                   d.ciudad,
+        direccion:                d.direccion.trim(),
+        como_se_entero:           d.como_se_entero,
+        estado:                   'inscrito'
+      };
+
+      var result = await db.from('inscripciones_my_name_is').insert(payload);
+
+      if(result.error){
+        errBox.textContent = 'Ocurrió un error al enviar tu inscripción. Por favor intenta de nuevo.';
+        errBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar inscripción →';
+        return;
+      }
+
+      /* Correo de confirmación */
+      fetch(SUPABASE_URL + '/functions/v1/send-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+        },
+        body: JSON.stringify({
+          email:      payload.email,
+          nombre:     payload.nombre + (payload.apellidos ? ' ' + payload.apellidos : ''),
+          evento:     'My Name Is… — Inglés especializado en Mesa y Bar',
+          fecha:      '',
+          hora:       '',
+          lugar:      payload.ciudad + ', Colombia',
+          direccion:  '',
+          link:       'https://www.instagram.com/asobaresco/',
+          link_label: 'Síguenos en Instagram →',
+        })
+      });
+
+      card.style.display    = 'none';
+      success.style.display = 'block';
+      document.getElementById('mniFormWrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+  initForm();
+})();
+</script>

@@ -154,17 +154,17 @@
   background:rgba(255,255,255,.04);border:1px solid var(--mni-line);
   border-radius:20px;padding:44px 48px !important;
 }
-.mni-form-title{font-size:clamp(22px,2.4vw,28px) !important;font-weight:700 !important;color:#fff !important;margin-bottom:6px !important;}
-.mni-form-lead{font-size:14px;color:var(--mni-white40);margin-bottom:30px !important;}
+.mni-form-title{font-size:clamp(24px,2.6vw,32px) !important;font-weight:700 !important;color:#fff !important;margin-bottom:6px !important;}
+.mni-form-lead{font-size:15px;color:var(--mni-white40);margin-bottom:30px !important;}
 .mni-form-sec{
-  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
   color:var(--mni-teal);padding-bottom:10px !important;
   border-bottom:1px solid var(--mni-line);
-  margin:28px 0 18px !important;
+  margin:32px 0 20px !important;
 }
 .mni-form-sec:first-of-type{margin-top:0 !important;}
-.mni-fg{margin-bottom:14px !important;}
-.mni-fg label{display:block;font-size:13px;font-weight:600;color:var(--mni-white70);margin-bottom:6px !important;}
+.mni-fg{margin-bottom:16px !important;}
+.mni-fg label{display:block;font-size:15px;font-weight:600;color:var(--mni-white70);margin-bottom:7px !important;}
 .mni-fg input,.mni-fg select,.mni-fg textarea{
   width:100% !important;
   background:rgba(255,255,255,.07) !important;
@@ -172,8 +172,8 @@
   border-radius:10px !important;
   color:var(--mni-white) !important;
   font-family:var(--mni-font) !important;
-  font-size:14px !important;
-  padding:11px 14px !important;
+  font-size:15px !important;
+  padding:13px 16px !important;
   transition:border-color .2s ease !important;
   -webkit-appearance:none !important;
 }
@@ -187,20 +187,38 @@
 
 /* ---- CHECKBOXES ---- */
 .mni-checks{display:flex;flex-direction:column;gap:8px;margin-bottom:14px !important;}
-.mni-checks__label{font-size:13px;font-weight:600;color:var(--mni-white70);margin-bottom:8px !important;display:block;}
+.mni-checks__label{font-size:15px;font-weight:600;color:var(--mni-white70);margin-bottom:10px !important;display:block;}
 .mni-check{
-  display:flex;align-items:center;gap:10px;
-  font-size:13.5px;color:var(--mni-white70);cursor:pointer;
-  padding:9px 12px !important;border-radius:9px;
+  display:flex;align-items:center;gap:12px;
+  font-size:15px;color:var(--mni-white70);cursor:pointer;
+  padding:10px 14px !important;border-radius:9px;
   border:1.5px solid transparent;
   transition:background .18s,border-color .18s;
 }
 .mni-check:hover{background:rgba(29,111,232,.12);border-color:rgba(29,111,232,.3);}
 .mni-check input[type="checkbox"]{
-  width:17px !important;height:17px !important;
+  width:20px !important;height:20px !important;
+  flex-shrink:0;cursor:pointer;
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  background:rgba(255,255,255,.08) !important;
+  border:2px solid rgba(239,246,255,.35) !important;
   border-radius:5px !important;
-  accent-color:var(--mni-blue) !important;
-  cursor:pointer;flex-shrink:0;
+  position:relative;
+  transition:background .15s,border-color .15s !important;
+}
+.mni-check input[type="checkbox"]:checked{
+  background:var(--mni-blue) !important;
+  border-color:var(--mni-blue) !important;
+}
+.mni-check input[type="checkbox"]:checked::after{
+  content:'';
+  position:absolute;
+  left:5px;top:2px;
+  width:6px;height:10px;
+  border:2.5px solid #fff;
+  border-top:none;border-left:none;
+  transform:rotate(45deg);
 }
 .mni-check.mni-check--checked{background:rgba(29,111,232,.15);border-color:rgba(29,111,232,.5);}
 .mni-otro-wrap{margin-top:6px !important;padding-left:4px !important;}
@@ -213,12 +231,31 @@
 }
 .mni-politica label{
   display:flex;align-items:flex-start;gap:12px;
-  font-size:13px;color:var(--mni-white70);cursor:pointer;
+  font-size:14px;color:var(--mni-white70);cursor:pointer;
 }
 .mni-politica input[type="checkbox"]{
-  width:18px !important;height:18px !important;
-  accent-color:var(--mni-blue) !important;
-  flex-shrink:0;margin-top:2px;
+  width:20px !important;height:20px !important;
+  flex-shrink:0;margin-top:2px;cursor:pointer;
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  background:rgba(255,255,255,.08) !important;
+  border:2px solid rgba(239,246,255,.35) !important;
+  border-radius:5px !important;
+  position:relative;
+  transition:background .15s,border-color .15s !important;
+}
+.mni-politica input[type="checkbox"]:checked{
+  background:var(--mni-blue) !important;
+  border-color:var(--mni-blue) !important;
+}
+.mni-politica input[type="checkbox"]:checked::after{
+  content:'';
+  position:absolute;
+  left:5px;top:2px;
+  width:6px;height:10px;
+  border:2.5px solid #fff;
+  border-top:none;border-left:none;
+  transform:rotate(45deg);
 }
 
 /* ---- SUBMIT ---- */

@@ -32,39 +32,35 @@ html:has(#bwa-wrap) {
   text-align: center;
   border-bottom: 3px solid #d4a017;
 }
-#bwa-wrap .bwa-logo-row {
+#bwa-wrap .bwa-title-logo {
+  display: block;
+  height: clamp(80px, 14vw, 140px);
+  width: auto;
+  margin: 0 auto 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 24px rgba(212,160,23,.35));
+}
+#bwa-wrap .bwa-organiza-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
-#bwa-wrap .bwa-logo-img {
-  height: 72px;
-  width: auto;
-  border-radius: 10px;
-  object-fit: contain;
-}
-#bwa-wrap .bwa-tag {
-  background: #d4a017;
-  color: #0d0d0d;
-  font-size: 11px;
-  font-weight: 800;
+#bwa-wrap .bwa-organiza-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #666;
   letter-spacing: 2px;
-  padding: 5px 14px;
-  border-radius: 4px;
   text-transform: uppercase;
 }
-#bwa-wrap .bwa-header h1 {
-  font-size: clamp(28px, 5vw, 48px);
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: -1px;
-  line-height: 1.1;
-  margin-bottom: 6px;
+#bwa-wrap .bwa-asobares-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  opacity: .85;
 }
-#bwa-wrap .bwa-header h1 span { color: #d4a017; }
 #bwa-wrap .bwa-header .bwa-ciudad {
   font-size: 14px;
   font-weight: 700;
@@ -394,12 +390,11 @@ html:has(#bwa-wrap) {
 
   <!-- HEADER -->
   <div class="bwa-header">
-    <div class="bwa-logo-row">
-      <img class="bwa-logo-img" src="https://asobares.org/wp-content/uploads/2026/11/logo-con-fondo.jpg" alt="Bar Week Armenia"/>
-      <span style="color:#333;font-size:18px">×</span>
-      <span class="bwa-tag">ASOBARES Colombia</span>
+    <img class="bwa-title-logo" src="https://asobares.org/wp-content/uploads/2026/11/Logo.png" alt="Bar Week Armenia 2026"/>
+    <div class="bwa-organiza-row">
+      <span class="bwa-organiza-label">Organiza</span>
+      <img class="bwa-asobares-logo" src="https://asobares.org/wp-content/uploads/2026/05/Nuevo-logo-Asobares-Blanco-scaled.png" alt="Asobares Colombia"/>
     </div>
-    <h1>Bar<span>Week</span></h1>
     <div class="bwa-ciudad">Armenia, Quindío — Colombia</div>
     <div class="bwa-precio-pill">🍸 Cóctel + Tapa por $35.000</div>
     <div class="bwa-dates-row">

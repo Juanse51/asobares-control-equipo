@@ -959,6 +959,12 @@
       const [barWeekFiltroEstado, setBarWeekFiltroEstado] = useState('all');
       const [barWeekDetalle, setBarWeekDetalle] = useState(null);
       const [barWeekNotasEdit, setBarWeekNotasEdit] = useState('');
+      const [barWeekArmeniaData, setBarWeekArmeniaData] = useState([]);
+      const [barWeekArmeniaLoading, setBarWeekArmeniaLoading] = useState(false);
+      const [barWeekArmeniaSearch, setBarWeekArmeniaSearch] = useState('');
+      const [barWeekArmeniaFiltroEstado, setBarWeekArmeniaFiltroEstado] = useState('all');
+      const [barWeekArmeniaDetalle, setBarWeekArmeniaDetalle] = useState(null);
+      const [barWeekArmeniaNotasEdit, setBarWeekArmeniaNotasEdit] = useState('');
 
       const [espaciosCorpData, setEspaciosCorpData] = useState([]);
       const [espaciosCorpLoading, setEspaciosCorpLoading] = useState(false);
@@ -1067,6 +1073,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
       useEffect(() => { if (view === 'crm' || view === 'crm-armenia-guia') { setArmeniaGuiaDetalle(null); loadArmeniaGuia(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-armenia-postgastro') { setArmeniaPostGastroDetalle(null); loadArmeniaPostGastro(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-bar-week') { setBarWeekDetalle(null); loadBarWeek(); } }, [view]);
+      useEffect(() => { if (view === 'crm' || view === 'crm-bar-week-armenia') { setBarWeekArmeniaDetalle(null); loadBarWeekArmenia(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-espacios-corp') { setEspaciosCorpDetalle(null); loadEspaciosCorp(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-ecosistema-dj') { loadEcosistemaDj(); } }, [view]);
       useEffect(() => { if (view === 'crm' || view === 'crm-mix-shake') { setMixShakeDetalle(null); loadMixShake(); } }, [view]);
@@ -1822,6 +1829,46 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
         if (!filtered.length) { showNotif('No hay logos en los registros filtrados', 'error'); return; }
         const withUrls = filtered.map(r => ({ ...r, _logo_url: SUPABASE_URL + '/storage/v1/object/formularios/' + r.logo_marca }));
         await downloadArchivosZip(withUrls, 'nombre_establecimiento', [{ key: '_logo_url', folder: 'Logos', suffix: 'logo' }], 'bar_week_logos');
+      };
+      const loadBarWeekArmenia = async () => {
+        setBarWeekArmeniaLoading(true);
+        const { data } = await supabase.from('inscripciones_bar_week_armenia').select('*').order('created_at', { ascending: false });
+        setBarWeekArmeniaData(data || []);
+        setBarWeekArmeniaLoading(false);
+      };
+      const updateBarWeekArmeniaEstado = async (id, estado) => {
+        await supabase.from('inscripciones_bar_week_armenia').update({ estado }).eq('id', id);
+        setBarWeekArmeniaData(prev => prev.map(r => r.id === id ? { ...r, estado } : r));
+        setBarWeekArmeniaDetalle(prev => prev && prev.id === id ? { ...prev, estado } : prev);
+      };
+      const saveBarWeekArmeniaNotas = async (id, notas) => {
+        await supabase.from('inscripciones_bar_week_armenia').update({ notas }).eq('id', id);
+        setBarWeekArmeniaData(prev => prev.map(r => r.id === id ? { ...r, notas } : r));
+        setBarWeekArmeniaDetalle(prev => prev && prev.id === id ? { ...prev, notas } : prev);
+        showNotif('Notas guardadas');
+      };
+      const deleteBarWeekArmeniaPersona = async (id) => {
+        const { error, count } = await supabase.from('inscripciones_bar_week_armenia').delete({ count: 'exact' }).eq('id', id);
+        if (error) { showNotif('Error: ' + error.message); return; }
+        if (count === 0) { showNotif('Sin permisos para eliminar.'); return; }
+        setBarWeekArmeniaData(prev => prev.filter(r => r.id !== id));
+        setBarWeekArmeniaDetalle(null);
+        showNotif('Registro eliminado');
+      };
+      const getBarWeekArmeniaFiltered = () => {
+        const q = barWeekArmeniaSearch.toLowerCase();
+        return barWeekArmeniaData.filter(r => {
+          if (barWeekArmeniaFiltroEstado !== 'all' && r.estado !== barWeekArmeniaFiltroEstado) return false;
+          if (q && ![r.nombre_establecimiento, r.barrio, r.localidad, r.nombre_contacto, r.correo_contacto, r.instagram].some(v => String(v ?? '').toLowerCase().includes(q))) return false;
+          return true;
+        });
+      };
+      const exportBarWeekArmeniaExcel = () => exportDynamicExcel(getBarWeekArmeniaFiltered(), 'Bar Week Armenia', 'bar_week_armenia');
+      const downloadBarWeekArmeniaLogos = async () => {
+        const filtered = getBarWeekArmeniaFiltered().filter(r => r.logo_marca);
+        if (!filtered.length) { showNotif('No hay logos en los registros filtrados', 'error'); return; }
+        const withUrls = filtered.map(r => ({ ...r, _logo_url: SUPABASE_URL + '/storage/v1/object/formularios/' + r.logo_marca }));
+        await downloadArchivosZip(withUrls, 'nombre_establecimiento', [{ key: '_logo_url', folder: 'Logos', suffix: 'logo' }], 'bar_week_armenia_logos');
       };
 
       const loadEspaciosCorp = async () => {
@@ -2772,7 +2819,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
 
           <main style={{ flex: 1, marginLeft: isMobile ? 0 : 260, padding: isMobile ? '16px 12px 80px' : '32px 32px 80px', minWidth: 0 }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 20 : 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'crm-ecosistema-dj' && 'El Ecosistema DJ'}{view === 'crm-mix-shake' && 'Mix And Shake'}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>{isMobile && <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: '2px solid #e5e7eb', background: 'white', fontSize: 18, cursor: 'pointer' }}>☰</button>}<div style={{ minWidth: 0 }}><h1 style={{ fontSize: isMobile ? 18 : 28, fontWeight: 700, color: '#1a1a2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{view === 'dashboard' && 'Mi Dashboard'}{view === 'my-tasks' && 'Mis Tareas'}{view === 'my-board' && 'Mi Tablero'}{view === 'all-tasks' && 'Tareas del Equipo'}{view === 'all-board' && 'Tablero General'}{view === 'assigned' && 'Tareas que Asigné'}{view === 'docs' && 'Documentación'}{view === 'crm' && 'CRM / Formularios'}{view === 'crm-aev' && 'Área en Vivo — Lab'}{view === 'fontur' && 'Formulario FONTUR'}{view === 'registros' && 'Registros de Formularios'}{view === 'certificaciones' && 'Certificaciones'}{view === 'crm-gastro' && 'Postulados Gastromarketing Day'}{view === 'crm-aev-lab' && 'Área en Vivo — Capacitación Octava'}{view === 'crm-aev-bootcamp2' && 'Área en Vivo — Bootcamp 2'}{view === 'crm-aev-seguridad' && 'Área en Vivo — Bootcamp 3 Seguridad'}{view === 'crm-aev-folder' && 'Área en Vivo'}{view === 'crm-armenia-folder' && 'Armenia 24'}{view === 'crm-armenia-cap' && 'Inscripción a Formación o Capacitación'}{view === 'crm-armenia-diag' && 'Instrumento Diagnóstico y Acompañamiento'}{view === 'crm-armenia-asistencia' && 'Registro Asistencia — Ciclo de Formación'}{view === 'crm-armenia-guia' && 'Inscripción Guía Gastroentretenimiento'}{view === 'crm-armenia-postgastro' && 'Postulación — Asistencia Técnica Gastroentretenimiento'}{view === 'crm-bar-week' && 'Bar Week Bogotá 2026'}{view === 'crm-bar-week-armenia' && 'Bar Week Armenia 2026'}{view === 'crm-espacios-corp' && 'Espacios para Eventos Corporativos'}{view === 'crm-ecosistema-dj' && 'El Ecosistema DJ'}{view === 'crm-mix-shake' && 'Mix And Shake'}
                 {view === 'crm-circulo-gastro' && 'Círculo Gastro'}
                 {view === 'crm-cluster-dj' && 'Cluster DJ'}
                 {view === 'crm-base-total' && 'Base de Datos Total'}{view === 'crm-afiliados' && 'Afiliados'}{view === 'crm-my-name-is' && 'My Name Is… — Inglés especializado en Mesa y Bar'}{view === 'team' && 'Gestión de Equipo'}{view === 'analytics' && 'KPIs y Estadísticas'}{view === 'conecta' && 'Conecta — Mesa de Negocios'}</h1>{!isMobile && <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>{currentMonth} {currentYear}</p>}</div></div>
@@ -2988,6 +3035,7 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
                     { id: 'crm-gastro', icon: 'bi-cup-hot', title: 'Postulados Gastromarketing Day', desc: 'Postulaciones al Gastromarketing Day — Catedral de Sal, 24-25 sep 2026. Gestiona estados y notas internas.', count: gastroData.length, loading: gastroLoading, color: '#f59e0b', bg: '#fef3c7' },
                     { id: 'crm-armenia-folder', icon: 'bi-buildings', title: 'Armenia 24', desc: 'Formularios del programa de Fortalecimiento Empresarial en Armenia, Quindío — Alcaldía de Armenia · Asobares · Quindío Convention Bureau.', count: armeniaCapData.length + armeniaDiagData.length + armeniaAsistData.length + armeniaGuiaData.length + armeniaPostGastroData.length, loading: armeniaCapLoading || armeniaDiagLoading || armeniaAsistLoading || armeniaGuiaLoading || armeniaPostGastroLoading, color: '#2db84b', bg: '#f0f9f4' },
                     { id: 'crm-bar-week', icon: 'bi-cup-straw', title: 'Bar Week Bogotá', desc: 'Establecimientos registrados en Bar Week Bogotá 2026 — Cóctel + Tapa por $35.000 · 27 nov al 7 dic · Asobares · IDT.', count: barWeekData.length, loading: barWeekLoading, color: '#d4a017', bg: '#fffde7' },
+                    { id: 'crm-bar-week-armenia', icon: 'bi-cup-straw', title: 'Bar Week Armenia', desc: 'Establecimientos registrados en Bar Week Armenia 2026 — Cóctel + Tapa por $35.000 · Asobares Colombia.', count: barWeekArmeniaData.length, loading: barWeekArmeniaLoading, color: '#c0710a', bg: '#fff3e0' },
                     { id: 'crm-espacios-corp', icon: 'bi-building-check', title: 'Espacios Corporativos', desc: 'Establecimientos registrados para el directorio de espacios para eventos corporativos — Iniciativa ASOBARES + ANATO Capítulo Central.', count: espaciosCorpData.length, loading: espaciosCorpLoading, color: '#1d4ed8', bg: '#eff6ff' },
                     { id: 'crm-mix-shake', icon: 'bi-cup-straw-fill', title: 'Mix And Shake', desc: 'Comunidad de bartending de Asobares Colombia — Inscripciones de talento de barra, establecimientos, marcas y proveedores.', count: mixShakeData.length, loading: mixShakeLoading, color: '#8B2BE8', bg: '#f3e8ff' },
                           { id: 'crm-circulo-gastro', icon: 'bi-fork-knife', title: 'Círculo Gastro', desc: 'Comunidad gastronómica de circulogastro.com — Inscripciones de profesionales, establecimientos, marcas y proveedores.', count: circuloGastroData.length, loading: circuloGastroLoading, color: '#e67e22', bg: '#fef3e2' },
@@ -5236,6 +5284,90 @@ const [afiliadosExporting, setAfiliadosExporting] = useState(false);
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                                 {bwBadge(r.estado)}
+                                <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {view === 'crm-bar-week-armenia' && (() => {
+              const bwaBadge = (estado) => { const m = { pendiente: { bg: '#fef3c7', color: '#92400e', lbl: 'Pendiente' }, confirmado: { bg: '#d1fae5', color: '#065f46', lbl: 'Confirmado' }, rechazado: { bg: '#fee2e2', color: '#991b1b', lbl: 'Rechazado' } }; const s = m[estado] || m.pendiente; return <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: s.bg, color: s.color }}>{s.lbl}</span>; };
+              const filtered = getBarWeekArmeniaFiltered();
+              return (
+                <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
+                  {barWeekArmeniaDetalle ? (
+                    <div style={{ flex: 1, overflowY: 'auto', background: 'white', borderRadius: 16, padding: 24 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <button onClick={() => setBarWeekArmeniaDetalle(null)} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← Volver</button>
+                        {currentUser.role === 'admin' && <button onClick={() => { if(window.confirm('¿Eliminar este registro?')) deleteBarWeekArmeniaPersona(barWeekArmeniaDetalle.id); }} style={{ padding: '8px 16px', borderRadius: 8, background: '#fee2e2', color: '#E84338', border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}><i className="bi bi-trash"></i> Eliminar</button>}
+                      </div>
+                      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                        <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#c0710a,#a05a08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 12px' }}><i className="bi bi-cup-straw"></i></div>
+                        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{barWeekArmeniaDetalle.nombre_establecimiento}</h2>
+                        <p style={{ fontSize: 14, color: '#64748b' }}>{barWeekArmeniaDetalle.barrio} · {barWeekArmeniaDetalle.localidad}</p>
+                        <p style={{ fontSize: 13, color: '#94a3b8' }}>{new Date(barWeekArmeniaDetalle.created_at).toLocaleDateString('es-CO')}</p>
+                      </div>
+                      {bwaBadge(barWeekArmeniaDetalle.estado)}
+                      <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
+                        {[['pendiente','Pendiente'],['confirmado','Confirmado'],['rechazado','Rechazado']].map(([val,lbl]) =>
+                          <button key={val} onClick={() => updateBarWeekArmeniaEstado(barWeekArmeniaDetalle.id, val)} style={{ padding: '6px 14px', borderRadius: 8, border: `2px solid ${barWeekArmeniaDetalle.estado===val?'#c0710a':'#e5e7eb'}`, background: barWeekArmeniaDetalle.estado===val?'#c0710a':'white', color: barWeekArmeniaDetalle.estado===val?'#fff':'#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                        )}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+                        {Object.entries(barWeekArmeniaDetalle).filter(([k,v])=>!['id','created_at','nombre_establecimiento','barrio','localidad','estado','notas'].includes(k)&&v!==null&&v!==undefined&&v!=='').map(([k,v])=>(
+                          <div key={k}><p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</p><p style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>{String(v)}</p></div>
+                        ))}
+                      </div>
+                      <div style={{ marginTop: 16 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>NOTAS INTERNAS</p>
+                        <textarea value={barWeekArmeniaNotasEdit} onChange={e => setBarWeekArmeniaNotasEdit(e.target.value)} onFocus={() => setBarWeekArmeniaNotasEdit(barWeekArmeniaDetalle.notas || '')} style={{ width: '100%', padding: 12, border: '2px solid #e5e7eb', borderRadius: 10, fontSize: 13, fontFamily: 'inherit', minHeight: 80, resize: 'vertical', boxSizing: 'border-box' }} placeholder="Añade notas sobre este establecimiento..."/>
+                        <button onClick={() => saveBarWeekArmeniaNotas(barWeekArmeniaDetalle.id, barWeekArmeniaNotasEdit)} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#c0710a,#a05a08)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Guardar notas</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+                        <button onClick={() => setView('crm')} style={{ padding: '8px 16px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', cursor: 'pointer', fontWeight: 600 }}>← CRM</button>
+                        <input value={barWeekArmeniaSearch} onChange={e => setBarWeekArmeniaSearch(e.target.value)} placeholder="Buscar por establecimiento, barrio, sector, contacto..." style={{ flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}/>
+                        <select value={barWeekArmeniaFiltroEstado} onChange={e => setBarWeekArmeniaFiltroEstado(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}>
+                          <option value="all">Todos</option>
+                          <option value="pendiente">Pendiente</option>
+                          <option value="confirmado">Confirmado</option>
+                          <option value="rechazado">Rechazado</option>
+                        </select>
+                        <button onClick={loadBarWeekArmenia} style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'white', fontSize: 13, cursor: 'pointer' }}><i className="bi bi-arrow-clockwise"></i></button>
+                        <button onClick={exportBarWeekArmeniaExcel} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#c0710a,#a05a08)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>⬇ Excel</button>
+                        <button onClick={downloadBarWeekArmeniaLogos} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>⬇ Logos ZIP</button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12, marginBottom: 16 }}>
+                        {[['Total',barWeekArmeniaData.length,'#c0710a'],['Pendiente',barWeekArmeniaData.filter(r=>!r.estado||r.estado==='pendiente').length,'#92400e'],['Confirmado',barWeekArmeniaData.filter(r=>r.estado==='confirmado').length,'#065f46'],['Rechazado',barWeekArmeniaData.filter(r=>r.estado==='rechazado').length,'#E84338']].map(([lbl,val,color])=>(
+                          <div key={lbl} style={{ background: 'white', borderRadius: 12, padding: '14px 18px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                            <p style={{ fontSize: 22, fontWeight: 700, color }}>{val}</p>
+                            <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{lbl}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {barWeekArmeniaLoading ? (
+                        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Cargando...</div>
+                      ) : filtered.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16, color: '#94a3b8' }}>No hay registros{barWeekArmeniaSearch ? ' que coincidan' : ''}.</div>
+                      ) : (
+                        <div style={{ background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+                          {filtered.map((r,i) => (
+                            <div key={r.id} onClick={() => { setBarWeekArmeniaDetalle(r); setBarWeekArmeniaNotasEdit(r.notas||''); }} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderBottom: i<filtered.length-1?'1px solid #f1f5f9':'none', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='#fff3e0'} onMouseOut={e=>e.currentTarget.style.background='white'}>
+                              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg,#c0710a,#a05a08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}><i className="bi bi-cup-straw"></i></div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 2 }}>{r.nombre_establecimiento}</p>
+                                <p style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.barrio} · {r.localidad}</p>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                                {bwaBadge(r.estado)}
                                 <span style={{ fontSize: 13, color: '#94a3b8' }}>Ver →</span>
                               </div>
                             </div>

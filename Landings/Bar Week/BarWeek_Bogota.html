@@ -207,19 +207,19 @@
 #bw .aliado .txt-logo{font-weight:600;font-size:1.05rem;line-height:1.25}
 #bw .rc.idt{border-radius:8px}
 #bw .patros-tit{margin-top:44px;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--tenue)}
-#bw .patros{display:grid;grid-template-columns:repeat(5,1fr);grid-auto-flow:dense;gap:12px;margin-top:14px}
-#bw .patro{display:flex;flex-direction:column;border:1px solid var(--linea);border-radius:12px;overflow:hidden}
+#bw .patros{--c:5;display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:14px}
+#bw .patro{width:calc((100% - (var(--c) - 1) * 12px) / var(--c));display:flex;flex-direction:column;border:1px solid var(--linea);border-radius:12px;overflow:hidden}
 #bw .patro .logos{background:#fff;flex:1;min-height:120px;display:flex;align-items:center;justify-content:center;gap:24px;padding:18px 20px}
-#bw .patro.oscuro .logos{background:#0b0b0b}
+#bw .patro.oscuro .logos{background:#000}
 #bw .patro .logos > img{max-width:100%;width:auto;height:auto;object-fit:contain;flex:0 1 auto;min-width:0}
 #bw .patro .logos.multi > img{max-width:40%}
 #bw .patro .logos .negro{filter:brightness(0)}
 #bw .rc{position:relative;display:block;overflow:hidden;flex:0 1 auto;min-width:0;aspect-ratio:var(--r);width:min(100%,calc(var(--h) * var(--r)))}
 #bw .aliado .rc img, #bw .patro .logos .rc img{position:absolute;max-width:none;max-height:none;height:auto;width:var(--w);left:var(--x);top:var(--y)}
 #bw .patro .nom{padding:8px 10px;font-size:.72rem;color:var(--tenue);text-align:center;line-height:1.3}
-#bw .patros .doble{grid-column:span 2}
-@media(max-width:1000px){#bw .patros{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:760px){#bw .aliados .fila{grid-template-columns:1fr}#bw .patros{grid-template-columns:repeat(2,1fr)}}
+#bw .patros .doble{width:calc(2 * (100% - (var(--c) - 1) * 12px) / var(--c) + 12px)}
+@media(max-width:1000px){#bw .patros{--c:3}}
+@media(max-width:760px){#bw .aliados .fila{grid-template-columns:1fr}#bw .patros{--c:2}}
 
 #bw footer{border-top:1px solid var(--linea);padding:40px 0 60px;font-size:.82rem;color:var(--tenue)}
 #bw footer .legal{border:1px solid var(--linea);border-radius:12px;padding:14px 16px;color:var(--suave);margin-bottom:22px;font-size:.8rem}
@@ -519,11 +519,11 @@
       <div class="aliado"><span class="rc idt" style="--r:0.682;--h:80px;--w:165.87%;--x:-32.93%;--y:-8.16%"><img src="https://asobares.org/wp-content/uploads/2026/11/IDT-Bogota.png" alt="Instituto Distrital de Turismo · IDT Bogotá"></span><span class="rol">En alianza con</span></div>
       <div class="aliado"><img src="https://asobares.org/wp-content/uploads/2026/11/CLUVI.png" alt="Cluvi"><span class="rol">Tecnología</span></div>
     </div>
-    <div class="patros-tit">Aliados y patrocinadores</div>
+    <div class="patros-tit">Aliados</div>
     <div class="patros">
       <div class="patro doble"><div class="logos multi"><span class="rc" style="--r:1.394;--h:62px;--w:166.03%;--x:-33.59%;--y:-32.45%"><img src="https://asobares.org/wp-content/uploads/2026/11/LOGO-FRUCO.png" alt="Fruco"></span><span class="rc" style="--r:1.202;--h:66px;--w:140.23%;--x:-18.84%;--y:-11.17%"><img src="https://asobares.org/wp-content/uploads/2026/11/Knorr_Professional_Logo_CMYK-V2.png" alt="Knorr Professional"></span></div><div class="nom">Unilever</div></div>
       <div class="patro doble"><div class="logos multi"><span class="rc" style="--r:1.247;--h:62px;--w:149.75%;--x:-24.96%;--y:-12.24%"><img src="https://asobares.org/wp-content/uploads/2026/11/pernord-ODT_logo_R_BLACK.png" alt="Ojo de Tigre"></span><img src="https://asobares.org/wp-content/uploads/2026/11/the-glenlivet_logo_600.avif" alt="The Glenlivet" style="max-height:44px" class="negro"><img src="https://asobares.org/wp-content/uploads/2026/11/Chivas-regal.webp" alt="Chivas Regal" style="max-height:48px"></div><div class="nom">Pernod Ricard</div></div>
-      <div class="patro"><div class="logos"><img src="https://asobares.org/wp-content/uploads/2026/11/FY20_Bacardi_AMEA_Logos_Primary_Background_Full_Colour_CMYK-scaled.png" alt="Bacardí" style="max-height:80px"></div><div class="nom">Bacardí</div></div>
+      <div class="patro oscuro"><div class="logos"><img src="https://asobares.org/wp-content/uploads/2026/11/FY20_Bacardi_AMEA_Logos_Primary_Background_Full_Colour_CMYK-scaled.png" alt="Bacardí" style="max-height:80px"></div><div class="nom">Bacardí</div></div>
       <div class="patro"><div class="logos"><span class="rc" style="--r:1.266;--h:72px;--w:104.95%;--x:-2.78%;--y:-10.37%"><img src="https://asobares.org/wp-content/uploads/2026/11/logo-agurdiente-antioqueno.png" alt="Aguardiente Antioqueño"></span></div><div class="nom">Aguardiente Antioqueño</div></div>
       <div class="patro oscuro"><div class="logos"><img src="https://asobares.org/wp-content/uploads/2026/11/LOGO-BLANCO-scaled.png" alt="Domecq · Ron Quimbaya" style="max-height:64px"></div><div class="nom">Domecq · Ron Quimbaya</div></div>
       <div class="patro"><div class="logos"><img src="https://asobares.org/wp-content/uploads/2026/11/logo-mitica.png" alt="Mítica" style="max-height:80px"></div><div class="nom">Mítica</div></div>
@@ -532,7 +532,7 @@
       <div class="patro"><div class="logos"><span class="rc" style="--r:0.785;--h:80px;--w:193.05%;--x:-47.88%;--y:-25.76%"><img src="https://asobares.org/wp-content/uploads/2026/11/logosimbolo-iglu-color.png" alt="Hielo Iglú"></span></div><div class="nom">Hielo Iglú</div></div>
       <div class="patro"><div class="logos"><img src="https://asobares.org/wp-content/uploads/2026/11/LOGO-HERRERA-CAFE.png" alt="Herrera Café" style="max-height:80px"></div><div class="nom">Herrera Café</div></div>
       <div class="patro oscuro"><div class="logos"><span class="rc" style="--r:3.240;--h:60px;--w:107.82%;--x:-3.91%;--y:-131.66%"><img src="https://asobares.org/wp-content/uploads/2026/11/Logo-Porkcolombia.png" alt="Porkcolombia"></span></div><div class="nom">Porkcolombia</div></div>
-      <div class="patro"><div class="logos"><img src="https://asobares.org/wp-content/uploads/2026/11/asoembutidos.jpg" alt="AsoEmbutidos" style="max-height:80px"></div><div class="nom">AsoEmbutidos</div></div>
+      <div class="patro oscuro"><div class="logos"><img src="https://asobares.org/wp-content/uploads/2026/11/asoembutidos.jpg" alt="AsoEmbutidos" style="max-height:80px"></div><div class="nom">AsoEmbutidos</div></div>
       <div class="patro"><div class="logos"><span class="rc" style="--r:1.815;--h:76px;--w:130.19%;--x:-15.30%;--y:-40.32%"><img src="https://asobares.org/wp-content/uploads/2026/11/Logo-Ventas-institucionales-Vectorizado.png" alt="Ventas Institucionales"></span></div><div class="nom">Ventas Institucionales</div></div>
       <div class="patro doble"><div class="logos multi"><span class="rc" style="--r:0.791;--h:80px;--w:181.41%;--x:-40.70%;--y:-6.19%"><img src="https://asobares.org/wp-content/uploads/2026/11/LOGO-BARTENDING.png" alt="Bartending Colombia"></span><span class="rc" style="--r:5.222;--h:44px;--w:109.81%;--x:-4.87%;--y:-176.70%"><img src="https://asobares.org/wp-content/uploads/2026/11/LOGO-BARTENDING-CUCHILLERIA-2.png" alt="La Cuchillería"></span></div><div class="nom">Bartending · La Cuchillería</div></div>
       <div class="patro"><div class="logos"><span class="rc" style="--r:0.628;--h:80px;--w:163.25%;--x:-31.63%;--y:-18.65%"><img src="https://asobares.org/wp-content/uploads/2026/11/Logo-Balzak.png" alt="Balzak by Karen Díaz"></span></div><div class="nom">Balzak by Karen Díaz</div></div>

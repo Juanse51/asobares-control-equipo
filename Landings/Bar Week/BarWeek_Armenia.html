@@ -1,0 +1,532 @@
+<!-- ============================================================
+     BAR WEEK Armenia 2026 — Widget para Elementor (HTML widget)
+     Prefijo CSS: #bw  |  Assets: https://barweek-bogota.netlify.app/
+     ============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ── Wrapper full-bleed ───────────────────────────────────────────── */
+#bw {
+  position: relative !important;
+  width: 100vw !important;
+  left: 50% !important;
+  margin-left: -50vw !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box;
+}
+/* ── CSS original scoped bajo #bw ──────────────────────────────────── */
+
+#bw{
+  --negro:#151515; --negro2:#1d1b19; --negro3:#26231f;
+  --crema:#F6E6CF; --oro:#FCAE4C; --cobre:#C87941;
+  --texto:#F6E6CF; --suave:rgba(246,230,207,.66); --tenue:rgba(246,230,207,.4);
+  --linea:rgba(246,230,207,.12); --radio:18px;
+}
+#bw *{box-sizing:border-box;margin:0;padding:0}
+#bw [hidden]{display:none!important}
+#bw{scroll-behavior:smooth}
+#bw{background:var(--negro);color:var(--texto);font-family:Poppins,system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+#bw a{color:inherit}
+#bw img{max-width:100%;display:block}
+#bw button{font-family:inherit;cursor:pointer}
+#bw .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+#bw .eyebrow{font-size:.74rem;letter-spacing:.28em;text-transform:uppercase;color:var(--oro);font-weight:500}
+#bw h2.titulo{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.1;margin:.4em 0 .3em;letter-spacing:-.01em}
+#bw .lead{color:var(--suave);max-width:640px;font-size:1.02rem}
+#bw .oro{color:var(--oro)}
+#bw section{padding:88px 0}
+#bw .btn{display:inline-flex;align-items:center;gap:.5em;border:0;border-radius:999px;padding:.9em 1.5em;font-weight:600;font-size:.95rem;text-decoration:none;transition:transform .15s,background .15s,color .15s}
+#bw .btn:active{transform:scale(.97)}
+#bw .btn-oro{background:var(--oro);color:var(--negro)}
+#bw .btn-oro:hover{background:#ffc070}
+#bw .btn-linea{background:transparent;color:var(--crema);box-shadow:inset 0 0 0 1.5px var(--linea)}
+#bw .btn-linea:hover{box-shadow:inset 0 0 0 1.5px var(--oro);color:var(--oro)}
+#bw .btn-sm{padding:.6em 1.05em;font-size:.84rem}
+#bw .btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* Cinta de propuesta */
+#bw .cinta{background:var(--cobre);color:var(--negro);font-size:.78rem;text-align:center;padding:6px 12px;font-weight:500}
+@media(max-width:700px){#bw .cinta-extra{display:none}}
+
+/* Header */
+#bw header.top{position:sticky;top:0;z-index:900;background:rgba(21,21,21,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--linea)}
+#bw .top .wrap{display:flex;align-items:center;justify-content:space-between;height:66px;gap:16px}
+#bw .top .logo img{height:40px;width:auto}
+#bw .top nav{display:flex;gap:26px;font-size:.88rem}
+#bw .top nav a{text-decoration:none;color:var(--suave)}
+#bw .top nav a:hover{color:var(--oro)}
+#bw .ruta-btn{position:relative}
+#bw .ruta-btn .badge{position:absolute;top:-6px;right:-6px;background:var(--crema);color:var(--negro);font-size:.7rem;font-weight:700;border-radius:999px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 5px}
+@media(max-width:860px){#bw .top nav{display:none}}
+
+/* Hero */
+#bw .hero{position:relative;min-height:88vh;display:flex;align-items:center;padding:80px 0 64px;overflow:hidden}
+#bw .hero::before{content:"";position:absolute;inset:0;background:url(https://barweek-bogota.netlify.app/assets/hero-bg.jpg) center/cover no-repeat;opacity:.9}
+#bw .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(21,21,21,.1) 0%,rgba(21,21,21,.35) 55%,var(--negro) 100%),linear-gradient(90deg,rgba(21,21,21,.75) 0%,rgba(21,21,21,0) 70%)}
+#bw .hero .wrap{position:relative;z-index:1;width:100%}
+#bw .hero-logo{width:min(420px,78vw);margin-bottom:28px;filter:drop-shadow(0 10px 40px rgba(0,0,0,.5))}
+#bw .hero h1{font-size:clamp(2.2rem,6vw,4.4rem);font-weight:800;line-height:1.02;letter-spacing:-.02em;max-width:760px}
+#bw .hero p.sub{margin-top:18px;font-size:clamp(1rem,2vw,1.18rem);color:var(--suave);max-width:560px}
+#bw .hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+#bw .fecha-chip{display:inline-flex;gap:10px;align-items:center;border:1px solid rgba(252,174,76,.45);border-radius:999px;padding:6px 14px;font-size:.82rem;color:var(--oro);margin-bottom:22px;background:rgba(21,21,21,.4)}
+#bw .cuenta{display:flex;gap:10px;margin-top:40px}
+#bw .cuenta div{background:rgba(21,21,21,.6);border:1px solid var(--linea);border-radius:14px;padding:10px 14px;min-width:74px;text-align:center}
+#bw .cuenta b{display:block;font-size:1.6rem;font-weight:700;color:var(--crema);font-variant-numeric:tabular-nums}
+#bw .cuenta span{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tenue)}
+
+/* Cifras */
+#bw .cifras{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);background:var(--negro2)}
+#bw .cifras .wrap{display:grid;grid-template-columns:repeat(4,1fr)}
+#bw .cifras .c{padding:30px 18px;border-right:1px solid var(--linea)}
+#bw .cifras .c:last-child{border-right:0}
+#bw .cifras b{font-size:clamp(1.6rem,3.4vw,2.4rem);font-weight:700;color:var(--oro);display:block;line-height:1.1}
+#bw .cifras span{color:var(--suave);font-size:.86rem}
+@media(max-width:700px){#bw .cifras .wrap{grid-template-columns:repeat(2,1fr)}#bw .cifras .c:nth-child(2){border-right:0}#bw .cifras .c:nth-child(-n+2){border-bottom:1px solid var(--linea)}}
+
+/* Pasos */
+#bw .pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:44px}
+#bw .paso{background:var(--negro2);border:1px solid var(--linea);border-radius:var(--radio);padding:26px 22px}
+#bw .paso .n{font-size:.8rem;font-weight:700;color:var(--negro);background:var(--oro);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;margin-bottom:18px}
+#bw .paso h3{font-size:1.08rem;font-weight:600;margin-bottom:6px}
+#bw .paso p{color:var(--suave);font-size:.9rem}
+@media(max-width:900px){#bw .pasos{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){#bw .pasos{grid-template-columns:1fr}}
+
+/* Menú */
+#bw .menu-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;align-items:stretch;margin-top:10px}
+#bw .menu-card{position:relative;border-radius:24px;padding:40px;background:radial-gradient(120% 120% at 100% 0%,rgba(252,174,76,.28),rgba(200,121,65,.08) 45%,transparent 70%),var(--negro2);border:1px solid rgba(252,174,76,.3);overflow:hidden}
+#bw .menu-card .precio{font-size:clamp(3rem,8vw,5.2rem);font-weight:800;color:var(--oro);line-height:1;letter-spacing:-.03em}
+#bw .menu-card .precio small{font-size:.32em;color:var(--crema);font-weight:500;letter-spacing:0;margin-left:.3em}
+#bw .menu-card ul{list-style:none;margin-top:26px;display:grid;gap:12px}
+#bw .menu-card li{display:flex;gap:12px;align-items:center;font-size:1.02rem}
+#bw .menu-card li i{font-style:normal;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(252,174,76,.14);color:var(--oro)}
+#bw .mensajes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#bw .mensajes div{background:var(--negro2);border:1px solid var(--linea);border-radius:var(--radio);padding:22px}
+#bw .mensajes b{display:block;font-weight:600;margin-bottom:4px}
+#bw .mensajes span{color:var(--suave);font-size:.88rem}
+@media(max-width:860px){#bw .menu-grid{grid-template-columns:1fr}}
+@media(max-width:480px){#bw .mensajes{grid-template-columns:1fr}#bw .menu-card{padding:28px}}
+
+/* Mapa vivo */
+#bw #mapa-vivo{padding-bottom:40px}
+#bw .filtros{display:flex;flex-wrap:wrap;gap:10px;margin:30px 0 8px;align-items:center}
+#bw .filtros input, #bw .filtros select{background:var(--negro2);border:1px solid var(--linea);color:var(--crema);border-radius:999px;padding:.7em 1.1em;font-family:inherit;font-size:.88rem;outline:none}
+#bw .filtros input{flex:1 1 220px;min-width:0}
+#bw .filtros select{flex:0 1 auto;appearance:none;padding-right:2.2em;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23FCAE4C' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+#bw .filtros input:focus, #bw .filtros select:focus{border-color:var(--oro)}
+#bw .filtros select option{background:var(--negro)}
+#bw .chips{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:none}
+#bw .chips::-webkit-scrollbar{display:none}
+#bw .chip{flex:0 0 auto;border:1px solid var(--linea);background:transparent;color:var(--suave);border-radius:999px;padding:.45em 1em;font-size:.82rem;white-space:nowrap}
+#bw .chip:hover{color:var(--crema);border-color:var(--tenue)}
+#bw .chip.on{background:var(--oro);color:var(--negro);border-color:var(--oro);font-weight:600}
+#bw .chip .ct{opacity:.6;margin-left:4px;font-size:.92em}
+#bw .aviso-horario{display:flex;gap:10px;align-items:center;font-size:.8rem;color:var(--tenue);margin:6px 0 18px}
+#bw .aviso-horario .chip{opacity:.5;cursor:not-allowed}
+#bw .explorador{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:18px;height:680px}
+#bw .lista{overflow-y:auto;padding-right:6px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:var(--negro3) transparent}
+#bw .resumen{font-size:.82rem;color:var(--tenue);padding:0 2px 4px}
+#bw .bar{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;background:var(--negro2);border:1px solid var(--linea);border-radius:16px;padding:12px;cursor:pointer;transition:border-color .15s,background .15s}
+#bw .bar:hover, #bw .bar.activo{border-color:rgba(252,174,76,.55);background:#211e1b}
+#bw .bar .ini-img{object-fit:cover;background:#fff;padding:0}
+#bw .ficha-logo{width:64px;height:64px;border-radius:14px;object-fit:cover;margin-right:16px;flex:0 0 auto;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+#bw .ficha-top{align-items:center}
+#bw .bar .ini{width:64px;height:64px;border-radius:12px;display:grid;place-items:center;font-weight:700;font-size:1.15rem;color:var(--negro);background:linear-gradient(135deg,var(--oro),var(--cobre))}
+#bw .bar h4{font-size:.98rem;font-weight:600;line-height:1.25}
+#bw .bar .meta{font-size:.8rem;color:var(--suave);margin-top:2px}
+#bw .bar .tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+#bw .tag{font-size:.7rem;border-radius:6px;padding:2px 7px;background:rgba(246,230,207,.07);color:var(--suave)}
+#bw .add{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--linea);background:transparent;color:var(--oro);font-size:1.3rem;display:grid;place-items:center;flex:0 0 auto}
+#bw .add:hover{border-color:var(--oro)}
+#bw .add.on{background:var(--oro);color:var(--negro);border-color:var(--oro);font-size:1rem}
+#bw #mapa{border-radius:var(--radio);border:1px solid var(--linea);overflow:hidden;background:#1a1a1a;min-height:300px}
+#bw .vacio{padding:40px 20px;text-align:center;color:var(--tenue);border:1px dashed var(--linea);border-radius:16px}
+#bw .toggle-vista{display:none;gap:8px;margin-bottom:12px}
+@media(max-width:900px){
+  #bw .explorador{grid-template-columns:1fr;height:auto}
+  #bw .lista{max-height:none;overflow:visible;padding-right:0}
+  #bw #mapa{height:62vh}
+  #bw .toggle-vista{display:flex}
+  #bw .explorador[data-vista=lista] #mapa{display:none}
+  #bw .explorador[data-vista=mapa] .lista{display:none}
+}
+/* Leaflet en tema */
+#bw .leaflet-container{font-family:Poppins,sans-serif;background:#141414}
+#bw .tiles-oscuros{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.92) saturate(.35) sepia(.25)}
+#bw .pin{width:18px;height:18px;border-radius:50%;background:var(--oro);border:3px solid var(--negro);box-shadow:0 0 0 2px rgba(252,174,76,.45),0 4px 10px rgba(0,0,0,.6)}
+#bw .pin.en-ruta{background:var(--crema);box-shadow:0 0 0 2px var(--crema),0 4px 12px rgba(0,0,0,.6)}
+#bw .pin.activo{transform:scale(1.45)}
+#bw .leaflet-popup-content-wrapper, #bw .leaflet-popup-tip{background:var(--negro2);color:var(--crema);border:1px solid var(--linea);box-shadow:0 10px 30px rgba(0,0,0,.6)}
+#bw .leaflet-popup-content{margin:14px 16px;font-size:.85rem;line-height:1.4}
+#bw .leaflet-popup-content b{font-size:.98rem;display:block;margin-bottom:2px}
+#bw .leaflet-popup-content .pp-meta{color:var(--suave)}
+#bw .leaflet-popup-content button{margin-top:10px}
+#bw .leaflet-container a.leaflet-popup-close-button{color:var(--suave)}
+#bw .leaflet-control-zoom a{background:var(--negro2)!important;color:var(--crema)!important;border-color:var(--linea)!important}
+#bw .leaflet-control-attribution{background:rgba(21,21,21,.7)!important;color:var(--tenue)!important}
+#bw .leaflet-control-attribution a{color:var(--suave)!important}
+#bw .nota-mapa{font-size:.76rem;color:var(--tenue);margin-top:10px}
+
+/* Rutas sugeridas */
+#bw .rutas{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px}
+#bw .ruta{background:var(--negro2);border:1px solid var(--linea);border-radius:var(--radio);padding:24px;display:flex;flex-direction:column;gap:12px}
+#bw .ruta .zona{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cobre);font-weight:600}
+#bw .ruta h3{font-size:1.12rem;font-weight:600;line-height:1.25}
+#bw .ruta ol{list-style:none;counter-reset:p;display:grid;align-content:start;gap:7px;font-size:.88rem;color:var(--suave);flex:1}
+#bw .ruta li{counter-increment:p;display:flex;gap:10px;align-items:baseline}
+#bw .ruta li::before{content:counter(p);font-size:.72rem;font-weight:700;color:var(--oro);min-width:12px}
+@media(max-width:1000px){#bw .rutas{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){#bw .rutas{grid-template-columns:1fr}}
+
+/* VIP */
+#bw .vip{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:40px}
+#bw .vip-card{border-radius:22px;padding:34px;border:1px solid var(--linea);background:var(--negro2);position:relative}
+#bw .vip-card.dest{background:linear-gradient(150deg,rgba(252,174,76,.2),rgba(200,121,65,.06) 60%),var(--negro2);border-color:rgba(252,174,76,.4)}
+#bw .vip-card .pronto{position:absolute;top:22px;right:22px;font-size:.78rem;border:1px solid var(--cobre);color:var(--cobre);border-radius:999px;padding:4px 10px}
+#bw .vip-card h3{font-size:1.4rem;font-weight:700;margin:6px 0 10px}
+#bw .vip-card p{color:var(--suave);font-size:.92rem;margin-bottom:22px}
+@media(max-width:760px){#bw .vip{grid-template-columns:1fr}}
+
+/* Bares participantes */
+#bw .para-bares{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center;background:var(--negro2);border:1px solid var(--linea);border-radius:28px;padding:48px}
+#bw .para-bares ol{list-style:none;display:grid;gap:14px;counter-reset:s}
+#bw .para-bares li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:12px;font-size:.92rem;color:var(--suave)}
+#bw .para-bares li::before{content:counter(s);width:34px;height:34px;border-radius:50%;border:1.5px solid var(--oro);color:var(--oro);display:grid;place-items:center;font-weight:600;font-size:.85rem}
+#bw .para-bares li b{color:var(--crema);display:block;font-weight:600}
+@media(max-width:860px){#bw .para-bares{grid-template-columns:1fr;padding:30px 22px}}
+
+/* Aliados */
+#bw .aliados{border-top:1px solid var(--linea);padding:60px 0}
+#bw .aliados .fila{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:28px}
+#bw .aliado{border:1px solid var(--linea);border-radius:var(--radio);padding:26px;display:flex;flex-direction:column;gap:16px;align-items:flex-start;min-height:150px;justify-content:space-between}
+#bw .aliado .rol{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--tenue)}
+#bw .aliado img{max-height:44px;width:auto;max-width:100%;object-fit:contain}
+#bw .aliado .txt-logo{font-weight:600;font-size:1.05rem;line-height:1.25}
+#bw .rc.idt{border-radius:8px}
+#bw .patros-tit{margin:0 0 20px;text-align:center;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.1;letter-spacing:-.01em;color:var(--crema)}
+#bw .creditos{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:28px 80px;margin-top:56px;padding-top:24px;border-top:1px solid var(--linea)}
+#bw .cred{display:flex;align-items:center;gap:18px}
+#bw .cred .rol{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--tenue)}
+#bw .creditos{--h:34px}
+#bw .cred img{height:var(--h);width:auto;max-width:100%;object-fit:contain}
+#bw .cred img.bog{height:calc(var(--h) * 2.543);transform:translateY(calc(var(--h) * -0.518))}
+#bw .patros{--c:5;display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:14px}
+#bw .patro{width:calc((100% - (var(--c) - 1) * 12px) / var(--c));display:flex;flex-direction:column;border:1px solid var(--linea);border-radius:12px;overflow:hidden}
+#bw .patro .logos{background:#fff;flex:1;min-height:120px;display:flex;align-items:center;justify-content:center;gap:24px;padding:18px 20px}
+#bw .patro.oscuro .logos{background:#000}
+#bw .patro .logos > img{max-width:100%;width:auto;height:auto;object-fit:contain;flex:0 1 auto;min-width:0}
+#bw .patro .logos.multi > img{max-width:40%}
+#bw .patro .logos .negro{filter:brightness(0)}
+#bw .rc{position:relative;display:block;overflow:hidden;flex:0 1 auto;min-width:0;aspect-ratio:var(--r);width:min(100%,calc(var(--h) * var(--r)))}
+#bw .aliado .rc img, #bw .patro .logos .rc img{position:absolute;max-width:none;max-height:none;height:auto;width:var(--w);left:var(--x);top:var(--y)}
+#bw .patro .nom{padding:8px 10px;font-size:.72rem;color:var(--tenue);text-align:center;line-height:1.3}
+#bw .patros .doble{width:calc(2 * (100% - (var(--c) - 1) * 12px) / var(--c) + 12px)}
+@media(max-width:1000px){#bw .patros{--c:3}}
+@media(max-width:760px){#bw .aliados .fila{grid-template-columns:1fr}#bw .patros{--c:2}#bw .creditos{flex-direction:column;gap:32px}#bw .cred{flex-direction:column;gap:10px;max-width:100%}#bw .creditos{--h:28px;padding-top:40px}#bw .cred img.bog{transform:none;margin-top:-6px}}
+
+#bw footer{border-top:1px solid var(--linea);padding:40px 0 60px;font-size:.82rem;color:var(--tenue)}
+#bw footer .legal{border:1px solid var(--linea);border-radius:12px;padding:14px 16px;color:var(--suave);margin-bottom:22px;font-size:.8rem}
+#bw footer .pie{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+#bw footer .pie img{height:22px;width:auto;display:inline-block;vertical-align:middle;margin-left:6px}
+
+/* Panel lateral: mi ruta */
+#bw .velo{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1500;opacity:0;pointer-events:none;transition:opacity .2s}
+#bw .velo.on{opacity:1;pointer-events:auto}
+#bw .panel{position:fixed;top:0;right:0;height:100%;width:min(440px,100%);background:var(--negro);border-left:1px solid var(--linea);z-index:1600;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column}
+#bw .panel.on{transform:none}
+#bw .panel .cab{display:flex;justify-content:space-between;align-items:center;padding:22px;border-bottom:1px solid var(--linea)}
+#bw .panel .cab h3{font-size:1.2rem;font-weight:700}
+#bw .cerrar{background:transparent;border:1px solid var(--linea);color:var(--crema);width:36px;height:36px;border-radius:50%;font-size:1.1rem}
+#bw .panel .cuerpo{flex:1;overflow-y:auto;padding:18px 22px}
+#bw .panel .pie-panel{padding:18px 22px;border-top:1px solid var(--linea);display:grid;gap:10px}
+#bw .parada{display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--linea)}
+#bw .parada .num{width:30px;height:30px;border-radius:50%;background:var(--oro);color:var(--negro);font-weight:700;display:grid;place-items:center;font-size:.85rem}
+#bw .parada b, #bw .parada-nom{font-weight:600;font-size:.95rem;display:block;line-height:1.25}
+#bw .parada-nom{background:none;border:0;padding:0;color:var(--crema);text-align:left;cursor:pointer;font-family:inherit}
+#bw .parada-nom:hover{color:var(--oro)}
+#bw .parada-res{display:inline-block;margin-top:6px;font-size:.78rem;font-weight:600;color:var(--negro);background:var(--oro);border-radius:999px;padding:.3em .8em;text-decoration:none}
+#bw .parada-res:hover{background:#ffc070}
+#bw .parada span{font-size:.78rem;color:var(--suave)}
+#bw .parada .acc{display:flex;gap:4px}
+#bw .parada .acc button{background:transparent;border:1px solid var(--linea);color:var(--suave);width:30px;height:30px;border-radius:8px;font-size:.85rem}
+#bw .parada .acc button:hover{color:var(--oro);border-color:var(--oro)}
+#bw .total-ruta{display:flex;justify-content:space-between;font-size:.9rem;color:var(--suave)}
+#bw .total-ruta b{color:var(--oro)}
+
+/* Modal ficha */
+#bw .modal{position:fixed;inset:0;z-index:1700;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.7)}
+#bw .modal .caja{background:var(--negro);border:1px solid var(--linea);border-radius:24px;width:min(560px,100%);max-height:92vh;overflow-y:auto;position:relative}
+#bw .ficha-top{height:150px;background:radial-gradient(90% 140% at 100% 0%,rgba(252,174,76,.55),rgba(200,121,65,.25) 45%,transparent 75%),var(--negro2);display:flex;align-items:flex-end;padding:22px;border-radius:24px 24px 0 0;position:relative}
+#bw .ficha-top .foto-nota{position:absolute;top:16px;left:22px;font-size:.7rem;color:var(--tenue);letter-spacing:.12em;text-transform:uppercase}
+#bw .ficha-top h3{font-size:1.6rem;font-weight:700;line-height:1.1}
+#bw .modal .cerrar{position:absolute;top:14px;right:14px;background:rgba(21,21,21,.6)}
+#bw .ficha-body{padding:22px;display:grid;gap:18px}
+#bw .ficha-menu{border:1px solid rgba(252,174,76,.35);border-radius:16px;padding:16px 18px;background:rgba(252,174,76,.06)}
+#bw .ficha-menu .p{font-size:1.5rem;font-weight:800;color:var(--oro)}
+#bw .dl{display:grid;grid-template-columns:110px 1fr;gap:8px 14px;font-size:.88rem}
+#bw .dl dt{color:var(--tenue)}
+#bw .pend{color:var(--cobre);font-style:italic}
+#bw .ficha-acc{display:flex;gap:10px;flex-wrap:wrap}
+
+/* Modal de reserva / edad */
+#bw .form{display:grid;gap:12px;margin-top:6px}
+#bw .form label{font-size:.8rem;color:var(--suave);display:grid;gap:6px}
+#bw .form input, #bw .form select{background:var(--negro2);border:1px solid var(--linea);color:var(--crema);border-radius:12px;padding:.75em .9em;font-family:inherit;font-size:.92rem}
+#bw .form .dos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#bw .edad{text-align:center;padding:40px 28px}
+#bw .edad img{width:220px;margin:0 auto 20px}
+#bw .edad h3{font-size:1.3rem;margin-bottom:8px}
+#bw .edad p{color:var(--suave);font-size:.9rem;margin-bottom:22px}
+#bw .edad .ctas{display:flex;gap:10px;justify-content:center}
+#bw .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--crema);color:var(--negro);padding:.75em 1.3em;border-radius:999px;font-size:.88rem;font-weight:500;z-index:2000;opacity:0;transition:all .2s;pointer-events:none}
+#bw .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== Rediseño editorial (v2) ===== */
+#bw .titulo.grande{font-size:clamp(2.4rem,6vw,4.6rem);line-height:.98;letter-spacing:-.03em;font-weight:800}
+#bw .cab-sec{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:44px}
+#bw .cab-sec .lead{justify-self:end;max-width:420px}
+@media(max-width:800px){#bw .cab-sec{grid-template-columns:1fr;gap:14px}#bw .cab-sec .lead{justify-self:start}}
+
+#bw .hero{position:relative;min-height:100vh;display:flex;align-items:flex-end;padding:0 0 56px;overflow:hidden}
+#bw .hero::before, #bw .hero::after{content:none}
+#bw .hero-foto{position:absolute;inset:0;background:url(https://barweek-bogota.netlify.app/assets/hero-zonat.jpg?v=2) center 30%/cover no-repeat;transform:scale(1.04);animation:respira 18s ease-in-out infinite alternate}
+@keyframes respira{to{transform:scale(1.12)}}
+#bw .hero-foto::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(21,21,21,.55) 0%,rgba(21,21,21,.05) 30%,rgba(21,21,21,.35) 55%,rgba(21,21,21,.97) 92%)}
+#bw .hero-in{position:relative;z-index:1;width:100%}
+#bw .hero-logo{position:absolute;z-index:1;top:48px;left:max(20px,calc((100vw - 1200px)/2 + 20px));width:min(260px,48vw);margin:0;filter:drop-shadow(0 8px 30px rgba(0,0,0,.6))}
+#bw .hero h1{font-size:clamp(3rem,min(10.5vw,15vh),9.6rem);font-weight:800;line-height:.9;letter-spacing:-.045em;max-width:none}
+#bw .hero h1 em{font-style:normal;color:var(--oro);display:block}
+#bw .hero-meta{display:grid;grid-template-columns:1fr 1fr 1fr 1.2fr;border-top:1px solid rgba(246,230,207,.28);margin-top:34px}
+#bw .hero-meta>div{padding:18px 18px 0 0}
+#bw .hero-meta b{display:block;font-size:1.15rem;font-weight:700;letter-spacing:-.01em}
+#bw .hero-meta span{font-size:.85rem;color:var(--suave)}
+#bw .hero-cta{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+#bw .faltan{font-size:.82rem!important}
+#bw .faltan b{display:inline!important;font-size:inherit!important;color:var(--oro)}
+@media(max-width:900px){#bw .hero-meta{grid-template-columns:1fr 1fr}#bw .hero-cta{grid-column:1/-1}}
+@media(max-width:520px){#bw .hero{min-height:92vh}#bw .hero-logo{top:32px}#bw .hero-meta>div:first-child{grid-column:1/-1}}
+
+#bw .ticker{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);overflow:hidden;padding:34px 0;background:var(--negro);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+#bw .ticker-in{display:flex;align-items:center;gap:72px;width:max-content;padding-right:72px;animation:corre 70s linear infinite}
+#bw .ticker-in img{height:58px;width:auto;max-width:150px;object-fit:contain;opacity:.82;transition:opacity .2s}
+#bw .ticker:hover .ticker-in{animation-play-state:paused}
+#bw .ticker-in img:hover{opacity:1}
+@media(max-width:600px){#bw .ticker{padding:24px 0}#bw .ticker-in{gap:44px;padding-right:44px}#bw .ticker-in img{height:42px;max-width:110px}}
+@keyframes corre{to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){#bw .ticker-in, #bw .hero-foto{animation:none}}
+
+#bw .como{padding:110px 0}
+#bw .como-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+#bw .como-foto{margin:0;aspect-ratio:4/5;overflow:hidden;border-radius:4px}
+#bw .como-foto img{width:100%;height:100%;object-fit:cover}
+#bw .pasos-lista{list-style:none;margin-top:40px}
+#bw .pasos-lista li{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:20px 0;border-top:1px solid var(--linea)}
+#bw .pasos-lista li:last-child{border-bottom:1px solid var(--linea)}
+#bw .pasos-lista .num{font-size:2rem;font-weight:300;color:var(--cobre);line-height:1;letter-spacing:-.04em}
+#bw .pasos-lista b{font-size:1.2rem;font-weight:600}
+#bw .pasos-lista p{color:var(--suave);font-size:.92rem;margin-top:2px}
+@media(max-width:860px){#bw .como-grid{grid-template-columns:1fr;gap:36px}#bw .como-foto{aspect-ratio:4/3}}
+
+#bw .menu-full{position:relative;min-height:92vh;display:flex;align-items:center;overflow:hidden;padding:0}
+#bw .menu-foto{position:absolute;inset:0;background:url(https://barweek-bogota.netlify.app/assets/barra-tapas.jpg) center/cover no-repeat}
+#bw .menu-foto::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(21,21,21,.94) 0%,rgba(21,21,21,.7) 45%,rgba(21,21,21,.15) 100%),linear-gradient(180deg,var(--negro) 0%,transparent 14%,transparent 86%,var(--negro) 100%)}
+#bw .menu-in{position:relative;z-index:1;width:100%}
+#bw .precio-gigante{font-size:clamp(4.4rem,15vw,13rem);font-weight:800;letter-spacing:-.06em;line-height:.85;color:var(--oro)}
+#bw .menu-txt{font-size:clamp(1.15rem,2.4vw,1.7rem);font-weight:500;line-height:1.3;margin-top:22px;max-width:640px}
+#bw .menu-lineas{margin-top:38px;color:var(--suave);font-size:.95rem;max-width:none}
+#bw .menu-lineas i{font-style:normal;color:var(--cobre);margin:0 .5em}
+
+#bw .barrios{padding-top:110px}
+#bw .mosaico{display:grid;grid-template-columns:1.25fr 1fr 1fr;grid-template-rows:280px 280px;gap:14px}
+#bw .tile{position:relative;border:0;border-radius:4px;overflow:hidden;text-align:left;color:var(--crema);background:var(--negro2);padding:22px;display:flex;flex-direction:column;justify-content:flex-end;font-family:inherit}
+#bw .tile::before{content:"";position:absolute;inset:0;background:var(--img) center/cover no-repeat;transition:transform .6s ease}
+#bw .tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(21,21,21,.88) 100%)}
+#bw .tile:hover::before{transform:scale(1.06)}
+#bw .tile>*{position:relative;z-index:1}
+#bw .t-alta{grid-row:1/3}
+#bw .t-nom{font-size:clamp(1.4rem,2.6vw,2.2rem);font-weight:700;letter-spacing:-.02em;line-height:1}
+#bw .t-n{font-size:.85rem;color:var(--suave);margin-top:6px}
+#bw .t-tipo{background:var(--oro);color:var(--negro)}
+#bw .t-tipo::before, #bw .t-tipo::after{content:none}
+#bw .t-tipo .t-n{color:rgba(21,21,21,.7)}
+#bw .t-big{font-size:clamp(3.6rem,7vw,6rem);font-weight:800;letter-spacing:-.05em;line-height:.85;margin-bottom:auto}
+#bw .t-oscuro{background:var(--negro2);color:var(--crema);border:1px solid var(--linea)}
+#bw .t-oscuro .t-big{color:var(--cobre)}
+#bw .t-oscuro .t-n{color:var(--suave)}
+@media(max-width:860px){#bw .mosaico{grid-template-columns:1fr 1fr;grid-template-rows:300px 220px 220px}#bw .t-alta{grid-column:1/-1;grid-row:auto}}
+@media(max-width:520px){#bw .mosaico{grid-template-columns:1fr;grid-template-rows:none;grid-auto-rows:220px}}
+
+#bw .ruta{padding:0;overflow:hidden;border-radius:4px}
+#bw .ruta .r-foto{aspect-ratio:16/10;background:var(--img) center/cover no-repeat}
+#bw .ruta .r-cuerpo{padding:22px;display:flex;flex-direction:column;gap:12px;flex:1}
+#bw .ruta h3{font-size:1.3rem;font-weight:700;letter-spacing:-.01em}
+#bw .ruta .zona{letter-spacing:0;text-transform:none;font-size:.82rem;color:var(--cobre);font-weight:500}
+#bw .paso, #bw .vip-card, #bw .para-bares, #bw .aliado, #bw .bar, #bw #mapa{border-radius:6px}
+#bw .aliado{min-height:130px}
+#bw .aliado .rol{letter-spacing:0;text-transform:none;font-size:.8rem}
+
+
+/* ===== Armenia ===== */
+#bw .hero-foto{background-image:url(https://asobares.org/wp-content/uploads/2026/10/Noche-vibrante-de-cocteles-y-musica.jpg);background-position:center}
+#bw .menu-foto{background-image:url(https://asobares.org/wp-content/uploads/2026/10/Brindis-soleado-en-la-terraza.jpg)}
+#bw .pronto-bares{border:1px solid rgba(252,174,76,.35);border-radius:6px;background:radial-gradient(90% 140% at 100% 0%,rgba(252,174,76,.18),transparent 70%),var(--negro2);padding:56px 40px;text-align:center}
+#bw .pronto-bares .eyebrow{display:block;margin-bottom:14px}
+#bw .pronto-bares .lead{margin:14px auto 28px}
+#bw .pronto-bares .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+#bw .cred-colab{display:flex;align-items:center;flex-wrap:wrap;justify-content:center;background:#fff;border-radius:12px;padding:14px 8px}
+#bw .cred .cred-colab img{height:40px;width:auto;padding:0 24px;box-sizing:content-box;transform:none}
+#bw .cred .cred-colab img+img{border-left:1px solid #e3e3e3}
+#bw .cred .cred-colab img.qcb{height:48px}
+#bw .creditos{flex-direction:column;gap:28px}
+#bw .cred{flex-direction:column;gap:12px}
+@media(max-width:760px){#bw .pronto-bares{padding:40px 22px}#bw .cred-colab{flex-direction:column;gap:14px;padding:16px 20px}#bw .cred .cred-colab img{padding:0;height:36px}#bw .cred .cred-colab img+img{border-left:0;border-top:1px solid #e3e3e3;padding-top:14px}#bw .cred .cred-colab img.qcb{height:44px}}
+</style>
+
+<div id="bw">
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#inicio" aria-label="BAR WEEK Armenia"><img src="https://barweek-bogota.netlify.app/assets/barweek-logo.png" alt="BAR WEEK"></a>
+    <nav>
+      <a href="#como">Cómo funciona</a>
+      <a href="#menu">El menú</a>
+      <a href="#participantes">Bares</a>
+      <a href="#vip">Acceso VIP</a>
+    </nav>
+    <a class="btn btn-oro btn-sm" href="#bares">Inscribe tu bar</a>
+  </div>
+</header>
+
+<section class="hero" id="inicio">
+  <div class="hero-foto" role="img" aria-label="Noche de cócteles y música en Armenia"></div>
+  <img class="hero-logo" src="https://barweek-bogota.netlify.app/assets/barweek-logo.png" alt="BAR WEEK">
+  <div class="wrap hero-in">
+    <h1>Armenia se recorre <em>en una noche.</em></h1>
+    <div class="hero-meta">
+      <div><b>Fechas por confirmar</b><span>2026 · Armenia, Quindío</span></div>
+      <div><b>Próximamente</b><span>bares participantes de Armenia</span></div>
+      <div><b>$35.000</b><span>cóctel de autor + tapa</span></div>
+      <div class="hero-cta"><a class="btn btn-oro" href="#bares">Inscribe tu bar →</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="como" id="como">
+  <div class="wrap como-grid">
+    <figure class="como-foto"><img src="https://asobares.org/wp-content/uploads/2026/10/Coctel-artesanal-en-un-bar-nocturno.jpg" alt="Cóctel artesanal en un bar nocturno" loading="lazy"></figure>
+    <div>
+      <h2 class="titulo grande">Un bar nuevo<br>cada noche.</h2>
+      <ol class="pasos-lista">
+        <li><span class="num">01</span><div><b>Descubre los bares</b><p>Muy pronto publicaremos los bares participantes de Armenia.</p></div></li>
+        <li><span class="num">02</span><div><b>Arma tu plan</b><p>Elige a cuáles ir, solo o con tu grupo.</p></div></li>
+        <li><span class="num">03</span><div><b>Reserva</b><p>Asegura tu mesa directamente con cada bar.</p></div></li>
+        <li><span class="num">04</span><div><b>Pide tu BAR WEEK</b><p>Cóctel de autor + tapa. Disfruta con responsabilidad.</p></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="menu-full" id="menu">
+  <div class="menu-foto" role="img" aria-label="Brindis en una terraza"></div>
+  <div class="wrap menu-in">
+    <div class="precio-gigante">$35.000</div>
+    <p class="menu-txt">Un cóctel de autor y una tapa de barra.<br>El mismo precio en cada bar del circuito.</p>
+    <p class="menu-lineas">Coctelería de autor <i>/</i> Gastronomía de barra <i>/</i> Música en vivo y DJs <i>/</i> Los bares de Armenia</p>
+  </div>
+</section>
+
+<section id="participantes">
+  <div class="wrap">
+    <div class="pronto-bares">
+      <span class="eyebrow">Bares participantes</span>
+      <h2 class="titulo grande">Muy pronto.</h2>
+      <p class="lead">Estamos seleccionando los bares y restaurantes que harán parte de BAR WEEK Armenia. Cuando estén confirmados, aquí podrás conocerlos y armar tu ruta.</p>
+      <div class="ctas"><a class="btn btn-oro" href="#bares">¿Tienes un bar? Inscríbelo →</a></div>
+    </div>
+  </div>
+</section>
+
+<section id="vip" style="padding-top:20px">
+  <div class="wrap">
+    <h2 class="titulo">Acceso VIP y pre-compra.</h2>
+    <div class="vip">
+      <div class="vip-card dest">
+        <span class="pronto">Próximamente</span>
+        <h3>Pase VIP BAR WEEK</h3>
+        <p>Beneficios exclusivos de aliados y patrocinadores durante la semana. Cupos limitados.</p>
+        <button class="btn btn-oro" disabled>Disponible pronto</button>
+      </div>
+      <div class="vip-card">
+        <span class="pronto">Próximamente</span>
+        <h3>Compra tu menú por adelantado</h3>
+        <p>Paga tu menú BAR WEEK antes de llegar y preséntalo en el bar.</p>
+        <button class="btn btn-linea" disabled>Disponible pronto</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="bares" style="padding-top:20px">
+  <div class="wrap">
+    <div class="para-bares">
+      <div>
+        <h2 class="titulo">¿Tienes un bar en Armenia? Súmate al circuito.</h2>
+        <p class="lead" style="margin-bottom:26px">Inclusión en el mapa y en las piezas oficiales, promoción digital y de prensa, formación con acompañamiento experto y apoyo de proveedores para tu propuesta gastronómica.</p>
+        <!-- Reemplazar #URL-INSCRIPCION-ARMENIA por la URL de la página del formulario de inscripción de Armenia -->
+        <a class="btn btn-oro" href="#URL-INSCRIPCION-ARMENIA" target="_blank" rel="noopener">Inscripción en Asobares →</a>
+      </div>
+      <ol>
+        <li><div><b>Inscripción</b>Formulario de Asobares.</div></li>
+        <li><div><b>Curaduría</b>Selección de los establecimientos participantes.</div></li>
+        <li><div><b>Compromiso</b>Menú a $35.000, días y horarios, uso de marca.</div></li>
+        <li><div><b>Capacitación</b>Con bartenders, chefs y marcas aliadas.</div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<div class="aliados">
+  <div class="wrap">
+    <div class="creditos" style="margin-top:0;padding-top:0;border-top:0">
+      <div class="cred"><span class="rol">Organiza</span><img src="https://barweek-bogota.netlify.app/assets/asobares.png" alt="Asobares Colombia"></div>
+      <div class="cred"><span class="rol">Colabora</span>
+        <div class="cred-colab">
+          <img src="https://asobares.org/wp-content/uploads/2026/11/logo-armenia.png" alt="Alcaldía de Armenia">
+          <img src="https://asobares.org/wp-content/uploads/2026/11/camara-de-comercio-armenia.webp" alt="Cámara de Comercio de Armenia y del Quindío">
+          <img class="qcb" src="https://asobares.org/wp-content/uploads/2026/11/logo-header-quindio-convention-bureau.png" alt="Quindío Convention Bureau">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="legal">El exceso de alcohol es perjudicial para la salud. Ley 30 de 1986. Prohíbase el expendio de bebidas embriagantes a menores de edad. Ley 124 de 1994. Si vas a beber, no manejes.</div>
+    <div class="pie">
+      <span>BAR WEEK Armenia 2026 · Asobares Colombia</span>
+    </div>
+  </div>
+</footer>
+
+<div class="modal" id="modalEdad" hidden>
+  <div class="caja edad">
+    <img src="https://barweek-bogota.netlify.app/assets/barweek-logo.png" alt="BAR WEEK">
+    <h3>¿Eres mayor de 18 años?</h3>
+    <p>Este sitio contiene información sobre bebidas alcohólicas.</p>
+    <div class="ctas"><button class="btn btn-oro" id="edadSi">Sí, soy mayor de edad</button><button class="btn btn-linea" id="edadNo">No</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $ = function(s){ return document.querySelector('#bw ' + s); };
+  var visto = false;
+  try { visto = localStorage.getItem('bw_edad') === 'true'; } catch(e) {}
+  if (!visto) $('#modalEdad').hidden = false;
+  $('#edadSi').onclick = function(){ try { localStorage.setItem('bw_edad','true'); } catch(e) {} $('#modalEdad').hidden = true; };
+  $('#edadNo').onclick = function(){ $('#modalEdad .edad p').textContent = 'Lo sentimos: BAR WEEK es solo para mayores de 18 años.'; };
+})();
+</script>
+</div>

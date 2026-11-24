@@ -42,11 +42,10 @@ html:has(#bwa-wrap) {
 }
 #bwa-wrap .bwa-organiza-row {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
 }
 #bwa-wrap .bwa-organiza-label {
   font-size: 10px;
@@ -66,17 +65,21 @@ html:has(#bwa-wrap) {
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 14px 26px;
   background: #fff;
-  border-radius: 10px;
-  padding: 10px 22px;
+  border-radius: 12px;
+  padding: 14px 8px;
+  max-width: 100%;
 }
 #bwa-wrap .bwa-colabora-logos img {
-  height: 38px;
+  height: 40px;
   width: auto;
   max-width: 100%;
   object-fit: contain;
+  padding: 0 24px;
+  box-sizing: content-box;
 }
+#bwa-wrap .bwa-colabora-logos img + img { border-left: 1px solid #e3e3e3; }
+#bwa-wrap .bwa-colabora-logos .bwa-qcb { height: 48px; }
 #bwa-wrap .bwa-header .bwa-ciudad {
   font-size: 14px;
   font-weight: 700;
@@ -399,6 +402,10 @@ html:has(#bwa-wrap) {
   #bwa-wrap .bwa-card { padding: 28px 20px; }
   #bwa-wrap .bwa-dates-row { gap: 20px; }
   #bwa-wrap .bwa-fotos { height: 160px; }
+  #bwa-wrap .bwa-colabora-logos { flex-direction: column; gap: 14px; padding: 16px 20px; }
+  #bwa-wrap .bwa-colabora-logos img { padding: 0; height: 36px; }
+  #bwa-wrap .bwa-colabora-logos img + img { border-left: 0; border-top: 1px solid #e3e3e3; padding-top: 14px; }
+  #bwa-wrap .bwa-colabora-logos .bwa-qcb { height: 44px; }
 }
 </style>
 
@@ -416,7 +423,7 @@ html:has(#bwa-wrap) {
       <div class="bwa-colabora-logos">
         <img src="https://asobares.org/wp-content/uploads/2026/11/logo-armenia.png" alt="Alcaldía de Armenia"/>
         <img src="https://asobares.org/wp-content/uploads/2026/11/camara-de-comercio-armenia.webp" alt="Cámara de Comercio de Armenia y del Quindío"/>
-        <img src="https://asobares.org/wp-content/uploads/2026/11/logo-header-quindio-convention-bureau.png" alt="Quindío Convention Bureau"/>
+        <img class="bwa-qcb" src="https://asobares.org/wp-content/uploads/2026/11/logo-header-quindio-convention-bureau.png" alt="Quindío Convention Bureau"/>
       </div>
     </div>
     <div class="bwa-ciudad">Armenia, Quindío — Colombia</div>

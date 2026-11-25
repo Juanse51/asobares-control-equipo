@@ -655,8 +655,8 @@ window.BARES = [
   "barrio": "Usaquen",
   "localidad": "Usaquén",
   "direccion": "CALL 118 5 13",
-  "concepto": "COLOMBIANA",
-  "cocina": "Colombiana",
+  "concepto": "Cocina española",
+  "cocina": "Española",
   "musicaTxt": "VARIADO",
   "musica": "Variada",
   "capacidad": 130,
@@ -744,7 +744,8 @@ window.BARES = [
    "url": "https://tejolaembajada.com/reservar"
   },
   "lat": 4.66797,
-  "lon": -74.06508
+  "lon": -74.06508,
+  "horario": "Todos los días · Lunes a miércoles de 4:00 a 11:00 p. m. · Jueves de 4:00 p. m. a 1:00 a. m. · Viernes y sábado de 1:00 p. m. a 1:00 a. m. · Domingo de 1:00 a 8:00 p. m."
  },
  {
   "id": 10,
@@ -1278,19 +1279,20 @@ window.BARES = [
   "nombre": "Acertijo",
   "barrio": "Chapinero",
   "localidad": "Chapinero",
-  "direccion": "CL 57 NO. 4 29",
+  "direccion": "Calle 57 # 4-29, Chapinero",
   "concepto": "BAR",
   "cocina": "Gastrobar",
-  "musicaTxt": "CROSOVEER",
-  "musica": "Crossover",
-  "capacidad": 30,
+  "musicaTxt": "80's, 90's y disco",
+  "musica": "Disco y funk",
+  "capacidad": 55,
   "instagram": "acertijo_bar",
   "reserva": {
    "via": "WhatsApp",
    "url": "https://wa.link/ci61ji"
   },
   "lat": 4.63927,
-  "lon": -74.0575
+  "lon": -74.0575,
+  "horario": "Martes a sábado de 3:00 p. m. a 12:00 a. m. · Domingo de 3:00 a 9:00 p. m."
  },
  {
   "id": 44,
@@ -1464,10 +1466,11 @@ window.BARES = [
   "instagram": "pika.restaurante",
   "reserva": {
    "via": "WhatsApp",
-   "url": "https://wa.me/573052302708?text=Hola%2C%20quiero%20reservar%20en%20PIKA%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
+   "url": "https://wa.me/573150266665?text=Hola%2C%20quiero%20reservar%20en%20PIKA%20para%20BAR%20WEEK%20Bogot%C3%A1%20%28men%C3%BA%20de%20%2435.000%29."
   },
   "lat": 4.63766,
-  "lon": -74.0581
+  "lon": -74.0581,
+  "horario": "Martes a jueves de 1:00 a 9:00 p. m. · Viernes y sábado de 12:00 m. a 10:00 p. m."
  },
  {
   "id": 53,
@@ -1952,7 +1955,7 @@ function abrirFicha(id){
       <dl class="dl">
         <dt>Cocina</dt><dd>${esc(b.concepto || b.cocina)}</dd>
         <dt>Música</dt><dd>${esc(b.musicaTxt && b.musicaTxt !== 'nan' ? b.musicaTxt : b.musica)}</dd>
-        <dt>Horario</dt><dd class="pend">Por confirmar</dd>
+        <dt>Horario</dt>${b.horario ? `<dd>${esc(b.horario)}</dd>` : '<dd class="pend">Por confirmar</dd>'}
         ${b.capacidad ? `<dt>Capacidad</dt><dd>${b.capacidad} personas</dd>` : ''}
         <dt>Dirección</dt><dd>${esc(b.direccion)}</dd>
         ${b.instagram ? `<dt>Instagram</dt><dd><a href="https://instagram.com/${encodeURIComponent(b.instagram)}" target="_blank" rel="noopener" class="oro">@${esc(b.instagram)}</a></dd>` : ''}
